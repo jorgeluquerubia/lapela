@@ -483,11 +483,11 @@ export default function AdDetail() {
         </form>
       </Modal>
 
-      <div className="container mx-auto px-4 py-10">
+      <div className="container mx-auto px-4 py-6 md:py-10">
         <div className="flex flex-col md:flex-row gap-8 md:gap-12">
           {/* Left Column: Image Gallery */}
           <div className="md:w-1/2 lg:w-3/5">
-            <div className="w-full h-[500px] relative overflow-hidden rounded-lg bg-gray-100 flex items-center justify-center">
+            <div className="w-full h-[300px] md:h-[500px] relative overflow-hidden rounded-lg bg-gray-100 flex items-center justify-center">
               {product.image ? (
                 <Image 
                   src={product.image} 
@@ -498,7 +498,7 @@ export default function AdDetail() {
                 />
               ) : (
                 <div className="flex items-center justify-center w-full h-full bg-gray-200">
-                  <span className="text-gray-400 text-4xl">Sin imagen</span>
+                  <span className="text-gray-400 text-2xl md:text-4xl">Sin imagen</span>
                 </div>
               )}
             </div>
@@ -506,10 +506,10 @@ export default function AdDetail() {
 
           {/* Right Column: Info and Actions */}
           <div className="md:w-1/2 lg:w-2/5">
-            <h1 className="text-3xl font-bold tracking-tight text-gray-900">{product.name}</h1>
+            <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-gray-900">{product.name}</h1>
             
             <div className="mt-4">
-              <p className="text-3xl text-gray-900 font-bold">{product.price} €</p>
+              <p className="text-2xl md:text-3xl text-gray-900 font-bold">{product.price} €</p>
               <p className="text-sm text-gray-500">{product.type === 'auction' ? 'Puja actual' : 'Precio Fijo'}</p>
             </div>
 

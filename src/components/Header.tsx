@@ -25,14 +25,17 @@ export default function Header() {
     }
   };
 
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
   return (
     <header className="bg-white shadow-sm py-4">
-      <div className="container mx-auto px-4 flex items-center justify-between gap-4">
+      <div className="container mx-auto px-4 flex items-center justify-between flex-wrap gap-4">
         <div className="logo flex-shrink-0">
           <Link href="/" className="text-2xl font-bold text-gray-800">LaPela 🪙</Link>
         </div>
-        
-        <form onSubmit={handleSearchSubmit} className="flex-grow mx-4 max-w-xl">
+
+        {/* Search bar - takes full width on small screens */}
+        <form onSubmit={handleSearchSubmit} className="w-full md:w-auto md:flex-grow md:mx-4 md:max-w-xl order-3 md:order-2">
           <div className="relative">
             <input
               type="text"
@@ -48,16 +51,26 @@ export default function Header() {
             </button>
           </div>
         </form>
-        
-        <nav className="flex items-center space-x-4 flex-shrink-0">
-          <Link href="/publish-ad" className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200 whitespace-nowrap">
+
+        {/* Hamburger Menu Button */}
+        <div className="md:hidden order-2 md:order-3">
+          <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="text-gray-600 hover:text-indigo-600">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={isMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16m-7 6h7"}></path>
+            </svg>
+          </button>
+        </div>
+
+        {/* Navigation Links */}
+        <nav className={`w-full md:w-auto md:flex items-center space-x-4 md:space-x-4 flex-shrink-0 order-4 md:order-3 ${isMenuOpen ? 'flex flex-col md:flex-row mt-4 md:mt-0' : 'hidden'}`}>
+          <Link href="/publish-ad" className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200 whitespace-nowrap w-full text-center md:w-auto">
             Publicar Anuncio
           </Link>
           
           {loading ? (
             <div className="h-8 w-24 bg-gray-200 rounded-md animate-pulse"></div>
           ) : user ? (
-            <div className="flex items-center space-x-3">
+            <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-3 w-full md:w-auto">
               <Link href="/user-profile" className="flex items-center gap-2 text-gray-700 hover:text-indigo-600 transition-colors duration-200">
                 {profile?.avatar_url ? (
                   <Image 
@@ -72,21 +85,21 @@ export default function Header() {
                     👤
                   </div>
                 )}
-                <span className="font-medium whitespace-nowrap hidden md:inline">{profile?.username || 'Mi Perfil'}</span>
+                <span className="font-medium whitespace-nowrap">{profile?.username || 'Mi Perfil'}</span>
               </Link>
               <button onClick={handleLogout} className="text-gray-600 hover:text-red-500 transition-colors duration-200 whitespace-nowrap">
                 Cerrar Sesión
               </button>
             </div>
           ) : (
-            <>
+            <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4 w-full md:w-auto">
               <Link href="/login" className="text-gray-700 hover:text-indigo-600 transition-colors duration-200 whitespace-nowrap">
                 Iniciar Sesión
               </Link>
               <Link href="/register" className="text-gray-700 hover:text-indigo-600 transition-colors duration-200 whitespace-nowrap">
                 Registrarse
               </Link>
-            </>
+            </div>
           )}
         </nav>
       </div>
