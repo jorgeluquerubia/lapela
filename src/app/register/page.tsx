@@ -1,10 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/utils/supabase';
-import Header from '@/components/Header';
+import { useAuth } from '@/context/AuthContext';
 
 export default function Register() {
   const [email, setEmail] = useState('');
@@ -12,15 +12,25 @@ export default function Register() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const { session, loading: authLoading } = useAuth();
+
+  useEffect(() => {
+    if (!authLoading && session) {
+      router.push('/');
+    }
+  }, [session, authLoading, router]);
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setMessage(null);
+    setLoading(true);
 
     if (password !== confirmPassword) {
       setError('Las contraseñas no coinciden.');
+      setLoading(false);
       return;
     }
 
@@ -33,68 +43,66 @@ export default function Register() {
       setError(error.message);
     } else if (data.user) {
       setMessage('¡Registro exitoso! Por favor, revisa tu correo para confirmar tu cuenta.');
-      // Optionally redirect after a short delay
-      // setTimeout(() => router.push('/login'), 3000);
     }
+    setLoading(false);
   };
 
+  if (authLoading || session) {
+    return <p>Cargando...</p>;
+  }
+
   return (
-    <>
-      <Header />
+    <section className="register-form-container">
+      <h1>Crear una cuenta</h1>
+      
+      {/* Social login buttons can be implemented here */}
+      {/* <div className="social-login"> ... </div> */}
+      {/* <div className="divider"><span>o</span></div> */}
 
-      <main className="container">
-        <section className="register-form-container">
-          <h1>Crear una cuenta</h1>
-          <div className="social-login">
-            <button className="button social-button facebook">Registrarse con Facebook</button>
-            <button className="button social-button google">Registrarse con Google</button>
-          </div>
+      <form className="register-form" onSubmit={handleSignUp}>
+        <label htmlFor="email">Email</label>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          required
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          disabled={loading}
+        />
 
-          <div className="divider"><span>o</span></div>
+        <label htmlFor="password">Contraseña</label>
+        <input
+          type="password"
+          id="password"
+          name="password"
+          required
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          disabled={loading}
+        />
 
-          <form className="register-form" onSubmit={handleSignUp}>
-            <label htmlFor="email">Email</label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
+        <label htmlFor="confirm-password">Confirmar Contraseña</label>
+        <input
+          type="password"
+          id="confirm-password"
+          name="confirm-password"
+          required
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+          disabled={loading}
+        />
 
-            <label htmlFor="password">Contraseña</label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
+        {error && <p className="text-red-600 text-center">{error}</p>}
+        {message && <p className="text-green-600 text-center">{message}</p>}
 
-            <label htmlFor="confirm-password">Confirmar Contraseña</label>
-            <input
-              type="password"
-              id="confirm-password"
-              name="confirm-password"
-              required
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-            />
-
-            {error && <p style={{ color: 'red' }}>{error}</p>}
-            {message && <p style={{ color: 'green' }}>{message}</p>}
-
-            <button type="submit" className="button primary">Registrarse</button>
-            <p className="login-link">¿Ya tienes cuenta? <Link href="/login">Inicia sesión aquí</Link></p>
-          </form>
-        </section>
-      </main>
-
-      <footer>
-        <p>&copy; 2025 LaPela. Todos los derechos reservados.</p>
-      </footer>
-    </>
+        <button type="submit" className="button primary" disabled={loading}>
+          {loading ? 'Registrando...' : 'Registrarse'}
+        </button>
+        <p className="login-link">
+          ¿Ya tienes cuenta? <Link href="/login">Inicia sesión aquí</Link>
+        </p>
+      </form>
+    </section>
   );
 }

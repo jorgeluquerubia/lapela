@@ -14,6 +14,7 @@ interface Product {
   image: string;
   location: string;
   time: string;
+  status: 'available' | 'sold' | 'paid';
 }
 
 export default function UserProfile() {
@@ -70,6 +71,37 @@ export default function UserProfile() {
         setAvatarPreview(reader.result as string);
       };
       reader.readAsDataURL(file);
+    }
+  };
+
+  const handleMarkAsPaid = async (productId: string) => {
+    if (!user) return;
+
+    setLoading(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) throw new Error('No autenticado');
+
+      const response = await fetch(`/api/products/${productId}/mark-as-paid`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`
+        }
+      });
+
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.error || 'No se pudo actualizar el estado.');
+      }
+
+      // Refresh the product list to show the new status
+      fetchUserProducts(user.id);
+      setMessage('Producto marcado como pagado.');
+
+    } catch (err: any) {
+      setMessage(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -183,7 +215,13 @@ export default function UserProfile() {
             userProducts.map((product) => (
               <div className="product-card" key={product.id}>
                 <Link href={`/ad-detail/${product.id}`}>
-                  <div className="product-image" style={{ backgroundImage: `url('${product.image}')` }}></div>
+                  <div className="product-image" style={{ backgroundImage: `url('${product.image}')` }}>
+                    {product.status !== 'available' && (
+                      <span className={`status-badge status-${product.status}`}>
+                        {product.status === 'sold' ? 'Vendido' : 'Pagado'}
+                      </span>
+                    )}
+                  </div>
                   <div className="product-info">
                     <h3>{product.name}</h3>
                     <p className={product.type === 'auction' ? 'price auction-price' : 'price'}>
@@ -192,6 +230,17 @@ export default function UserProfile() {
                     <p className="meta">{product.location} &bull; {product.time}</p>
                   </div>
                 </Link>
+                {product.status === 'sold' && (
+                  <div className="product-actions p-4">
+                    <button 
+                      onClick={() => handleMarkAsPaid(product.id)}
+                      className="w-full bg-green-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-600 transition-colors"
+                      disabled={loading}
+                    >
+                      Marcar como Pagado
+                    </button>
+                  </div>
+                )}
               </div>
             ))
           ) : (

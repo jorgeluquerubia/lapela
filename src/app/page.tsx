@@ -1,21 +1,9 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import Anuncio from '@/components/Anuncio';
 import FiltroAnuncios from '@/components/FiltroAnuncios';
-
-interface Product {
-  id: string;
-  name: string;
-  price: string;
-  type: string;
-  seller: string;
-  location: string;
-  time: string;
-  image: string;
-  detailImage: string;
-  description: string;
-}
+import { Product } from '@/types';
+import ProductCard from '@/components/ProductCard';
 
 export default function Home() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -34,7 +22,7 @@ export default function Home() {
     setError(null);
 
     const queryParams = new URLSearchParams();
-    if (searchTerm) queryParams.append('search', searchTerm);
+    if (searchTerm) queryParams.append('q', searchTerm); // Use 'q' to match the global search
     if (categoryFilter && categoryFilter !== 'Todas') queryParams.append('category', categoryFilter);
     if (minPriceFilter) queryParams.append('minPrice', minPriceFilter);
     if (maxPriceFilter) queryParams.append('maxPrice', maxPriceFilter);
@@ -50,7 +38,7 @@ export default function Home() {
         throw new Error(errorData.error || 'Error al cargar los anuncios');
       }
       const data = await response.json();
-      setProducts(data as Product[]);
+      setProducts(data.products as Product[]); // Correctly access the products array
     } catch (err: any) {
       setError(err.message);
       console.error('Error fetching products:', err);
@@ -70,10 +58,10 @@ export default function Home() {
     setLocationFilter(filters.location);
   };
 
-  // This function will be passed to the Header component via the layout
-  const handleSearch = (search: string) => {
-    setSearchTerm(search);
-  };
+  // The handleSearch function is no longer needed here as the Header now handles global search
+  // const handleSearch = (search: string) => {
+  //   setSearchTerm(search);
+  // };
 
   return (
     <>
@@ -85,9 +73,9 @@ export default function Home() {
           {loading && <p className="text-center py-4">Cargando anuncios...</p>}
           {error && <p className="text-center py-4 text-red-600">{error}</p>}
           {!loading && !error && products.length === 0 && <p className="text-center py-4">No se encontraron anuncios.</p>}
-          <div className="grid-container">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {!loading && !error && products.map((product) => (
-              <Anuncio key={product.id} product={product} />
+              <ProductCard key={product.id} product={product} />
             ))}
           </div>
         </section>

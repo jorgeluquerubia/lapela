@@ -3,7 +3,6 @@
 import { useState, useEffect, ChangeEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/utils/supabase';
-import Header from '@/components/Header';
 import { User } from '@supabase/supabase-js';
 import Image from 'next/image'; // Using Next.js Image component for optimization
 
@@ -18,10 +17,24 @@ export default function PublishAd() {
   const [price, setPrice] = useState('');
   const [productType, setProductType] = useState('sale');
   const [location, setLocation] = useState('');
+  const [auctionEndsAt, setAuctionEndsAt] = useState('');
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  // Set default auction end date to 7 days from now
+  useEffect(() => {
+    const defaultEndDate = new Date();
+    defaultEndDate.setDate(defaultEndDate.getDate() + 7);
+    // Format for datetime-local input (YYYY-MM-DDTHH:mm)
+    const year = defaultEndDate.getFullYear();
+    const month = (defaultEndDate.getMonth() + 1).toString().padStart(2, '0');
+    const day = defaultEndDate.getDate().toString().padStart(2, '0');
+    const hours = defaultEndDate.getHours().toString().padStart(2, '0');
+    const minutes = defaultEndDate.getMinutes().toString().padStart(2, '0');
+    setAuctionEndsAt(`${year}-${month}-${day}T${hours}:${minutes}`);
+  }, []);
 
   useEffect(() => {
     async function fetchUser() {
@@ -96,25 +109,47 @@ export default function PublishAd() {
       return;
     }
 
-    // 4. Insert product data into the database
-    const { error: insertError } = await supabase.from('products').insert([
-      {
-        user_id: user.id,
-        name,
-        description,
-        price,
-        location,
-        image: publicUrl,
-        seller: profile.username,
-        type: productType,
-        time: new Date().toLocaleDateString(),
-        detailImage: publicUrl,
-      },
-    ]);
+    // 4. Generate slug
+    const generateSlug = (title: string) => {
+      const randomString = Math.random().toString(36).substring(2, 8);
+      return title
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, '') // remove special chars
+        .replace(/\s+/g, '-') // replace spaces with hyphens
+        .trim() + '-' + randomString;
+    };
+
+    // 5. Insert product data into the database
+    const productData: any = {
+      user_id: user.id,
+      name,
+      description,
+      price: parseFloat(price),
+      location,
+      image: publicUrl,
+      seller: profile.username,
+      type: productType,
+      time: new Date().toISOString(), // Use ISO string for consistency
+      detailImage: publicUrl,
+      slug: generateSlug(name),
+    };
+
+    if (productType === 'auction') {
+      productData.auction_ends_at = new Date(auctionEndsAt).toISOString();
+    }
+
+    const { data: newProduct, error: insertError } = await supabase
+      .from('products')
+      .insert([productData])
+      .select('slug')
+      .single();
 
     if (insertError) {
       setError('Error al publicar el anuncio: ' + insertError.message);
+    } else if (newProduct) {
+      router.push(`/ad-detail/${newProduct.slug}`);
     } else {
+      setError('No se pudo obtener el ID del nuevo anuncio. Redirigiendo al perfil.');
       router.push('/user-profile');
     }
     setSubmitting(false);
@@ -125,14 +160,12 @@ export default function PublishAd() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header />
-      <main className="container mx-auto px-4 py-8">
-        <div className="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-md">
-          <h1 className="text-2xl font-bold text-gray-800 mb-6">Publicar un nuevo anuncio</h1>
-          <form className="space-y-6" onSubmit={handleSubmit}>
-            {/* Form fields for name, description, etc. remain the same */}
-            <div>
+    <div className="container mx-auto px-4 py-8">
+      <div className="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-md">
+        <h1 className="text-2xl font-bold text-gray-800 mb-6">Publicar un nuevo anuncio</h1>
+        <form className="space-y-6" onSubmit={handleSubmit}>
+          {/* Form fields for name, description, etc. remain the same */}
+          <div>
               <label htmlFor="name" className="block text-sm font-medium text-gray-700">Título del anuncio</label>
               <input id="name" type="text" value={name} onChange={(e) => setName(e.target.value)} required className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" />
             </div>
@@ -166,6 +199,20 @@ export default function PublishAd() {
                 <input id="location" type="text" value={location} onChange={(e) => setLocation(e.target.value)} required className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" />
               </div>
             </div>
+
+            {productType === 'auction' && (
+              <div>
+                <label htmlFor="auction-ends-at" className="block text-sm font-medium text-gray-700">Finalización de la subasta</label>
+                <input 
+                  id="auction-ends-at" 
+                  type="datetime-local" 
+                  value={auctionEndsAt} 
+                  onChange={(e) => setAuctionEndsAt(e.target.value)} 
+                  required 
+                  className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" 
+                />
+              </div>
+            )}
             
             <div>
               <label className="block text-sm font-medium text-gray-700">Imagen del Producto</label>
@@ -194,7 +241,6 @@ export default function PublishAd() {
             </div>
           </form>
         </div>
-      </main>
     </div>
   );
 }
