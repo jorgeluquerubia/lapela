@@ -8,6 +8,7 @@ import Image from 'next/image';
 import { useAuth } from '@/context/AuthContext';
 import Modal from '@/components/Modal'; // Import the Modal component
 import { Product } from '@/types';
+import toast from 'react-hot-toast';
 
 interface SellerProfile {
   id: string;
@@ -120,12 +121,13 @@ export default function AdDetail() {
         const updatedQuestion = await response.json();
         setQuestions(prev => prev.map(q => q.id === questionId ? updatedQuestion : q));
         handleAnswerChange(questionId, ''); // Clear form
+        toast.success('Respuesta enviada con éxito');
       } else {
         const errorData = await response.json();
-        setActionError(errorData.error || 'Error al enviar la respuesta');
+        toast.error(errorData.error || 'Error al enviar la respuesta');
       }
     } catch (err) {
-      setActionError('Error al enviar la respuesta');
+      toast.error('Error al enviar la respuesta');
     }
   };
 
@@ -162,12 +164,13 @@ export default function AdDetail() {
         const newQuestionData = await response.json();
         setQuestions(prev => [newQuestionData, ...prev]);
         setNewQuestion('');
+        toast.success('Pregunta enviada con éxito');
       } else {
         const errorData = await response.json();
-        setActionError(errorData.error || 'Error al enviar la pregunta');
+        toast.error(errorData.error || 'Error al enviar la pregunta');
       }
     } catch (error) {
-      setActionError('Error al enviar la pregunta');
+      toast.error('Error al enviar la pregunta');
     } finally {
       setQuestionLoading(false);
     }
@@ -247,10 +250,9 @@ export default function AdDetail() {
   }, [fetchPageData]);
 
   const handlePlaceBid = async () => {
-    setActionError(null);
     const bid = parseFloat(bidAmount);
     if (isNaN(bid) || (product && bid <= product.price)) {
-      setActionError(`Tu puja debe ser mayor que ${product?.price} €.`);
+      toast.error(`Tu puja debe ser mayor que ${product?.price} €.`);
       return;
     }
 
@@ -285,8 +287,9 @@ export default function AdDetail() {
           setBidHistory(prev => [result.newBid, ...prev]);
           
           setIsModalOpen(false);
+          toast.success('¡Puja realizada con éxito!');
         } catch (err: any) {
-          setActionError(err.message);
+          toast.error(err.message);
           setIsModalOpen(false);
         }
       },
@@ -310,9 +313,10 @@ export default function AdDetail() {
           }
 
           // Redirect to user profile after successful deletion
+          toast.success('Anuncio eliminado con éxito');
           router.push('/user-profile');
         } catch (err: any) {
-          setActionError('Error al eliminar el anuncio: ' + err.message);
+          toast.error('Error al eliminar el anuncio: ' + err.message);
           setIsModalOpen(false);
         }
       },
@@ -374,9 +378,10 @@ export default function AdDetail() {
 
           setProduct(result as Product); // Update UI with the new product state
           setIsModalOpen(false);
+          toast.success('¡Compra realizada con éxito!');
 
         } catch (err: any) {
-          setActionError(err.message);
+          toast.error(err.message);
           setIsModalOpen(false);
         }
       },
@@ -423,10 +428,10 @@ export default function AdDetail() {
 
       setIsContactModalOpen(false);
       setContactMessage('');
-      alert('Mensaje enviado con éxito.');
+      toast.success('Mensaje enviado con éxito.');
 
     } catch (err: any) {
-      setActionError(err.message);
+      toast.error(err.message);
     } finally {
       setContactLoading(false);
     }
