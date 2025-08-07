@@ -9,6 +9,7 @@ import { useAuth } from '@/context/AuthContext';
 import Modal from '@/components/Modal'; // Import the Modal component
 import { Product } from '@/types';
 import toast from 'react-hot-toast';
+import SkeletonAdDetail from '@/components/SkeletonAdDetail';
 
 interface SellerProfile {
   id: string;
@@ -325,7 +326,7 @@ export default function AdDetail() {
   };
 
   if (loading || authLoading) {
-    return <div className="text-center py-10">Cargando anuncio...</div>;
+    return <SkeletonAdDetail />;
   }
 
   if (error) {
