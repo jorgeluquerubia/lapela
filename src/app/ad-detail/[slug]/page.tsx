@@ -393,9 +393,6 @@ export default function AdDetail() {
 
           const response = await fetch(`/api/products/${product.id}/buy`, {
             method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${session.access_token}`
-            }
           });
 
           const result = await response.json();
