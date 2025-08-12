@@ -24,6 +24,7 @@ export default function PurchaseModal({ isOpen, onClose, product, onPurchaseComp
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(address),
+        credentials: 'include',
       });
 
       if (!addressResponse.ok) {
@@ -40,6 +41,7 @@ export default function PurchaseModal({ isOpen, onClose, product, onPurchaseComp
           seller_id: product.user_id,
           shipping_address_id: savedAddress.id,
         }),
+        credentials: 'include',
       });
 
       if (!orderResponse.ok) {

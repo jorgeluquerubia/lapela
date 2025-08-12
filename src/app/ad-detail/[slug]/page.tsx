@@ -472,6 +472,7 @@ export default function AdDetail() {
     try {
       const response = await fetch(`/api/orders/${order.id}/pay`, {
         method: 'POST',
+        credentials: 'include',
       });
 
       if (!response.ok) {
