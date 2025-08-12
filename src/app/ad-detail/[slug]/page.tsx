@@ -12,6 +12,11 @@ import { Product } from '@/types';
 import toast from 'react-hot-toast';
 import SkeletonAdDetail from '@/components/SkeletonAdDetail';
 
+interface Order {
+  id: string;
+  status: string;
+}
+
 interface SellerProfile {
   id: string;
   username: string | null;
@@ -75,6 +80,7 @@ export default function AdDetail() {
   const { user, loading: authLoading } = useAuth();
 
   const [product, setProduct] = useState<Product | null>(null);
+  const [order, setOrder] = useState<Order | null>(null);
   const [seller, setSeller] = useState<SellerProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -219,6 +225,22 @@ export default function AdDetail() {
       }
       setSeller(sellerData);
       setBidAmount((productData.current_bid || productData.price + 1).toString());
+
+      // If the product has a buyer, fetch the associated order
+      if (productData.buyer_id && (productData.status === 'pending_payment' || productData.status === 'sold')) {
+        const { data: orderData, error: orderError } = await supabase
+          .from('orders')
+          .select('id, status')
+          .eq('product_id', productData.id)
+          .eq('buyer_id', productData.buyer_id)
+          .single();
+        
+        if (orderError) {
+          console.error("Error fetching order:", orderError);
+        } else {
+          setOrder(orderData);
+        }
+      }
 
       // Fetch other related data like questions and bids
       const productId = productData.id;
@@ -384,8 +406,7 @@ export default function AdDetail() {
           setProduct(result as Product); // Update UI with the new product state
           setIsModalOpen(false);
           toast.success('¡Producto reservado! Finaliza la compra.');
-          // Open the purchase modal automatically after reserving
-          setIsPurchaseModalOpen(true);
+          fetchPageData(); // Refresh data to show the new state
 
         } catch (err: any) {
           toast.error(err.message);
@@ -446,6 +467,26 @@ export default function AdDetail() {
 
   const handlePurchaseComplete = () => {
     fetchPageData(); // Refresh product data
+  };
+
+  const handlePay = async () => {
+    if (!order) return;
+
+    try {
+      const response = await fetch(`/api/orders/${order.id}/pay`, {
+        method: 'POST',
+      });
+
+      if (!response.ok) {
+        throw new Error('No se pudo procesar el pago.');
+      }
+
+      toast.success('¡Pago procesado con éxito!');
+      fetchPageData(); // Refresh data to show the new state
+
+    } catch (error: any) {
+      toast.error(error.message || 'Ocurrió un error al procesar el pago.');
+    }
   };
 
   return (
@@ -561,45 +602,40 @@ export default function AdDetail() {
 
             {/* Action Area */}
             <div className="mt-8">
-              {!isOwner && product.type === 'auction' && (
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold">Hacer una puja</h3>
-                  <div className="flex items-center gap-2">
-                    <input 
-                      type="number"
-                      value={bidAmount}
-                      onChange={(e) => setBidAmount(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                    />
-                    <span className="text-xl text-gray-600">€</span>
-                  </div>
-                  <button onClick={onBidButtonClick} className="w-full bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-indigo-700 transition-colors">
-                    Pujar
-                  </button>
+              {/* VENDOR'S VIEW */}
+              {isOwner && product.status !== 'available' && order && (
+                <div className="p-4 border rounded-lg bg-gray-50">
+                  <h3 className="font-semibold text-lg mb-2">Estado de la venta</h3>
+                  <p>Comprado por: <span className="font-bold">{product.buyer?.username || 'un usuario'}</span></p>
+                  <p>Estado: <span className="font-bold">{order.status}</span></p>
                 </div>
               )}
 
-              {!isOwner && product.type === 'sale' && (
-                <>
-                  {product.status === 'available' && (
-                    <button 
-                      onClick={handleBuyNow}
-                      className="w-full bg-green-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-700 transition-colors"
-                    >
-                      Comprar ahora
-                    </button>
-                  )}
-                  {product.status === 'pending_payment' && product.buyer_id === user?.id && (
-                    <button 
+              {/* BUYER'S VIEW */}
+              {!isOwner && product.buyer_id === user?.id && order && (
+                <div className="space-y-4">
+                  {order.status === 'pending_payment' && (
+                     <button 
                       onClick={() => setIsPurchaseModalOpen(true)}
                       className="w-full bg-yellow-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-yellow-600 transition-colors"
                     >
-                      Finalizar Compra
+                      Finalizar Compra (Añadir dirección)
                     </button>
                   )}
-                  {product.status === 'sold' && product.buyer_id === user?.id && (
-                    <div className="space-y-4">
-                      <p className="text-center font-semibold bg-green-100 text-green-800 p-3 rounded-lg">¡Has comprado este producto!</p>
+                   {order.status === 'pending_shipping' && (
+                    <>
+                      <p className="text-center font-semibold bg-blue-100 text-blue-800 p-3 rounded-lg">Dirección enviada. Pendiente de pago.</p>
+                      <button 
+                        onClick={handlePay}
+                        className="w-full bg-green-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-700 transition-colors"
+                      >
+                        Pagar ahora
+                      </button>
+                    </>
+                  )}
+                  {order.status === 'shipped' && (
+                     <div className="space-y-4">
+                      <p className="text-center font-semibold bg-green-100 text-green-800 p-3 rounded-lg">¡Producto pagado!</p>
                       <button 
                         onClick={handleContactSeller}
                         className="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors"
@@ -608,18 +644,29 @@ export default function AdDetail() {
                       </button>
                     </div>
                   )}
-                  {(product.status === 'sold' || product.status === 'pending_payment') && product.buyer_id !== user?.id && (
-                     <div className="text-center font-semibold bg-red-100 text-red-800 p-3 rounded-lg">
-                        Este producto ya no está disponible.
-                     </div>
-                  )}
-                </>
+                </div>
+              )}
+
+              {/* PUBLIC/LOGGED-OUT VIEW */}
+              {product.status === 'available' && !isOwner && (
+                 <button 
+                    onClick={handleBuyNow}
+                    className="w-full bg-green-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-700 transition-colors"
+                  >
+                    Comprar ahora
+                  </button>
               )}
               
+              {(product.status !== 'available' && product.buyer_id !== user?.id) && (
+                <div className="text-center font-semibold bg-red-100 text-red-800 p-3 rounded-lg">
+                  Este producto ya no está disponible.
+                </div>
+              )}
+
               {actionError && <p className="text-red-600 text-sm mt-2">{actionError}</p>}
             </div>
 
-            {isOwner && (
+            {isOwner && product.status === 'available' && (
               <div className="mt-8 flex gap-4">
                 <Link href={`/edit-ad/${product.id}`} className="flex-1 text-center bg-blue-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-blue-600 transition-colors">
                   Editar Anuncio
