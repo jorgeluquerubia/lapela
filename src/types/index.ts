@@ -9,7 +9,8 @@ export interface Product {
   image: string;
   detailImage?: string; // Optional as it's not used everywhere
   description?: string; // Optional as it's not used everywhere
-  status: 'available' | 'sold' | 'paid';
+  status: 'available' | 'sold' | 'paid' | 'pending_payment';
+  buyer_id?: string | null;
   buyer: {
     id: string;
     username: string;

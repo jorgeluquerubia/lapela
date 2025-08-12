@@ -7,6 +7,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useAuth } from '@/context/AuthContext';
 import Modal from '@/components/Modal'; // Import the Modal component
+import PurchaseModal from '@/components/PurchaseModal';
 import { Product } from '@/types';
 import toast from 'react-hot-toast';
 import SkeletonAdDetail from '@/components/SkeletonAdDetail';
@@ -88,6 +89,9 @@ export default function AdDetail() {
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
   const [contactMessage, setContactMessage] = useState('');
   const [contactLoading, setContactLoading] = useState(false);
+
+  // State for Purchase Modal
+  const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false);
 
   // State for Q&A
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -379,7 +383,9 @@ export default function AdDetail() {
 
           setProduct(result as Product); // Update UI with the new product state
           setIsModalOpen(false);
-          toast.success('¡Compra realizada con éxito!');
+          toast.success('¡Producto reservado! Finaliza la compra.');
+          // Open the purchase modal automatically after reserving
+          setIsPurchaseModalOpen(true);
 
         } catch (err: any) {
           toast.error(err.message);
@@ -438,8 +444,20 @@ export default function AdDetail() {
     }
   };
 
+  const handlePurchaseComplete = () => {
+    fetchPageData(); // Refresh product data
+  };
+
   return (
     <>
+      {product && (
+        <PurchaseModal
+          isOpen={isPurchaseModalOpen}
+          onClose={() => setIsPurchaseModalOpen(false)}
+          product={product}
+          onPurchaseComplete={handlePurchaseComplete}
+        />
+      )}
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -571,7 +589,15 @@ export default function AdDetail() {
                       Comprar ahora
                     </button>
                   )}
-                  {product.status === 'sold' && product.buyer?.id === user?.id && (
+                  {product.status === 'pending_payment' && product.buyer_id === user?.id && (
+                    <button 
+                      onClick={() => setIsPurchaseModalOpen(true)}
+                      className="w-full bg-yellow-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-yellow-600 transition-colors"
+                    >
+                      Finalizar Compra
+                    </button>
+                  )}
+                  {product.status === 'sold' && product.buyer_id === user?.id && (
                     <div className="space-y-4">
                       <p className="text-center font-semibold bg-green-100 text-green-800 p-3 rounded-lg">¡Has comprado este producto!</p>
                       <button 
@@ -580,15 +606,9 @@ export default function AdDetail() {
                       >
                         Contactar con el Vendedor
                       </button>
-                      <button 
-                        onClick={() => alert('Esta función simularía la redirección a una pasarela de pago.')}
-                        className="w-full bg-yellow-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-yellow-600 transition-colors"
-                      >
-                        Pagar Producto
-                      </button>
                     </div>
                   )}
-                  {product.status === 'sold' && product.buyer?.id !== user?.id && (
+                  {(product.status === 'sold' || product.status === 'pending_payment') && product.buyer_id !== user?.id && (
                      <div className="text-center font-semibold bg-red-100 text-red-800 p-3 rounded-lg">
                         Este producto ya no está disponible.
                      </div>
