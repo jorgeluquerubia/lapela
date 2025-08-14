@@ -70,7 +70,10 @@ export default function Header() {
           {loading ? (
             <div className="h-8 w-24 bg-gray-200 rounded-md animate-pulse"></div>
           ) : user ? (
-            <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-3 w-full md:w-auto">
+            <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4 w-full md:w-auto">
+              <Link href="/my-products" className="text-gray-700 hover:text-indigo-600 transition-colors duration-200 whitespace-nowrap">
+                Mis Productos
+              </Link>
               <Link href="/user-profile" className="flex items-center gap-2 text-gray-700 hover:text-indigo-600 transition-colors duration-200">
                 {profile?.avatar_url ? (
                   <Image 
