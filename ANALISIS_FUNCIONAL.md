@@ -45,6 +45,12 @@ A continuación se detallan los flujos de trabajo y las funcionalidades implemen
     -   Elimina un producto.
     -   Requiere autenticación y verifica que el usuario sea el propietario del producto.
 
+-   **`GET /api/user-products`**:
+    -   Obtiene un listado de todos los productos asociados a un usuario, tanto los que ha puesto a la venta como los que ha comprado.
+    -   Requiere autenticación de usuario.
+    -   Filtra los productos donde el `user_id` (vendedor) o el `buyer_id` (comprador) coincide con el del usuario autenticado.
+    -   Devuelve la lista de productos ordenada por fecha de creación descendente.
+
 ### 3.2. Flujo de Compra Directa
 
 1.  **Iniciar Compra (`POST /api/products/[id]/buy`)**:

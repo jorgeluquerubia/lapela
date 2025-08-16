@@ -1,6 +1,6 @@
 export default function SkeletonAdDetail() {
   return (
-    <div className="container mx-auto px-4 py-6 md:py-10 animate-pulse">
+    <div className="container mx-auto px-4 py-6 md:py-10 animate-pulse" role="main">
       <div className="flex flex-col md:flex-row gap-8 md:gap-12">
         {/* Left Column: Image Gallery */}
         <div className="md:w-1/2 lg:w-3/5">

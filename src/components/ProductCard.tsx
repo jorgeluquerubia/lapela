@@ -27,7 +27,7 @@ export default function ProductCard({ product }: { product: Product }) {
 
   return (
     <div className="product-card border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow h-full flex flex-col bg-white">
-      <Link href={`/ad-detail/${product.slug}`} className="flex flex-col h-full">
+      <Link href={`/ad-detail/${product.slug}`}>
         <div className="relative w-full h-48 bg-gray-100">
           <Image 
             src={product.image} 
@@ -44,9 +44,13 @@ export default function ProductCard({ product }: { product: Product }) {
             </span>
           )}
         </div>
-        <div className="p-4 flex flex-col flex-grow">
-          <h3 className="font-semibold text-lg truncate flex-grow mb-2">{product.name}</h3>
-          
+      </Link>
+      <div className="p-4 flex flex-col flex-grow">
+        <Link href={`/ad-detail/${product.slug}`}>
+          <h3 className="font-semibold text-lg truncate mb-2 hover:text-indigo-600">{product.name}</h3>
+        </Link>
+        
+        <div className="flex-grow">
           <div className="mb-2">
             <p className="text-xl font-bold text-gray-800">{displayPrice} €</p>
             {isAuction ? (
@@ -58,20 +62,18 @@ export default function ProductCard({ product }: { product: Product }) {
               <p className="text-xs text-gray-500">Compra directa</p>
             )}
           </div>
-
-          <div className="text-sm text-gray-600 mt-auto pt-2 border-t">
-            <p className="truncate">
-              Vendido por:{' '}
-              <Link href={`/user-profile/${product.seller}`} onClick={(e) => e.stopPropagation()} className="text-indigo-600 hover:underline font-semibold">
-                {product.seller}
-              </Link>
-            </p>
-            {/* Placeholder for seller rating */}
-            {/* <p>Valoración: ⭐⭐⭐⭐ (123)</p> */}
-            <p className="truncate">{product.location}</p>
-          </div>
         </div>
-      </Link>
+
+        <div className="text-sm text-gray-600 pt-2 border-t">
+          <div className="truncate">
+            Vendido por:{' '}
+            <Link href={`/user-profile/${product.seller}`} className="text-indigo-600 hover:underline font-semibold">
+              {product.seller}
+            </Link>
+          </div>
+          <p className="truncate">{product.location}</p>
+        </div>
+      </div>
     </div>
   );
 }
