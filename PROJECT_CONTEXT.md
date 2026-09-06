@@ -144,8 +144,8 @@ Servicios externos
 | Pagos | Stripe SDK y Stripe Connect | Preparado para modo real; beta en simulación |
 | Repositorio | GitHub | `github.com/jorgeluquerubia/lapela`, rama principal `main` |
 | Gestión del trabajo | GitHub Issues | Una issue por spec, con etiquetas de tipo, prioridad y estado |
-| CI | GitHub Actions y Playwright | Workflow en `.github/workflows/playwright.yml` |
-| Pruebas | Jest, Testing Library, Playwright y SQL | La cobertura existente incluye pruebas legacy; ver limitaciones de validación |
+| CI | GitHub Actions, validación de specs y Playwright | Los workflows comprueban la trazabilidad documental y el recorrido público principal |
+| Pruebas | Jest, Testing Library, Playwright y SQL | La cobertura existente incluye pruebas legacy; el smoke E2E vigente está aislado de servicios externos |
 
 El proyecto Supabase se llama `lapela-app`. Su referencia es `buzmbigpgsrzjrkzidmr`. Esta referencia y la URL pública no son secretos; las claves y tokens sí lo son.
 
@@ -249,8 +249,8 @@ No hay todavía un panel de administración, alertas centralizadas, métricas de
 
 - `npm run build` es la comprobación fiable actual de compilación, lint y tipos.
 - `tests/database/marketplace.sql` valida propiedad, reservas, importe, idempotencia, chat, transiciones, pujas, expiración, anti-sniping, cierre y privilegios; se ejecutó satisfactoriamente el 2026-09-06.
-- Existen suites Jest y Playwright creadas para la versión anterior. Parte de ellas todavía espera textos, componentes y endpoints legacy, por lo que el conjunto completo no representa fielmente la aplicación reconstruida.
-- El workflow de GitHub ejecuta Playwright en push y pull request, pero debe actualizarse junto con las pruebas E2E antes de tratarlo como puerta de calidad fiable.
+- Existen suites Jest creadas para la versión anterior. Parte de ellas todavía espera textos, componentes y endpoints legacy, por lo que el conjunto completo no representa fielmente la aplicación reconstruida.
+- El workflow de GitHub ejecuta un smoke test Playwright vigente en push y pull request. Usa datos de demostración y valores sintéticos de Supabase, por lo que valida el arranque y la navegación pública sin acceder a producción. Aún no cubre autenticación, persistencia, publicación, compra ni pagos.
 - La producción beta y sus rutas principales se comprobaron mediante build, peticiones HTTP y revisión visual en navegador.
 
 ## 14. Mapa rápido del repositorio
