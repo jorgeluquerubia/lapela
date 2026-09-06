@@ -1,7 +1,7 @@
 ---
 id: LP-FEAT-005
 type: FEATURE
-status: IMPLEMENTED
+status: VERIFIED
 priority: P2
 requested_at: 2026-09-06
 requested_by: usuario
@@ -114,6 +114,7 @@ Una sección pública de preguntas y respuestas en `/articulos/[slug]` donde:
 | Pruebas unitarias de dominio | `noBargaining` y `noContact` bloquean ofertas y datos externos | `rules-qa.test.ts` (4 pruebas unitarias pasadas) | 2026-09-06 |
 | Pruebas unitarias de componente | `ProductQA.test.tsx` valida render, avisos, envío y respuesta | `ProductQA.test.tsx` (5 pruebas unitarias pasadas) | 2026-09-06 |
 | Build del proyecto (`npm run build`) | Compilación limpia de TypeScript y Next.js | Next.js 15.5 compiló 25 páginas estáticas y rutas dinámicas | 2026-09-06 |
+| GitHub Actions en PR #14 | Gobernanza, Playwright y despliegue de preview correctos | `validate` en 11 s, `test` en 1 min 31 s y Vercel verde | 2026-09-06 |
 
 ## 10. Decisiones, riesgos y preguntas abiertas
 
@@ -152,3 +153,4 @@ Una sección pública de preguntas y respuestas en `/articulos/[slug]` donde:
 | 2026-09-06 | `IN_PROGRESS` | Creación de especificación e inicio de implementación | Gemini |
 | 2026-09-06 | `IMPLEMENTED` | Implementación local completada; validación de la PR pendiente | Gemini |
 | 2026-09-06 | `IMPLEMENTED` | Rebase sobre `main`, pruebas unitarias, build y specs superados; CI pendiente | Codex |
+| 2026-09-06 | `VERIFIED` | PR #14 sin conflictos y todos los controles remotos superados | Codex |
