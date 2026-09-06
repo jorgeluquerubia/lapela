@@ -39,6 +39,9 @@ node_modules/
 /blob-report/
 /playwright/.cache/
 
+# Isolated agent worktrees (kept inside the authorized workspace)
+/.worktrees/
+
 .kiro/
 .vercel/
 .next-dev/
