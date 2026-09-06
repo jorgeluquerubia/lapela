@@ -8,6 +8,12 @@ jobs:
   test:
     timeout-minutes: 60
     runs-on: ubuntu-latest
+    env:
+      # Valores sintéticos: permiten arrancar el cliente sin usar secretos ni tocar producción.
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: playwright-anon-key
+      SUPABASE_SERVICE_ROLE_KEY: playwright-service-role-key
+      LAPELA_PAYMENTS_MODE: simulated
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-node@v4
