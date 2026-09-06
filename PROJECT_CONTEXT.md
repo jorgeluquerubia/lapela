@@ -289,3 +289,9 @@ La gobernanza documental se comprueba localmente con `npm run specs:check` y en 
 Cada solicitud que requiere una spec tiene una GitHub Issue en `github.com/jorgeluquerubia/lapela/issues`. La ficha contiene el enlace en `github_issue`. Se usan etiquetas `type:*`, `priority:*` y `status:*`; una issue permanece abierta mientras haya trabajo y se cierra cuando la ficha pasa a `VERIFIED` o `CANCELLED`.
 
 La spec continúa siendo la fuente de verdad para requisitos, criterios de aceptación, decisiones y validación. GitHub Issues aporta la vista operativa y no debe contener una copia independiente de toda la ficha.
+
+## 17. Ramas y concurrencia entre agentes
+
+`main` contiene únicamente trabajo integrado. Cada spec se implementa en una rama `<agente>/<id-de-spec-en-minúsculas>-<slug>` creada desde `origin/main`, por ejemplo `codex/lp-infra-003-agent-branches`. Cuando hay varios agentes, cada uno usa además un Git worktree diferente; compartir directorio aunque se usen ramas distintas no se considera aislamiento.
+
+La entrega se integra mediante pull request. La PR enlaza la spec y la issue, contiene la evidencia de validación e indica si cambió este contexto. El workflow de gobernanza valida el nombre de la rama y que su ID corresponda a una spec registrada. La issue permanece abierta hasta la integración en `main`.
