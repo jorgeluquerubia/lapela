@@ -17,6 +17,9 @@ const customJestConfig = {
     '^@/components/(.*)$': '<rootDir>/src/components/$1',
     '^@/utils/(.*)$': '<rootDir>/src/utils/$1',
     '^@/context/(.*)$': '<rootDir>/src/context/$1',
+    '^@/models/(.*)$': '<rootDir>/src/models/$1',
+    '^@/lib/(.*)$': '<rootDir>/src/lib/$1',
+    '^@/(.*)$': '<rootDir>/src/$1',
   },
   transformIgnorePatterns: [
     '/node_modules/(?!isows|@supabase/ssr|@supabase/realtime-js|@supabase/supabase-js)',

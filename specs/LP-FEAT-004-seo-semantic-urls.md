@@ -1,7 +1,7 @@
 ---
 id: LP-FEAT-004
 type: FEATURE
-status: IN_PROGRESS
+status: IMPLEMENTED
 priority: P2
 requested_at: 2026-09-06
 requested_by: usuario
@@ -10,7 +10,7 @@ owner: producto
 github_issue: https://github.com/jorgeluquerubia/lapela/issues/9
 related_specs: [LP-FEAT-001]
 dependencies: [Next.js]
-cross_cutting_concerns: []
+cross_cutting_concerns: [OPS, DOC]
 ---
 
 # LP-FEAT-004 · Optimización SEO y rutas semánticas
@@ -103,17 +103,19 @@ cross_cutting_concerns: []
 
 | Comprobación | Resultado esperado | Evidencia | Fecha |
 |---|---|---|---|
-| `npm run specs:check` | Ficha validada y enlazada en el registro | Specs válidas: 8 fichas registradas y 19 documentos enlazados | 2026-09-06 |
-| `npm run build` | Compilación de Next.js sin errores de tipos ni rutas | Build exitoso con rutas `/articulos/[slug]`, `/categoria/[categorySlug]`, `/subastas`, `/sitemap.xml` y `/robots.txt` | 2026-09-06 |
+| `npm run specs:check` | Ficha validada y enlazada en el registro | Specs válidas: 9 fichas registradas y 20 documentos enlazados | 2026-09-06 |
+| `npm run build` | Compilación de Next.js sin errores de tipos ni rutas | Build completo con 25 páginas generadas | 2026-09-06 |
 | Pruebas unitarias de slugs | Normalización de acentos, generación y extracción de id | `PASS src/lib/__tests__/slugs.test.ts` (8 tests pasados) | 2026-09-06 |
 | Pruebas de integración SEO | Robots, sitemap, metadata de categorías y artículos y redirección | `PASS src/app/__tests__/seo.test.tsx` (7 tests pasados) | 2026-09-06 |
-| Verificación de redirección | `/ad-detail/[slug]` redirige a `/articulos/[slug]` | Comprobado en suite unitaria con `next/navigation` redirect | 2026-09-06 |
-| Verificación de sitemap y robots | `/sitemap.xml` y `/robots.txt` devuelven contenido esperado | Comprobado en `src/app/__tests__/seo.test.tsx` | 2026-09-06 |
+| Metadatos de áreas privadas | Las páginas privadas indican `noindex, nofollow` | `PASS src/lib/__tests__/seo.test.ts`; layouts privados y build | 2026-09-06 |
+| Verificación HTTP | Categoría, artículo, sitemap y robots responden y contienen los datos esperados | Cuatro respuestas HTTP 200 sobre el build de producción | 2026-09-06 |
+| Verificación de redirección | `/ad-detail/demo-1` redirige a la URL canónica | Destino `/articulos/ejemplo-auriculares-inalambricos-negros-demo-1` | 2026-09-06 |
 
 ## 10. Decisiones, riesgos y preguntas abiertas
 
 - **Decisión 1:** Mantener el identificador al final del slug (`[titulo-slug]-[id]`) para evitar colisiones entre artículos con títulos idénticos y permitir resolución instantánea sin necesidad de índices únicos ni migraciones.
 - **Decisión 2:** Usar `/articulos/[slug]` en español para homogeneidad con `/categoria/` y `/subastas`.
+- **Riesgo:** El sitemap usa el entorno activo; antes de activar datos reales habrá que revisar qué contenido sandbox debe indexarse.
 
 ## 11. Implementación y trazabilidad
 
@@ -126,7 +128,12 @@ cross_cutting_concerns: []
 - `src/app/robots.ts` y `src/app/sitemap.ts`: Generadores de robots y sitemap.
 - `src/app/layout.tsx`: `metadataBase`, Open Graph global y Schema WebSite.
 - `src/components/Header.tsx`, `src/components/Catalog.tsx`, `src/components/ProductCard.tsx`: Enlaces semánticos `<Link>`.
+- `src/lib/seo.ts` y layouts de áreas privadas: metadatos `noindex, nofollow`.
+- **Rama:** `gemini/lp-feat-004-seo-semantic-urls`.
+- **Issue:** `https://github.com/jorgeluquerubia/lapela/issues/9`.
+- **Pull request:** pendiente.
 
 ## 12. Historial
 
 - 2026-09-06: Creación de la especificación tras análisis SEO solicitado por el usuario.
+- 2026-09-06: Implementación separada en su propia rama, compilada y verificada; pendiente de pull request.
