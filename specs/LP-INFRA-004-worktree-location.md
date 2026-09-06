@@ -1,7 +1,7 @@
 ---
 id: LP-INFRA-004
 type: INFRA
-status: IMPLEMENTED
+status: VERIFIED
 priority: P1
 requested_at: 2026-09-06
 requested_by: usuario
@@ -70,7 +70,7 @@ Los agentes mantienen el aislamiento por rama y directorio, pero crean los nuevo
 - [x] `AC-04` El validador comprueba la ubicación canónica y rechaza la recomendación anterior.
 - [x] `AC-05` Este cambio se realiza en `/Users/jorgeluque/lapela-next/.worktrees/lp-infra-004`.
 - [x] `AC-06` `PROJECT_CONTEXT.md` refleja la nueva ubicación y la excepción temporal de worktrees anteriores.
-- [ ] `AC-07` Specs, rama y workflow superan la validación automática.
+- [x] `AC-07` Specs, rama y workflow superan la validación automática.
 
 ## 7. Experiencia y estados
 
@@ -92,7 +92,7 @@ Los agentes mantienen el aislamiento por rama y directorio, pero crean los nuevo
 | Exclusión | `.worktrees/` no aparece en `git status` | `git check-ignore` confirma la exclusión local; `.gitignore` la hace permanente | 2026-09-06 |
 | Instrucciones | La ubicación antigua no aparece como recomendación | 11 fichas y 22 documentos válidos | 2026-09-06 |
 | Fallo controlado | La ausencia de la ubicación canónica se rechaza | El validador devuelve el error específico esperado | 2026-09-06 |
-| GitHub | Rama, PR e issue quedan enlazadas y validadas | Workflow y enlaces | pendiente |
+| GitHub | Rama, PR e issue quedan enlazadas y validadas | PR `#16`; workflow `validate` correcto | 2026-09-06 |
 
 ## 10. Decisiones, riesgos y preguntas abiertas
 
@@ -105,7 +105,7 @@ Los agentes mantienen el aislamiento por rama y directorio, pero crean los nuevo
 - **Rama:** `codex/lp-infra-004-worktree-location`.
 - **Worktree:** `/Users/jorgeluque/lapela-next/.worktrees/lp-infra-004`.
 - **Issue:** `https://github.com/jorgeluquerubia/lapela/issues/15`.
-- **Pull request:** pendiente.
+- **Pull request:** `https://github.com/jorgeluquerubia/lapela/pull/16`.
 - **Archivos:** `.gitignore`, `AGENTS.md`, `PROJECT_CONTEXT.md` y `tools/validate-specs.mjs`.
 
 ## 12. Historial
@@ -114,3 +114,4 @@ Los agentes mantienen el aislamiento por rama y directorio, pero crean los nuevo
 |---|---|---|---|
 | 2026-09-06 | `IN_PROGRESS` | Corrección registrada e iniciada en la nueva ubicación | Codex |
 | 2026-09-06 | `IMPLEMENTED` | Ubicación, exclusión, instrucciones y control automático incorporados | Codex |
+| 2026-09-06 | `VERIFIED` | Rama y ubicación canónicas aceptadas en GitHub Actions | Codex |
