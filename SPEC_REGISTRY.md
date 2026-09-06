@@ -56,7 +56,8 @@ Prioridades: `P0` bloquea una operación esencial o implica un riesgo grave; `P1
 | `LP-FEAT-004` | `FEATURE` | Optimización SEO y rutas semánticas | `VERIFIED` | `P2` | 2026-09-06 | [Abrir ficha](specs/LP-FEAT-004-seo-semantic-urls.md) |
 | `LP-INFRA-003` | `INFRA` | Trabajo aislado por rama para agentes concurrentes | `VERIFIED` | `P1` | 2026-09-06 | [Abrir ficha](specs/LP-INFRA-003-agent-branches.md) |
 | `LP-INFRA-004` | `INFRA` | Worktrees dentro del workspace autorizado | `VERIFIED` | `P1` | 2026-09-06 | [Abrir ficha](specs/LP-INFRA-004-worktree-location.md) |
-| `LP-FIX-002` | `FIX` | Playwright funcional en pull requests | `IMPLEMENTED` | `P1` | 2026-09-06 | [Abrir ficha](specs/LP-FIX-002-playwright-ci.md) |
+| `LP-FIX-002` | `FIX` | Playwright funcional en pull requests | `VERIFIED` | `P1` | 2026-09-06 | [Abrir ficha](specs/LP-FIX-002-playwright-ci.md) |
+| `LP-FEAT-005` | `FEATURE` | Preguntas y respuestas públicas en producto | `VERIFIED` | `P2` | 2026-09-06 | [Abrir ficha](specs/LP-FEAT-005-preguntas-respuestas-producto.md) |
 
 ## Flujo para una solicitud nueva
 

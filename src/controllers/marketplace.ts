@@ -1,7 +1,7 @@
 import {NextResponse} from 'next/server';
 import {createClient} from '@/utils/supabase/server';
 import {admin,card,publicFields,rpc} from '@/models/marketplace';
-import {categories,conditions,cents,text,noContact,uuid,canMessage} from '@/lib/rules';
+import {categories,conditions,cents,text,noContact,noBargaining,uuid,canMessage} from '@/lib/rules';
 import {stripe,origin} from '@/lib/payments';
 import {extractIdFromSlug,productSlug} from '@/lib/slugs';
 export async function currentUser(){const client=await createClient();const {data:{user}}=await client.auth.getUser();return user}
@@ -14,9 +14,17 @@ export async function catalog(request:Request){try{await maintain();const p=new 
 export async function handle(request:Request,path:string[]){try{
  const db=admin();const [action,id]=path;const targetId=extractIdFromSlug(id||'');const user=await currentUser();
  if(request.method==='GET'){
-  if(action==='listing'&&targetId&&uuid(targetId)){await maintain();const l=await result(db.from('lp_listings').select('*').eq('id',targetId).maybeSingle());if(!l||l.environment!==environment())return ok({error:'Artículo no encontrado'},404);const mine=l.seller_id===user?.id;const {seller_id,highest_bidder,...safe}=l;return ok({...safe,slug:productSlug(l.id,l.title),mine,isHighestBidder:!!user&&highest_bidder===user.id,paymentsReady:simulated()||!!process.env.STRIPE_SECRET_KEY,simulated:simulated()});}
+  if(action==='questions'&&targetId&&uuid(targetId)){
+   const p=new URL(request.url).searchParams;
+   const page=Math.max(1,Math.min(1000,Number.parseInt(p.get('page')||'1')||1));
+   const {data,error,count}=await db.from('lp_questions').select('id,listing_id,buyer_id,seller_id,question,answer,created_at,answered_at',{count:'exact'}).eq('listing_id',targetId).order('created_at',{ascending:false}).range((page-1)*10,page*10-1);
+   if(error)throw error;
+   const pending=user?await db.from('lp_questions').select('id',{head:true,count:'exact'}).eq('listing_id',targetId).is('answer',null):{count:0};
+   return ok({questions:data||[],totalCount:count||0,page,pageSize:10,totalPages:Math.max(1,Math.ceil((count||0)/10)),pendingCount:pending.count||0});
+  }
+  if(action==='listing'&&targetId&&uuid(targetId)){await maintain();const l=await result(db.from('lp_listings').select('*').eq('id',targetId).maybeSingle());if(!l||l.environment!==environment())return ok({error:'Artículo no encontrado'},404);const mine=l.seller_id===user?.id;const {seller_id,highest_bidder,...safe}=l;let pendingQuestions=0;if(mine){const pq=await db.from('lp_questions').select('id',{head:true,count:'exact'}).eq('listing_id',targetId).is('answer',null);pendingQuestions=pq.count||0;}return ok({...safe,slug:productSlug(l.id,l.title),mine,isHighestBidder:!!user&&highest_bidder===user.id,paymentsReady:simulated()||!!process.env.STRIPE_SECRET_KEY,simulated:simulated(),pendingQuestionsCount:pendingQuestions});}
   if(!user)return ok({error:'Inicia sesión para continuar.'},401);
-  if(action==='activity'){await maintain();const [listings,orders,bids]=await Promise.all([result(db.from('lp_listings').select('*').eq('seller_id',user.id).order('created_at',{ascending:false})),result(db.from('lp_orders').select('*,listing:lp_listings(title,images,delivery)').or(`buyer_id.eq.${user.id},seller_id.eq.${user.id}`).order('created_at',{ascending:false})),result(db.from('lp_bids').select('*,listing:lp_listings(title,images,price_cents,ends_at,status)').eq('bidder_id',user.id).order('created_at',{ascending:false}))]);return ok({listings,orders,bids,userId:user.id})}
+  if(action==='activity'){await maintain();const [listings,orders,bids,sellerQuestions,buyerQuestions]=await Promise.all([result(db.from('lp_listings').select('*').eq('seller_id',user.id).order('created_at',{ascending:false})),result(db.from('lp_orders').select('*,listing:lp_listings(title,images,delivery)').or(`buyer_id.eq.${user.id},seller_id.eq.${user.id}`).order('created_at',{ascending:false})),result(db.from('lp_bids').select('*,listing:lp_listings(title,images,price_cents,ends_at,status)').eq('bidder_id',user.id).order('created_at',{ascending:false})),result(db.from('lp_questions').select('*,listing:lp_listings(title,images)').eq('seller_id',user.id).is('answer',null).order('created_at',{ascending:false})),result(db.from('lp_questions').select('*,listing:lp_listings(title,images)').eq('buyer_id',user.id).order('created_at',{ascending:false}))]);return ok({listings,orders,bids,sellerQuestions:sellerQuestions||[],buyerQuestions:buyerQuestions||[],pendingQuestionsCount:(sellerQuestions||[]).length,userId:user.id})}
   if(action==='order'&&uuid(id||'')){const o=await result(db.from('lp_orders').select('*,listing:lp_listings(title,images,delivery,location)').eq('id',id).or(`buyer_id.eq.${user.id},seller_id.eq.${user.id}`).maybeSingle());if(!o)return ok({error:'Pedido no encontrado'},404);const allowed=canMessage(o.status,user.id,o.buyer_id,o.seller_id);const messages=allowed?await result(db.from('lp_messages').select('*').eq('order_id',id).order('created_at').limit(500)):[];if(!allowed)o.shipping_address=null;return ok({order:o,messages,userId:user.id,simulated:simulated(),canMessage:allowed})}
  }
  if(request.method!=='POST')return ok({error:'Ruta no encontrada'},404);
@@ -59,6 +67,18 @@ export async function handle(request:Request,path:string[]){try{
  if(action==='report'&&uuid(targetId||'')){await result(db.from('lp_reports').insert({reporter_id:user.id,listing_id:targetId,reason:text(body.reason,10,2000)}));return ok({success:true})}
  if(action==='onboard'){if(simulated())return ok({error:'Estás en modo de prueba. No necesitas activar cobros reales.'},400);
   const st=stripe();const base=origin();let account=await result(db.from('lp_accounts').select('stripe_account_id').eq('user_id',user.id).maybeSingle());if(!account){const a=await st.accounts.create({type:'express',country:'ES',email:user.email,capabilities:{card_payments:{requested:true},transfers:{requested:true}},metadata:{user_id:user.id}},{idempotencyKey:'lapela-account-'+user.id});account={stripe_account_id:a.id};await result(db.from('lp_accounts').upsert({user_id:user.id,...account},{onConflict:'user_id'}))}const link=await st.accountLinks.create({account:account.stripe_account_id,refresh_url:base+'/user-profile',return_url:base+'/user-profile',type:'account_onboarding'});return ok({url:link.url});
+ }
+ if(action==='question'&&uuid(targetId||'')){
+  const q=noBargaining(noContact(text(body.question,5,1000)));
+  const recent=await db.from('lp_questions').select('id',{head:true,count:'exact'}).eq('buyer_id',user.id).gte('created_at',new Date(Date.now()-3600000).toISOString());
+  if((recent.count||0)>=10)return ok({error:'Has alcanzado el límite de preguntas por hora.'},429);
+  const created=await rpc('lp_ask_question',{p_listing:targetId,p_actor:user.id,p_question:q});
+  return ok(created,201);
+ }
+ if(action==='answer'&&uuid(id||'')){
+  const ans=noContact(text(body.answer,2,1000));
+  const updated=await rpc('lp_answer_question',{p_question_id:id,p_actor:user.id,p_answer:ans});
+  return ok(updated);
  }
  return ok({error:'Ruta no encontrada'},404);
  }catch(e){const message=e instanceof Error?e.message:'No se ha podido completar la operación.';return ok({error:message},400)}}

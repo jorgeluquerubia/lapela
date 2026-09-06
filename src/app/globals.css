@@ -7,3 +7,23 @@
 .sandbox-banner{background:#f1f6de;color:#405315;text-align:center;padding:9px 20px;font-size:12px;letter-spacing:.035em;border-bottom:1px solid #dce5c6}
 .auth-actions{display:flex;flex-direction:column;align-items:center;gap:8px;margin:16px 0 8px}.auth-actions .button{width:100%}.auth-actions .text-link{margin-top:0}
 .forgot-link{align-self:flex-end;margin-top:-5px}
+
+.qa-section{margin-top:40px;border-top:1px solid var(--line);padding-top:30px}
+.qa-rule-banner{background:#f4f7f4;border:1px solid #d2ded5;border-radius:12px;padding:16px 20px;font-size:14px;margin-bottom:24px;color:var(--ink)}
+.qa-rule-banner strong{display:block;color:var(--green-dark);margin-bottom:6px;font-size:15px}
+.qa-rule-banner ul{margin:6px 0 0 18px;padding:0;color:#374942}
+.qa-rule-banner li{margin-bottom:3px}
+.qa-form{margin-bottom:32px;background:var(--surface);padding:22px;border-radius:14px;border:1px solid var(--line)}
+.qa-form textarea{min-height:95px;resize:vertical}
+.qa-card{border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin-bottom:16px;background:white}
+.qa-question{display:flex;flex-direction:column;gap:6px}
+.qa-question p{margin:0;font-size:15px;color:var(--ink);font-weight:500}
+.qa-meta{font-size:13px;color:var(--muted)}
+.qa-answer{margin-top:14px;padding:14px 16px;background:#f4f8f2;border-left:3px solid var(--green);border-radius:0 8px 8px 0}
+.qa-answer p{margin:4px 0 0;font-size:15px;color:var(--ink)}
+.qa-answer-title{font-size:13px;font-weight:700;color:var(--green)}
+.qa-answer-pending{display:inline-block;margin-top:10px;font-size:13px;color:var(--muted);background:var(--surface);padding:4px 10px;border-radius:6px}
+.qa-answer-form{margin-top:14px;padding-top:14px;border-top:1px dashed var(--line)}
+.qa-pagination{display:flex;justify-content:space-between;align-items:center;margin-top:24px;gap:12px;flex-wrap:wrap}
+.qa-badge{display:inline-block;background:var(--green);color:white;font-size:11px;font-weight:700;padding:2px 7px;border-radius:10px;margin-left:6px;vertical-align:middle}
+.seller-alert-banner{background:#ebf5ef;border:1px solid #9dc7af;color:#0e4e36;padding:14px 18px;border-radius:12px;margin-bottom:24px;font-size:14px;display:flex;justify-content:space-between;align-items:center;gap:12px}

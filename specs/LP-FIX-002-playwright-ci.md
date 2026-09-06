@@ -1,7 +1,7 @@
 ---
 id: LP-FIX-002
 type: FIX
-status: IMPLEMENTED
+status: VERIFIED
 priority: P1
 requested_at: 2026-09-06
 requested_by: usuario
@@ -65,7 +65,7 @@ Las pull requests arrancan la aplicación con una configuración de prueba segur
 - [x] `AC-01` Dada una pull request, cuando se ejecuta el workflow, entonces Next.js arranca sin secretos de Supabase.
 - [x] `AC-02` Dado el catálogo de demostración, cuando Playwright abre el inicio y selecciona un artículo, entonces llega a su ruta semántica y muestra la descripción.
 - [x] `AC-03` El workflow completo de Playwright finaliza correctamente en GitHub Actions.
-- [ ] `AC-04` La PR #14 deja de fallar por esta causa y queda actualizada con `main`.
+- [x] `AC-04` La PR #14 deja de fallar por esta causa y queda actualizada con `main`.
 
 ## 7. Experiencia y estados
 
@@ -90,7 +90,7 @@ Las pull requests arrancan la aplicación con una configuración de prueba segur
 | Playwright local con entorno equivalente a CI | Recorrido verde | Chromium: 1 prueba superada en 4,2 s | 2026-09-06 |
 | `npm run specs:check` | Registro coherente | 12 fichas y 23 documentos válidos | 2026-09-06 |
 | GitHub Actions | Jobs `validate` y `test` verdes | PR #18: `validate` en 9 s y `test` en 1 min 40 s | 2026-09-06 |
-| PR #14 actualizada | Sin conflicto y Playwright verde | Pendiente | 2026-09-06 |
+| PR #14 actualizada | Sin conflicto y Playwright verde | `mergeable: MERGEABLE`; job `test` superado en 1 min 31 s | 2026-09-06 |
 
 ## 10. Decisiones, riesgos y preguntas abiertas
 
@@ -113,3 +113,4 @@ Las pull requests arrancan la aplicación con una configuración de prueba segur
 | 2026-09-06 | `IN_PROGRESS` | Configuración sintética y smoke test validados localmente | Codex |
 | 2026-09-06 | `IMPLEMENTED` | PR #18 abierta; validación de GitHub pendiente | Codex |
 | 2026-09-06 | `IMPLEMENTED` | CI completa verde; pendiente aplicar a PR #14 | Codex |
+| 2026-09-06 | `VERIFIED` | Corrección integrada en `main` y comprobada en PR #14 | Codex |
