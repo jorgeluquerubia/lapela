@@ -54,7 +54,7 @@ Prioridades: `P0` bloquea una operación esencial o implica un riesgo grave; `P1
 | `LP-INFRA-001` | `INFRA` | Controles automáticos para specs y acceso de agentes | `VERIFIED` | `P1` | 2026-09-06 | [Abrir ficha](specs/LP-INFRA-001-spec-guardrails.md) |
 | `LP-INFRA-002` | `INFRA` | Trazabilidad de specs mediante GitHub Issues | `VERIFIED` | `P1` | 2026-09-06 | [Abrir ficha](specs/LP-INFRA-002-github-issues.md) |
 | `LP-FEAT-004` | `FEATURE` | Optimización SEO y rutas semánticas | `IN_PROGRESS` | `P2` | 2026-09-06 | [Abrir ficha](specs/LP-FEAT-004-seo-semantic-urls.md) |
-| `LP-INFRA-003` | `INFRA` | Trabajo aislado por rama para agentes concurrentes | `IMPLEMENTED` | `P1` | 2026-09-06 | [Abrir ficha](specs/LP-INFRA-003-agent-branches.md) |
+| `LP-INFRA-003` | `INFRA` | Trabajo aislado por rama para agentes concurrentes | `VERIFIED` | `P1` | 2026-09-06 | [Abrir ficha](specs/LP-INFRA-003-agent-branches.md) |
 
 ## Flujo para una solicitud nueva
 

@@ -1,7 +1,7 @@
 ---
 id: LP-INFRA-003
 type: INFRA
-status: IMPLEMENTED
+status: VERIFIED
 priority: P1
 requested_at: 2026-09-06
 requested_by: usuario
@@ -72,10 +72,10 @@ Cada solicitud se desarrolla en una rama y un worktree propios. El agente enlaza
 - [x] `AC-01` `AGENTS.md` contiene listas obligatorias de inicio, trabajo y cierre para ramas, worktrees e issues.
 - [x] `AC-02` Las instrucciones prohíben trabajar directamente en `main` y compartir un worktree entre agentes concurrentes.
 - [x] `AC-03` Existe una plantilla de pull request que exige ID, spec, issue, validación y actualización de contexto.
-- [ ] `AC-04` GitHub Actions valida la rama `<agente>/<id>-<slug>` en cada pull request.
+- [x] `AC-04` GitHub Actions valida la rama `<agente>/<id>-<slug>` en cada pull request.
 - [x] `AC-05` La propia mejora se desarrolla en `codex/lp-infra-003-agent-branches` dentro de un worktree aislado.
 - [x] `AC-06` `PROJECT_CONTEXT.md` describe el flujo operativo vigente.
-- [ ] `AC-07` La feature SEO se conserva sin mezclar sus archivos con esta rama y su issue queda sincronizada tras validarla.
+- [x] `AC-07` La feature SEO se conserva sin mezclar sus archivos con esta rama y su issue queda sincronizada tras validarla.
 
 ## 7. Experiencia y estados
 
@@ -96,8 +96,8 @@ Cada solicitud se desarrolla en una rama y un worktree propios. El agente enlaza
 | Aislamiento | La rama actual usa otro worktree y no incluye el diff SEO | `git worktree list`, rama y diff | 2026-09-06 |
 | Documentación | Specs y enlaces internos son válidos | 10 fichas y 21 documentos válidos | 2026-09-06 |
 | Rama inválida | El validador rechaza un nombre fuera de convención | `feature/seo` produce el error esperado | 2026-09-06 |
-| Pull request | CI ejecuta los controles y la PR contiene trazabilidad | Enlace a PR | pendiente |
-| SEO | Build y criterios de `LP-FEAT-004` comprobados antes de cerrar su issue | Evidencia en su spec | pendiente |
+| Pull request | CI ejecuta los controles y la PR contiene trazabilidad | PR `#11`: gobernanza y Vercel correctos | 2026-09-06 |
+| SEO | Build y criterios de `LP-FEAT-004` comprobados antes de cerrar su issue | 16 pruebas y build correctos; issue `#9` permanece abierta como `IMPLEMENTED` | 2026-09-06 |
 
 ## 10. Decisiones, riesgos y preguntas abiertas
 
@@ -111,7 +111,7 @@ Cada solicitud se desarrolla en una rama y un worktree propios. El agente enlaza
 - **Rama:** `codex/lp-infra-003-agent-branches`.
 - **Worktree:** `/Users/jorgeluque/lapela-next-worktrees/lp-infra-003`.
 - **Issue:** `https://github.com/jorgeluquerubia/lapela/issues/10`.
-- **Pull request:** pendiente.
+- **Pull request:** `https://github.com/jorgeluquerubia/lapela/pull/11`.
 - **Archivos:** `AGENTS.md`, `PROJECT_CONTEXT.md`, `.github/pull_request_template.md` y workflow de gobernanza.
 
 ## 12. Historial
@@ -120,3 +120,4 @@ Cada solicitud se desarrolla en una rama y un worktree propios. El agente enlaza
 |---|---|---|---|
 | 2026-09-06 | `IN_PROGRESS` | Flujo concurrente registrado e iniciado en worktree aislado | Codex |
 | 2026-09-06 | `IMPLEMENTED` | Instrucciones, plantilla de PR y validación de rama incorporadas | Codex |
+| 2026-09-06 | `VERIFIED` | Rama real aceptada en CI y trabajo SEO separado y sincronizado | Codex |
