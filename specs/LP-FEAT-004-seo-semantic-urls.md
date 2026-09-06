@@ -1,7 +1,7 @@
 ---
 id: LP-FEAT-004
 type: FEATURE
-status: IMPLEMENTED
+status: VERIFIED
 priority: P2
 requested_at: 2026-09-06
 requested_by: usuario
@@ -131,9 +131,10 @@ cross_cutting_concerns: [OPS, DOC]
 - `src/lib/seo.ts` y layouts de áreas privadas: metadatos `noindex, nofollow`.
 - **Rama:** `gemini/lp-feat-004-seo-semantic-urls`.
 - **Issue:** `https://github.com/jorgeluquerubia/lapela/issues/9`.
-- **Pull request:** pendiente.
+- **Pull request:** `https://github.com/jorgeluquerubia/lapela/pull/12`.
 
 ## 12. Historial
 
 - 2026-09-06: Creación de la especificación tras análisis SEO solicitado por el usuario.
 - 2026-09-06: Implementación separada en su propia rama, compilada y verificada; pendiente de pull request.
+- 2026-09-06: Pull request preparada y validación de specs y rama superada en GitHub Actions.
