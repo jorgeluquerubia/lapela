@@ -109,7 +109,7 @@ Una sección pública de preguntas y respuestas en `/articulos/[slug]` donde:
 
 | Comprobación | Resultado esperado | Evidencia | Fecha |
 |---|---|---|---|
-| `npm run specs:check` | Ficha registrada y gobernanza documental correcta | 11 fichas válidas y 22 documentos enlazados | 2026-09-06 |
+| `npm run specs:check` | Ficha registrada y gobernanza documental correcta | 13 fichas válidas y 24 documentos enlazados tras actualizar con `main` | 2026-09-06 |
 | Validación de invariantes SQL | Restricciones de auto-pregunta, propiedad de respuesta y RLS verificadas | `tests/database/marketplace.sql` ejecutado con éxito en PostgreSQL remoto | 2026-09-06 |
 | Pruebas unitarias de dominio | `noBargaining` y `noContact` bloquean ofertas y datos externos | `rules-qa.test.ts` (4 pruebas unitarias pasadas) | 2026-09-06 |
 | Pruebas unitarias de componente | `ProductQA.test.tsx` valida render, avisos, envío y respuesta | `ProductQA.test.tsx` (5 pruebas unitarias pasadas) | 2026-09-06 |
@@ -142,8 +142,8 @@ Una sección pública de preguntas y respuestas en `/articulos/[slug]` donde:
   - `src/app/my-products/page.tsx`
   - `tests/database/marketplace.sql`
 - **Migraciones/configuración:** `202609060005_product_qa.sql`
-- **Commit o despliegue:** Pendiente de commit y PR
-- **Notas de implementación:** Ejecución en rama aislada `gemini/lp-feat-005-product-qa`.
+- **Commit o despliegue:** commit original `2da151e`; PR [#14](https://github.com/jorgeluquerubia/lapela/pull/14).
+- **Notas de implementación:** Ejecución original en `gemini/lp-feat-005-product-qa`; actualización y resolución de conflictos preparada desde el worktree interno `.worktrees/lp-feat-005-pr14-repair`.
 
 ## 12. Historial
 
@@ -151,3 +151,4 @@ Una sección pública de preguntas y respuestas en `/articulos/[slug]` donde:
 |---|---|---|---|
 | 2026-09-06 | `IN_PROGRESS` | Creación de especificación e inicio de implementación | Gemini |
 | 2026-09-06 | `IMPLEMENTED` | Implementación local completada; validación de la PR pendiente | Gemini |
+| 2026-09-06 | `IMPLEMENTED` | Rebase sobre `main`, pruebas unitarias, build y specs superados; CI pendiente | Codex |
