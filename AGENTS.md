@@ -11,6 +11,29 @@ Este archivo es el punto de entrada para cualquier IA que trabaje en el reposito
 5. Clasifica la petición como `FEATURE`, `FIX`, `INFRA`, `SECURITY`, `TECH-DEBT`, `EXPERIMENT`, `OPS` o `DOC`.
 6. Comprueba el estado, el alcance, las dependencias y los criterios de aceptación. No mezcles objetivos distintos en una sola especificación.
 
+## Aislamiento obligatorio por rama y worktree
+
+No implementes una solicitud directamente en `main` o `master`. No cambies de rama ni uses `git stash` en una copia de trabajo que tenga cambios ajenos. Cada spec activa necesita una rama y un worktree exclusivos antes de modificar archivos.
+
+1. Comprueba `git status`, `git worktree list` y las ramas existentes sin alterar cambios.
+2. Actualiza referencias con `git fetch origin`.
+3. Desde el repositorio principal, crea un worktree nuevo basado en `origin/main`: `git worktree add <directorio-aislado> -b <rama> origin/main`.
+4. Usa la rama `<agente>/<id-de-spec-en-minúsculas>-<slug>`, por ejemplo `gemini/lp-feat-004-seo` o `codex/lp-fix-002-login`.
+5. Trabaja, valida, confirma y publica únicamente los archivos de esa spec. No incluyas cambios encontrados en otro worktree.
+6. Abre una pull request hacia `main`. La descripción debe enlazar spec e issue, incluir la evidencia y declarar si `PROJECT_CONTEXT.md` necesitó actualización.
+
+Si la rama o el worktree ya existen, reutilízalos tras comprobar que corresponden a la misma spec. Si otro agente los está usando, no escribas en ellos: coordina el relevo o crea un worktree distinto sobre la misma rama solo después de que deje de estar activa.
+
+### Estado de la issue durante el ciclo
+
+- **Inicio:** deja la issue abierta, aplica `status:in-progress` y anota el nombre de la rama.
+- **Pull request preparada:** enlaza la PR, actualiza la spec con evidencia y usa `status:implemented` mientras falte alguna comprobación.
+- **Lista para integrar:** marca `VERIFIED` y `status:verified` únicamente con todos los `AC-XX` comprobados y la PR preparada para `main`.
+- **Integración:** usa `Closes #<issue>` en la PR para que GitHub cierre la issue al fusionarla. Si se cancela, documenta el motivo en ficha e issue y ciérrala como no planificada.
+- **Bloqueo:** mantén la issue abierta con `status:blocked` y documenta la dependencia concreta.
+
+Antes de terminar, verifica que ficha, registro, issue, rama y PR muestran el mismo estado. Una implementación sin commit, una rama sin publicar o una issue desactualizada no es una entrega completa.
+
 ## Cómo interpretar una petición
 
 La clasificación de la ficha y la clase de requisito son dos conceptos diferentes:

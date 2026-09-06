@@ -273,6 +273,22 @@ if (changedFromIndex !== -1) {
   }
 }
 
+const branchNameIndex = process.argv.indexOf('--branch-name');
+if (branchNameIndex !== -1) {
+  const branchName = process.argv[branchNameIndex + 1];
+  const branchMatch = branchName?.match(
+    /^[a-z0-9][a-z0-9-]*\/(lp-(feat|fix|infra|sec|debt|exp|ops|doc)-\d{3})-[a-z0-9][a-z0-9-]*$/,
+  );
+  if (!branchMatch) {
+    fail(`La rama '${branchName ?? ''}' debe usar <agente>/<id-de-spec-en-minúsculas>-<slug>.`);
+  } else {
+    const branchSpecId = branchMatch[1].toUpperCase();
+    if (!specs.has(branchSpecId)) {
+      fail(`La rama '${branchName}' referencia '${branchSpecId}', que no existe en el registro.`);
+    }
+  }
+}
+
 if (errors.length > 0) {
   console.error(`Validación de specs fallida (${errors.length} error${errors.length === 1 ? '' : 'es'}):`);
   for (const error of errors) console.error(`- ${error}`);

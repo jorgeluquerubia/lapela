@@ -22,3 +22,6 @@ jobs:
         env:
           SPEC_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
         run: npm run specs:check -- --changed-from "$SPEC_BASE_SHA"
+      - name: Validate task branch
+        if: github.event_name == 'pull_request'
+        run: npm run specs:check -- --branch-name "${{ github.head_ref }}"
