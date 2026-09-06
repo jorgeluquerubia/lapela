@@ -4,6 +4,7 @@ import Link from 'next/link';
 import {api} from '@/lib/api';
 import {money} from '@/lib/rules';
 import {useAuth} from '@/context/AuthContext';
+import ProductQA from './ProductQA';
 
 interface ProductDetailInteractiveProps {
   initialItem: any;
@@ -101,6 +102,17 @@ export default function ProductDetailInteractive({initialItem, slug, demo = fals
           </div>
         )}
         <div className="detail-description">
+          {item.mine && (item.pendingQuestionsCount || 0) > 0 && (
+            <div className="seller-alert-banner" role="status">
+              <div>
+                <strong>Tienes {item.pendingQuestionsCount} pregunta{item.pendingQuestionsCount === 1 ? '' : 's'} sin responder.</strong>
+                <p className="m-0 text-xs text-emerald-900">Los compradores potenciales tienen dudas sobre este artículo.</p>
+              </div>
+              <a href="#qa-heading" className="button text-xs py-1 px-3">
+                Ver preguntas ↓
+              </a>
+            </div>
+          )}
           <h2>Todo sobre este artículo</h2>
           <div className="detail-chips">
             <span>{item.condition}</span>
@@ -115,6 +127,13 @@ export default function ProductDetailInteractive({initialItem, slug, demo = fals
               : `Recogida en persona en ${item.location}. La dirección exacta se acuerda tras el pago.`}
           </p>
         </div>
+
+        <ProductQA
+          listingId={item.id}
+          isSeller={!!item.mine}
+          user={user}
+          demo={demo}
+        />
       </section>
 
       <aside className="purchase-panel">

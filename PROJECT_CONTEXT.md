@@ -86,6 +86,7 @@ La propuesta combina la sencillez de uso de un marketplace móvil con dos mecani
 
 - Chat privado solo para comprador y vendedor de un pedido en estado pagado o posterior.
 - Límite de veinte mensajes por minuto y usuario.
+- Preguntas y respuestas públicas en la ficha de producto con paginación de 10 elementos, aviso anti-regateo, bloqueo de datos de contacto y notificaciones de preguntas pendientes para el vendedor.
 - Seguimiento de compras, ventas, pujas y anuncios en `Mi actividad`.
 - Denuncia de anuncios para revisión.
 
@@ -94,7 +95,6 @@ La propuesta combina la sencillez de uso de un marketplace móvil con dos mecani
 - Cobros reales y transferencias a vendedores.
 - SMTP de producción y garantías de entrega de correo.
 - Seguro de compra o depósito en garantía.
-- Sistema público de preguntas y respuestas previo a la compra.
 - Regateo, contraofertas o chat libre entre usuarios.
 - Reputación, valoraciones y perfiles públicos completos.
 - Panel operativo de moderación, disputas y reembolsos.
@@ -195,6 +195,7 @@ Las claves secretas no deben usar el prefijo `NEXT_PUBLIC_`, aparecer en specs, 
 - `lp_bids`: historial de pujas.
 - `lp_orders`: comprador, vendedor, importe, pago, dirección, seguimiento y estado.
 - `lp_messages`: conversación ligada al pedido.
+- `lp_questions`: preguntas y respuestas públicas del producto y estado de notificación.
 - `lp_accounts`: cuenta Stripe Connect del vendedor.
 - `lp_reports`: denuncias de anuncios o pedidos.
 - `lp_payment_events`: idempotencia de eventos Stripe.
@@ -209,6 +210,8 @@ Las claves secretas no deben usar el prefijo `NEXT_PUBLIC_`, aparecer en specs, 
 - `lp_transition`: controla envío y recepción según actor y estado.
 - `lp_release`: cancela reservas caducadas y libera el anuncio.
 - `lp_send_message`: autoriza chat solo entre las partes después del pago.
+- `lp_ask_question`: valida y registra una pregunta pública impidiendo la auto-pregunta del vendedor.
+- `lp_answer_question`: autoriza únicamente al vendedor para publicar la respuesta oficial.
 
 Las tablas `lp_*` tienen RLS activado, pero `anon` y `authenticated` no tienen acceso directo. Las operaciones pasan por el backend con `service_role`, que valida al usuario mediante Supabase Auth. El middleware devuelve HTTP 410 para mutaciones legacy. `next.config.mjs` añade cabeceras de seguridad contra sniffing, framing y permisos de cámara, micrófono y geolocalización.
 
@@ -220,11 +223,14 @@ El bucket `product-images` es público porque contiene fotografías de anuncios.
 |---|---|---|
 | `GET /api/products` | Público | Catálogo filtrado del entorno activo |
 | `GET /api/market/listing/:id` | Público | Detalle seguro del anuncio |
-| `GET /api/market/activity` | Autenticado | Compras, ventas, pujas y anuncios propios |
+| `GET /api/market/questions/:id` | Público | Preguntas y respuestas paginadas (10 por página) |
+| `GET /api/market/activity` | Autenticado | Compras, ventas, pujas, anuncios y preguntas pendientes |
 | `GET /api/market/order/:id` | Partes del pedido | Pedido, mensajes y datos autorizados |
 | `POST /api/market/upload` | Autenticado | Subir una fotografía validada |
 | `POST /api/market/publish` | Autenticado | Crear un anuncio |
 | `POST /api/market/bid/:id` | Autenticado | Registrar una puja |
+| `POST /api/market/question/:id` | Comprador potencial | Formular pregunta pública sin regateos ni datos privados |
+| `POST /api/market/answer/:id` | Vendedor del artículo | Responder públicamente a una pregunta |
 | `POST /api/market/checkout/:id` | Comprador | Reservar o continuar un pago |
 | `POST /api/market/simulate-payment/:id` | Comprador, sandbox | Confirmar pago simulado |
 | `POST /api/market/message/:id` | Partes, pedido pagado | Enviar mensaje sobre la entrega |
@@ -234,6 +240,7 @@ El bucket `product-images` es público porque contiene fotografías de anuncios.
 | `POST /api/market/report/:id` | Autenticado | Denunciar un anuncio |
 | `POST /api/market/onboard` | Vendedor, modo real | Iniciar onboarding de Stripe Connect |
 | `POST /api/stripe/webhook` | Stripe firmado | Confirmar pagos reales de forma idempotente |
+
 
 Las rutas antiguas bajo `/api/bids`, `/api/messages`, `/api/orders`, `/api/questions`, mutaciones de `/api/products` y equivalentes se conservan para referencia o compatibilidad controlada, pero las mutaciones responden HTTP 410. Su código archivado está en `archive/legacy-api`.
 
