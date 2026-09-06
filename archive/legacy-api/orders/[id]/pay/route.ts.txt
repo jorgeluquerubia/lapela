@@ -1,0 +1,98 @@
+import { NextResponse } from 'next/server';
+import { createClient } from '@/utils/supabase/server';
+
+export async function POST(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const orderId = (await params).id;
+  const supabase = await createClient();
+
+  // 1. Get user session
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) {
+    return new NextResponse(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
+  }
+
+  // 2. Get shipping address from request body
+  let body;
+  try {
+    body = await request.json();
+  } catch (error) {
+    return new NextResponse(JSON.stringify({ error: 'Invalid request body' }), { status: 400 });
+  }
+
+  const { shipping_address_id } = body;
+  if (!shipping_address_id) {
+    return new NextResponse(JSON.stringify({ error: 'Shipping address is required' }), { status: 400 });
+  }
+
+  // 3. Fetch the order to verify ownership and status
+  const { data: order, error: fetchError } = await supabase
+    .from('orders')
+    .select('buyer_id, status, product_id')
+    .eq('id', orderId)
+    .single();
+
+  if (fetchError || !order) {
+    return new NextResponse(JSON.stringify({ error: 'Order not found' }), { status: 404 });
+  }
+
+  if (order.buyer_id !== user.id) {
+    return new NextResponse(JSON.stringify({ error: 'Forbidden' }), { status: 403 });
+  }
+
+  if (order.status !== 'pending_payment') {
+    return new NextResponse(JSON.stringify({ error: 'This order cannot be paid for' }), { status: 400 });
+  }
+
+  // 4. Verify the shipping address belongs to the user
+  const { data: address, error: addressError } = await supabase
+    .from('shipping_addresses')
+    .select('user_id')
+    .eq('id', shipping_address_id)
+    .single();
+
+  if (addressError || !address || address.user_id !== user.id) {
+    return new NextResponse(JSON.stringify({ error: 'Invalid shipping address' }), { status: 400 });
+  }
+
+  // 5. Update the order status to 'paid' and add shipping address
+  const { data: updatedOrder, error: updateError } = await supabase
+    .from('orders')
+    .update({
+      status: 'paid',
+      shipping_address_id: shipping_address_id
+    })
+    .eq('id', orderId)
+    .select()
+    .single();
+
+  if (updateError) {
+    console.error('Error updating order status:', updateError);
+    return new NextResponse(JSON.stringify({ error: 'Could not process payment' }), { status: 500 });
+  }
+
+  // 6. Update the product status to 'paid' (no longer visible publicly)
+  const { error: productError } = await supabase
+    .from('products')
+    .update({ status: 'paid' })
+    .eq('id', order.product_id);
+
+  if (productError) {
+    console.error('Error updating product status:', productError);
+    // Try to revert the order update if product update fails
+    await supabase
+      .from('orders')
+      .update({ status: 'pending_payment' })
+      .eq('id', orderId);
+    return new NextResponse(JSON.stringify({ error: 'Could not complete the payment process' }), { status: 500 });
+  }
+
+  console.log('✅ Payment processed successfully');
+  console.log('- Order ID:', updatedOrder.id);
+  console.log('- Order status: paid');
+  console.log('- Product status: paid');
+
+  return NextResponse.json(updatedOrder);
+}

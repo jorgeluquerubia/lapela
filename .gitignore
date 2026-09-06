@@ -38,3 +38,10 @@ node_modules/
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+
+.kiro/
+.vercel/
+.next-dev/
+.env*
+!.env.example
+.vercel

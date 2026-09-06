@@ -1,88 +1,10 @@
 'use client';
-
-import { useState, useEffect } from 'react';
-import { Product } from '@/types';
-import ProductCard from '@/components/ProductCard';
-import { useAuth } from '@/context/AuthContext';
-
-const MyProductsPage = () => {
-  const { user, loading: authLoading } = useAuth();
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (authLoading) {
-      // Esperamos a que el contexto de autenticación termine de cargar
-      return;
-    }
-
-    if (user) {
-      const fetchProducts = async () => {
-        try {
-          const response = await fetch('/api/user-products');
-          if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.error || 'Failed to fetch user products');
-          }
-          const data = await response.json();
-          setProducts(data);
-        } catch (err) {
-          setError(err instanceof Error ? err.message : 'An unknown error occurred');
-        } finally {
-          setLoading(false);
-        }
-      };
-      fetchProducts();
-    } else {
-      // Si no hay usuario después de que el contexto ha cargado, mostramos el error.
-      setLoading(false);
-      setError("Debes iniciar sesión para ver tus productos.");
-    }
-  }, [user, authLoading]);
-
-  if (authLoading || loading) {
-    return <div className="text-center py-10">Cargando tus productos...</div>;
-  }
-
-  if (error) {
-    return <div className="text-center py-10 text-red-500">Error: {error}</div>;
-  }
-
-  const mySales = products.filter(p => p.user_id === user?.id);
-  const myPurchases = products.filter(p => p.buyer_id === user?.id);
-
-  return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8">Mis Productos</h1>
-
-      <div>
-        <h2 className="text-2xl font-semibold mb-4 border-b pb-2">Mis Ventas</h2>
-        {mySales.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {mySales.map(product => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
-        ) : (
-          <p>Aún no has puesto ningún producto a la venta.</p>
-        )}
-      </div>
-
-      <div className="mt-12">
-        <h2 className="text-2xl font-semibold mb-4 border-b pb-2">Mis Compras</h2>
-        {myPurchases.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {myPurchases.map(product => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
-        ) : (
-          <p>Aún no has comprado ningún producto.</p>
-        )}
-      </div>
-    </div>
-  );
-};
-
-export default MyProductsPage;
+import {useEffect,useState} from 'react';
+import Link from 'next/link';
+import {api} from '@/lib/api';
+import {money} from '@/lib/rules';
+import {useAuth} from '@/context/AuthContext';
+const labels:Record<string,string>={available:'A la venta',reserved:'Reservado',sold:'Vendido',expired:'Finalizado',withdrawn:'Retirado',pending_payment:'Pendiente de pago',paid:'Pagado',shipped:'Enviado',completed:'Completado',cancelled:'Cancelado',refunded:'Reembolsado',disputed:'En revisión'};
+export default function Activity(){const {user,loading}=useAuth();const [data,setData]=useState<any>(null);const [tab,setTab]=useState('purchases');const [error,setError]=useState('');const [withdraw,setWithdraw]=useState('');const [busy,setBusy]=useState(false);useEffect(()=>{if(user)api('activity').then(setData).catch(e=>setError(e.message))},[user]);async function remove(){setBusy(true);try{await api('withdraw/'+withdraw,{});setData(await api('activity'));setWithdraw('')}catch(e){setError((e as Error).message)}finally{setBusy(false)}}
+if(loading)return <p>Cargando…</p>;if(!user)return <div className="empty-state"><h1>Tus tratos, en un solo sitio.</h1><p>Entra para seguir tus compras, ventas y pujas.</p><Link href="/login" className="button primary">Entrar</Link></div>;const rows=!data?[]:tab==='listings'?data.listings:tab==='bids'?data.bids:data.orders.filter((o:any)=>tab==='purchases'?o.buyer_id===user.id:o.seller_id===user.id);
+return <><div className="catalog-head"><div><span className="eyebrow">TU ESPACIO</span><h1>Mi actividad</h1></div><Link className="button primary" href="/publish-ad">＋ Vender un artículo</Link></div><div className="mode-tabs activity-tabs">{[['purchases','Compras'],['sales','Ventas'],['bids','Mis pujas'],['listings','Mis anuncios']].map(([v,t])=><button key={v} className={tab===v?'active':''} onClick={()=>setTab(v)}>{t}</button>)}</div>{error&&<p className="error-message">{error}</p>}{!data&&!error?<p>Cargando actividad…</p>:!rows.length?<div className="empty-state"><h2>Todavía no hay actividad aquí</h2><p>Los artículos y pedidos aparecerán aquí cuando participes.</p><Link href="/" className="button">Explorar artículos</Link></div>:<div className="activity-list">{rows.map((r:any)=>{const l=r.listing||r;return <article key={r.id} className="activity-row"><img src={l.images[0]} alt={l.title}/><div><h3><Link href={tab==='listings'||tab==='bids'?'/ad-detail/'+(r.listing_id||r.id):'/orders/'+r.id}>{l.title}</Link></h3><p className="muted">{labels[r.status||l.status]||r.status} · {new Date(r.created_at).toLocaleDateString('es-ES')}</p></div><strong>{money(r.amount_cents||r.price_cents)}</strong>{tab==='listings'?r.status==='available'&&!r.bid_count?<button className="button" onClick={()=>setWithdraw(r.id)}>Retirar</button>:null:tab!=='bids'?<Link className="button" href={'/orders/'+r.id}>Ver pedido →</Link>:<Link className="button" href={'/ad-detail/'+r.listing_id}>Ver subasta →</Link>}</article>})}</div>}{withdraw&&<div className="confirmation"><h2>¿Retirar este anuncio?</h2><p>Se conservará en tu historial y dejará de estar a la venta.</p><button className="button primary" disabled={busy} onClick={remove}>Retirar anuncio</button><button className="button" onClick={()=>setWithdraw('')}>Cancelar</button></div>}</>}

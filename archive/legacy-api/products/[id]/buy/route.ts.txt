@@ -1,0 +1,89 @@
+import { NextResponse } from 'next/server';
+import { createClient } from '@/utils/supabase/server';
+
+export async function POST(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const productId = (await params).id;
+  const supabase = await createClient();
+
+  // 1. Get user session
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) {
+    return new NextResponse(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
+  }
+
+  // 2. Fetch the product to check its status and seller
+  const { data: product, error: fetchError } = await supabase
+    .from('products')
+    .select('status, user_id')
+    .eq('id', productId)
+    .single();
+
+  if (fetchError || !product) {
+    return new NextResponse(JSON.stringify({ error: 'Product not found' }), { status: 404 });
+  }
+
+  // 3. Business logic validation
+  if (product.user_id === user.id) {
+    return new NextResponse(JSON.stringify({ error: 'You cannot buy your own product' }), { status: 403 });
+  }
+
+  if (product.status !== 'available') {
+    return new NextResponse(JSON.stringify({ error: 'This product is no longer available' }), { status: 400 });
+  }
+
+  // 4. Use the buy_product RPC function to atomically create order and update product
+  // This function handles all validation, order creation, and product updates in a single transaction
+  console.log('Calling buy_product RPC function...');
+
+  const { data: updatedProduct, error: rpcError } = await supabase
+    .rpc('buy_product', {
+      product_id: productId
+    });
+
+  if (rpcError) {
+    console.error('Error calling buy_product RPC:', rpcError);
+    console.error('RPC error details:', {
+      message: rpcError.message,
+      code: rpcError.code,
+      hint: rpcError.hint,
+      details: rpcError.details
+    });
+
+    // Handle specific error cases
+    if (rpcError.message?.includes('not available for purchase')) {
+      return new NextResponse(JSON.stringify({
+        error: 'This product is no longer available'
+      }), { status: 400 });
+    }
+
+    if (rpcError.message?.includes('cannot buy your own product')) {
+      return new NextResponse(JSON.stringify({
+        error: 'You cannot buy your own product'
+      }), { status: 403 });
+    }
+
+    return new NextResponse(JSON.stringify({
+      error: 'Could not complete the purchase',
+      debug: {
+        rpcErrorMessage: rpcError.message,
+        rpcErrorCode: rpcError.code
+      }
+    }), { status: 500 });
+  }
+
+  if (!updatedProduct) {
+    console.error('RPC function returned no data');
+    return new NextResponse(JSON.stringify({
+      error: 'Could not complete the purchase - no product data returned'
+    }), { status: 500 });
+  }
+
+  console.log('✅ Purchase completed successfully using RPC function');
+  console.log('Updated product:', updatedProduct);
+
+  // 5. Return the updated product
+  return NextResponse.json(updatedProduct);
+}

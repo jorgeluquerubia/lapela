@@ -1,0 +1,12 @@
+.git
+.kiro
+.env*
+!.env.example
+coverage
+test-results
+playwright-report
+.next
+.next-dev
+node_modules
+investigate_rls.js
+*.patch

@@ -1,24 +1,4 @@
-import { createClient } from '@/utils/supabase/server';
-import { NextResponse } from 'next/server';
-
-export async function GET() {
-  const supabase = createClient();
-
-  // Using a direct query to get distinct categories.
-  // Note: For very large tables, creating a separate 'categories' table would be more performant.
-  const { data, error } = await supabase
-    .from('products')
-    .select('category')
-    .neq('category', null);
-
-  if (error) {
-    console.error('Error fetching categories:', error);
-    return NextResponse.json({ error: 'Failed to fetch categories' }, { status: 500 });
-  }
-
-  // Get unique categories from the result
-  const uniqueCategories = Array.from(new Set(data.map(item => item.category)))
-    .map(category => ({ category }));
-
-  return NextResponse.json(uniqueCategories);
-}
+import {NextResponse} from 'next/server';
+// Legacy operations are retired in both middleware and route handlers.
+export async function GET(_request: Request){return NextResponse.json({error:'Esta operación pertenece a la versión anterior. Actualiza la página.'},{status:410})}
+export const POST=GET;export const PUT=GET;export const PATCH=GET;export const DELETE=GET;
