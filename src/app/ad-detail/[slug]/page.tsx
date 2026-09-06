@@ -1,13 +1,23 @@
-'use client';
-import {useParams} from 'next/navigation';
-import Link from 'next/link';
-import {useEffect,useState} from 'react';
-import {api} from '@/lib/api';
-import {money} from '@/lib/rules';
-import {useAuth} from '@/context/AuthContext';
-import {demoProducts} from '@/lib/demo-products';
-export default function Detail(){const {slug}=useParams<{slug:string}>();const {user}=useAuth();const [item,setItem]=useState<any>(null);const [error,setError]=useState('');const [busy,setBusy]=useState(false);const [bid,setBid]=useState('');const [selected,setSelected]=useState(0);const [confirm,setConfirm]=useState(false);const [notice,setNotice]=useState('');const [report,setReport]=useState(false);const [reason,setReason]=useState('');const demo=slug.startsWith('ejemplo-');
-useEffect(()=>{let active=true;setError('');if(demo){const p=demoProducts.find(p=>p.slug===slug);setItem(p?{id:p.id,title:p.name,description:p.description,images:[p.image],mode:p.type,price_cents:p.price*100,condition:'Buen estado',location:p.location,category:p.category,delivery:'pickup',shipping_cents:0,status:'available',bid_count:0}:null);return}api('listing/'+slug).then(l=>{if(active){setItem(l);setBid(String((l.price_cents+(l.bid_count?100:0))/100))}}).catch(e=>{if(active)setError(e.message)});return()=>{active=false}},[slug,demo]);
-async function action(kind:string){setBusy(true);setError('');try{if(kind==='bid'){await api('bid/'+slug,{amount:bid});setItem(await api('listing/'+slug));setNotice('Tu puja se ha registrado. Encontrarás el seguimiento en Mi actividad.');setConfirm(false)}else if(kind==='report'){await api('report/'+slug,{reason});setNotice('Aviso registrado para revisión.');setReport(false)}else{const r=await api('checkout/'+slug,{});window.location.assign(r.url)}}catch(e){setError((e as Error).message)}finally{setBusy(false)}}
-if(!item)return <div className="empty-state"><h1>{error?'No se encuentra el artículo':'Cargando artículo…'}</h1><p>{error}</p><Link href="/" className="button">Volver al catálogo</Link></div>;
-const auction=item.mode==='auction';return <><div className="breadcrumbs"><Link href="/">Explorar</Link><span>/</span><Link href={'/?category='+encodeURIComponent(item.category)}>{item.category}</Link><span>/</span><span>{item.title}</span></div>{demo&&<div className="notice">Anuncio de ejemplo · Fotografía ilustrativa. Este artículo no está a la venta.</div>}<div className="detail-layout"><section><div className="detail-photo"><img src={item.images[selected]} alt={item.title}/></div>{item.images.length>1&&<div className="photo-thumbs">{item.images.map((url:string,i:number)=><button key={url} onClick={()=>setSelected(i)} aria-label={`Ver foto ${i+1}`} aria-pressed={selected===i}><img src={url} alt=""/></button>)}</div>}<div className="detail-description"><h2>Todo sobre este artículo</h2><div className="detail-chips"><span>{item.condition}</span><span>{item.category}</span><span>{item.location}</span></div><p className="whitespace-pre-wrap">{item.description}</p><h3>Entrega</h3><p>{item.delivery==='shipping'?`Envío a España · ${money(item.shipping_cents)}. El vendedor organiza el envío.`:`Recogida en persona en ${item.location}. La dirección exacta se acuerda tras el pago.`}</p></div></section><aside className="purchase-panel"><span className={`sale-tag static-tag ${auction?'auction':''}`}>{auction?'Subasta':'Precio cerrado'}</span><h1>{item.title}</h1><div className="detail-price">{money(item.price_cents)}</div><p className="muted">{auction?`${item.bid_count} pujas · ${item.ends_at?'Finaliza '+new Date(item.ends_at).toLocaleString('es-ES'):'Ejemplo de subasta'}`:'Este es el precio. Sin ofertas ni regateos.'}</p>{notice&&<div className="notice" role="status">{notice}</div>}{error&&<p className="error-message" role="alert">{error}</p>}{item.status!=='available'?<div className="notice">Este artículo ya no está disponible.</div>:demo?<Link className="button primary w-full" href="/register">Crear mi cuenta</Link>:item.mine?<div className="notice">Este es tu anuncio. <Link className="underline" href="/my-products">Gestionar en Mi actividad</Link></div>:!user?<Link href="/login" className="button primary w-full">Entrar para {auction?'pujar':'comprar'}</Link>:<>{auction&&<form onSubmit={e=>{e.preventDefault();setConfirm(true)}}><label htmlFor="bid">Tu puja (€)</label><input className="field-input" id="bid" type="number" step="0.01" min={(item.price_cents+(item.bid_count?100:0))/100} value={bid} onChange={e=>setBid(e.target.value)} required/><button className="button primary w-full" disabled={busy} type="submit">Revisar puja</button></form>}{confirm&&<div className="confirmation" role="group" aria-label="Confirmar puja"><strong>Confirmar una puja de {money(Math.round(Number(bid)*100))}</strong><p>Si ganas, tendrás 24 horas para pagar. Las pujas en los últimos 2 minutos amplían el cierre otros 2 minutos.</p><button className="button primary" disabled={busy} onClick={()=>action('bid')}>Confirmar puja</button><button className="button" onClick={()=>setConfirm(false)}>Volver</button></div>}{(!auction||item.buy_now_cents)&&<button className={`button ${auction?'secondary':'primary'} w-full mt-3`} disabled={busy} onClick={()=>action('checkout')}>{busy?'Preparando…':`Comprar ahora · ${money((auction?item.buy_now_cents:item.price_cents)+item.shipping_cents)}`}</button>}</>}<div className="purchase-promise"><strong>Un trato claro, de principio a fin.</strong><p>El chat se habilita cuando el pago está confirmado. Úsalo para acordar el envío o la recogida.</p><Link href="/como-funciona" className="underline">Ver cómo funciona</Link></div>{!demo&&user&&<button className="text-link" onClick={()=>setReport(!report)}>Informar de este anuncio</button>}{report&&<form className="mt-4" onSubmit={e=>{e.preventDefault();action('report')}}><label htmlFor="report">¿Qué ocurre con el anuncio?</label><textarea id="report" className="field-input" required minLength={10} maxLength={2000} value={reason} onChange={e=>setReason(e.target.value)}/><button className="button" disabled={busy}>Enviar aviso</button></form>}</aside></div></>}
+import {redirect} from 'next/navigation';
+import {productSlug} from '@/lib/slugs';
+import {getListingByIdOrSlug} from '@/models/marketplace';
+import {findDemoProduct} from '@/lib/demo-products';
+
+interface AdDetailRedirectProps {
+  params: Promise<{slug: string}>;
+}
+
+export default async function LegacyAdDetailRedirect({params}: AdDetailRedirectProps) {
+  const {slug} = await params;
+  const demo = findDemoProduct(slug);
+  if (demo) {
+    redirect(`/articulos/${demo.slug}`);
+  }
+
+  const item = await getListingByIdOrSlug(slug);
+  if (item) {
+    redirect(`/articulos/${productSlug(item.id, item.title)}`);
+  }
+
+  redirect(`/articulos/${slug}`);
+}

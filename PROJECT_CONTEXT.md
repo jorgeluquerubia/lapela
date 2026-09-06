@@ -40,6 +40,8 @@ La propuesta combina la sencillez de uso de un marketplace móvil con dos mecani
 - Orden por fecha, precio y próxima finalización de subasta.
 - Catálogo de ejemplo como alternativa cuando no hay conexión o resultados.
 - Ficha de artículo con fotografías, estado, ubicación, entrega, precio y reglas de compra.
+- Rutas semánticas para categorías (`/categoria/:slug`), subastas (`/subastas`) y artículos (`/articulos/:slug-con-id`).
+- Metadatos canónicos y sociales, Schema.org, `robots.txt` y sitemap dinámico para indexación.
 
 ### Cuenta y autenticación
 
@@ -269,6 +271,8 @@ No hay todavía un panel de administración, alertas centralizadas, métricas de
 | `.env.example` | Inventario seguro de configuración local y de despliegue |
 | `tools/validate-specs.mjs` | Validador automático del registro, fichas y enlaces documentales |
 | `.github/ISSUE_TEMPLATE/spec.yml` | Formulario manual para crear una issue vinculada a una spec |
+
+Las utilidades SEO y de slugs viven en `src/lib/slugs.ts` y `src/lib/seo.ts`. Las antiguas URLs `/ad-detail/:slug` redirigen a la ruta canónica del artículo. Las páginas privadas y transaccionales declaran `noindex, nofollow`, y `robots.txt` bloquea también su rastreo.
 
 ## 15. Jerarquía documental
 
