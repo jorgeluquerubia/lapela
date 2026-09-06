@@ -53,8 +53,11 @@ export default function Register() {
       const alreadyConfirmed = Boolean(data.user.email_confirmed_at || data.user.confirmed_at);
       setMessage(alreadyConfirmed
         ? 'Esta cuenta ya está confirmada. Puedes iniciar sesión directamente.'
-        : '¡Registro exitoso! Revisa tu correo (también Spam o Promociones) para confirmar tu cuenta.');
+        : '¡Registro exitoso! Por favor, revisa tu correo para confirmar tu cuenta. (También Spam o Promociones.)');
       setShowResend(!alreadyConfirmed);
+    } else {
+      setMessage('Si ya tenías una cuenta, no se envía un correo de verificación nuevo. Prueba a iniciar sesión.');
+      setShowResend(false);
     }
     setLoading(false);
   };
