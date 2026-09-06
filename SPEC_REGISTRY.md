@@ -10,18 +10,20 @@ Cuando una solicitud contiene varios resultados independientes, se divide en var
 
 ## Clasificación
 
-| Tipo | Se usa para | Ejemplo |
-|---|---|---|
-| `FEATURE` | Capacidad nueva visible para una persona usuaria o para la operación del producto | Recuperar una contraseña |
-| `FIX` | Corregir un comportamiento existente que no cumple lo esperado | No llega el correo de verificación |
-| `INFRA` | Hosting, despliegue, base de datos, configuración de servicios o entornos | Preparar un entorno de staging |
-| `SECURITY` | Autenticación, autorización, privacidad, fraude o protección de datos | Restringir el chat hasta el pago |
-| `TECH-DEBT` | Reducir complejidad o riesgo técnico sin cambiar el objetivo de producto | Sustituir una ruta legacy |
-| `EXPERIMENT` | Hipótesis que necesita validación antes de convertirse en producto | Probar una nueva ordenación |
-| `OPS` | Soporte, monitorización, migraciones operativas o procedimientos | Revisar entregas pendientes |
-| `DOC` | Documentación, gobierno del trabajo o contrato para agentes | Mantener este registro |
+| Tipo | Prefijo de ID | Se usa para | Ejemplo |
+|---|---|---|---|
+| `FEATURE` | `FEAT` | Capacidad nueva visible para una persona usuaria o para la operación del producto | Recuperar una contraseña |
+| `FIX` | `FIX` | Corregir un comportamiento existente que no cumple lo esperado | No llega el correo de verificación |
+| `INFRA` | `INFRA` | Hosting, despliegue, base de datos, configuración de servicios o entornos | Preparar un entorno de staging |
+| `SECURITY` | `SEC` | Autenticación, autorización, privacidad, fraude o protección de datos | Restringir el chat hasta el pago |
+| `TECH-DEBT` | `DEBT` | Reducir complejidad o riesgo técnico sin cambiar el objetivo de producto | Sustituir una ruta legacy |
+| `EXPERIMENT` | `EXP` | Hipótesis que necesita validación antes de convertirse en producto | Probar una nueva ordenación |
+| `OPS` | `OPS` | Soporte, monitorización, migraciones operativas o procedimientos | Revisar entregas pendientes |
+| `DOC` | `DOC` | Documentación, gobierno del trabajo o contrato para agentes | Mantener este registro |
 
 Una petición puede tener impacto en varias áreas, pero debe elegir un `type` principal. Los impactos secundarios se anotan en `cross_cutting_concerns`.
+
+El tipo de ficha no sustituye al tipo de requisito. Dentro de cualquier ficha se usan `RF-XX` para conductas funcionales, `RNF-XX` para atributos medibles de calidad y `RN-XX` para reglas de negocio. Por ejemplo, corregir un RF incumplido sigue siendo una ficha `FIX`. La convención completa está en [`specs/REQUIREMENTS_GUIDE.md`](specs/REQUIREMENTS_GUIDE.md).
 
 ## Estados y prioridad
 
@@ -45,8 +47,9 @@ Prioridades: `P0` bloquea una operación esencial o implica un riesgo grave; `P1
 | `LP-FEAT-002` | `FEATURE` | Pagos simulados durante la beta | `VERIFIED` | `P1` | 2026-09-06 | [Abrir ficha](specs/LP-FEAT-002-simulated-payments.md) |
 | `LP-FIX-001` | `FIX` | Recuperación del correo de verificación | `VERIFIED` | `P1` | 2026-09-06 | [Abrir ficha](specs/LP-FIX-001-email-verification.md) |
 | `LP-FEAT-003` | `FEATURE` | Recuperación de contraseña | `VERIFIED` | `P1` | 2026-09-06 | [Abrir ficha](specs/LP-FEAT-003-password-recovery.md) |
-| `LP-DOC-001` | `DOC` | Registro de specs para agentes de IA | `IMPLEMENTED` | `P1` | 2026-09-06 | [Abrir ficha](specs/LP-DOC-001-ai-spec-governance.md) |
+| `LP-DOC-001` | `DOC` | Registro de specs para agentes de IA | `VERIFIED` | `P1` | 2026-09-06 | [Abrir ficha](specs/LP-DOC-001-ai-spec-governance.md) |
 | `LP-DOC-002` | `DOC` | Contexto canónico de producto e infraestructura | `VERIFIED` | `P1` | 2026-09-06 | [Abrir ficha](specs/LP-DOC-002-project-context.md) |
+| `LP-INFRA-001` | `INFRA` | Controles automáticos para specs y acceso de agentes | `VERIFIED` | `P1` | 2026-09-06 | [Abrir ficha](specs/LP-INFRA-001-spec-guardrails.md) |
 
 ## Flujo para una solicitud nueva
 
@@ -57,6 +60,8 @@ Prioridades: `P0` bloquea una operación esencial o implica un riesgo grave; `P1
 5. Implementar manteniendo la ficha y este índice actualizados.
 6. Validar los criterios con pruebas, revisión visual, comprobaciones de API, despliegue u otra evidencia adecuada.
 7. Marcar `VERIFIED` solo cuando no queden criterios sin comprobar; anotar riesgos, deuda y trabajo futuro.
+
+Antes de cerrar el trabajo se ejecuta `npm run specs:check`. En CI, la misma comprobación valida la estructura, los IDs, la sincronización del registro, los enlaces locales y que un cambio de implementación incluya una actualización de su ficha y del índice.
 
 ## Definition of Ready
 

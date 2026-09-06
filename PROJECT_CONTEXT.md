@@ -263,6 +263,7 @@ No hay todavía un panel de administración, alertas centralizadas, métricas de
 | `specs` | Una ficha por solicitud de producto o técnica |
 | `SPEC_REGISTRY.md` | Índice y estado de las specs |
 | `.env.example` | Inventario seguro de configuración local y de despliegue |
+| `tools/validate-specs.mjs` | Validador automático del registro, fichas y enlaces documentales |
 
 ## 15. Jerarquía documental
 
@@ -270,7 +271,10 @@ No hay todavía un panel de administración, alertas centralizadas, métricas de
 2. [`PROJECT_CONTEXT.md`](PROJECT_CONTEXT.md): estado vigente del producto y la infraestructura.
 3. [`SPEC_REGISTRY.md`](SPEC_REGISTRY.md): solicitudes, decisiones, prioridades y estado.
 4. [`specs/`](specs/): detalle y criterios de cada solicitud.
+   La guía [`specs/REQUIREMENTS_GUIDE.md`](specs/REQUIREMENTS_GUIDE.md) separa RF, RNF y reglas de negocio del tipo de trabajo.
 5. [`README.md`](README.md): introducción y arranque rápido.
 6. [`ANALISIS_FUNCIONAL.md`](ANALISIS_FUNCIONAL.md): análisis histórico de la versión anterior; no es fuente de verdad actual.
 
 Cuando una spec cambia una capacidad, servicio, variable, ruta, estado o limitación transversal, el mismo cambio debe actualizar este documento.
+
+La gobernanza documental se comprueba localmente con `npm run specs:check` y en GitHub Actions. El control de cambios de CI exige que una modificación de implementación actualice al menos una ficha y `SPEC_REGISTRY.md`; la decisión de actualizar este contexto se toma aplicando la regla transversal anterior.

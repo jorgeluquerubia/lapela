@@ -1,0 +1,6 @@
+---
+description: Entrada obligatoria al contexto y las specs de La Pela
+alwaysApply: true
+---
+
+Lee y aplica `AGENTS.md` antes de analizar o modificar el proyecto. Continúa con `PROJECT_CONTEXT.md`, `SPEC_REGISTRY.md` y la ficha relacionada según indica ese documento.

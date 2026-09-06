@@ -1,13 +1,13 @@
 ---
 id: LP-DOC-001
 type: DOC
-status: IMPLEMENTED
+status: VERIFIED
 priority: P1
 requested_at: 2026-09-06
 requested_by: usuario
 source: conversación
 owner: producto
-related_specs: []
+related_specs: [LP-INFRA-001]
 dependencies: []
 cross_cutting_concerns: [OPS]
 ---
@@ -39,7 +39,7 @@ Una IA nueva puede empezar por un archivo raíz, encontrar el índice, abrir la 
 ### Excluido
 
 - Sustituir la documentación funcional existente.
-- Automatizar todavía la creación de IDs o validación en CI.
+- Generar automáticamente el contenido o los IDs de las fichas.
 
 ## 5. Requisitos y reglas de negocio
 
@@ -54,7 +54,7 @@ Una IA nueva puede empezar por un archivo raíz, encontrar el índice, abrir la 
 - [x] `AC-02` El registro define tipos `FEATURE`, `FIX`, `INFRA`, `SECURITY`, `TECH-DEBT`, `EXPERIMENT`, `OPS` y `DOC`.
 - [x] `AC-03` La plantilla exige fecha, solicitud original, alcance, criterios, validación, riesgos y trazabilidad.
 - [x] `AC-04` Las solicitudes relevantes ya realizadas tienen IDs y fichas enlazadas.
-- [ ] `AC-05` Añadir una validación automática en CI que detecte IDs duplicados y enlaces rotos.
+- [x] `AC-05` Añadir una validación automática en CI que detecte IDs duplicados y enlaces rotos.
 
 ## 7. Experiencia y estados
 
@@ -73,22 +73,25 @@ Una IA nueva puede empezar por un archivo raíz, encontrar el índice, abrir la 
 | Comprobación | Resultado esperado | Evidencia | Fecha |
 |---|---|---|---|
 | Descubribilidad | Los archivos se encuentran desde la raíz | `AGENTS.md`, `README.md` y `SPEC_REGISTRY.md` enlazados | 2026-09-06 |
-| Completitud | Hay ficha por cada solicitud registrada | Cinco filas y cinco archivos | 2026-09-06 |
+| Completitud | Hay ficha por cada solicitud registrada | Siete filas y siete archivos | 2026-09-06 |
 | Consistencia | IDs, enlaces y estados coinciden | Revisión de enlaces y frontmatter | 2026-09-06 |
+| Automatización | El registro válido pasa y los fallos estructurales se rechazan | `npm run specs:check` y workflow `specs.yml` | 2026-09-06 |
 
 ## 10. Decisiones, riesgos y preguntas abiertas
 
 - **Decisión:** El registro raíz es la fuente de verdad; `specs/` contiene el detalle.
-- **Riesgo:** Sin un chequeo automático, una IA puede olvidar actualizar el índice.
-- **Pregunta abierta:** Decidir si se añade un script de validación en CI en la próxima iteración.
+- **Riesgo:** La validación estructural no puede decidir por sí sola si el texto describe correctamente el producto.
+- **Pregunta abierta:** Ninguna para este alcance.
 
 ## 11. Implementación y trazabilidad
 
 - `AGENTS.md`, `SPEC_REGISTRY.md`, `specs/README.md`, `specs/SPEC_TEMPLATE.md` y fichas `LP-*.md`.
 - `README.md` enlaza el punto de entrada en la misma entrega.
+- `LP-INFRA-001` incorpora la validación automática y los accesos para herramientas de IA.
 
 ## 12. Historial
 
 | Fecha | Estado | Cambio | Autor/agente |
 |---|---|---|---|
 | 2026-09-06 | `IMPLEMENTED` | Contrato de trabajo, índice, plantilla y backfill creados | Codex |
+| 2026-09-06 | `VERIFIED` | Validación automática de IDs, registro y enlaces añadida mediante `LP-INFRA-001` | Codex |

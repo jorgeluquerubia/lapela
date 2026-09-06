@@ -24,6 +24,7 @@ La web se ha reconstruido alrededor de una regla sencilla: el precio queda fijad
 npm install
 npm run dev
 npm run build
+npm run specs:check
 ```
 
 La aplicación local arranca en `http://localhost:3011` cuando se usa el puerto de la sesión actual. El catálogo de prueba contiene anuncios y cuentas separadas de la operación futura.

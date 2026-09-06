@@ -41,8 +41,19 @@ Describe el cambio observable y por qué importa para el producto. Debe poder co
 
 ## 5. Requisitos y reglas de negocio
 
-- `REQ-01`:
-- `RULE-01`:
+Usa identificadores únicos dentro de la ficha. Al citarlos fuera de ella, antepón el ID de spec: `LP-TIPO-000/RF-01`.
+
+### Requisitos funcionales
+
+- `RF-01`: El sistema debe ...
+
+### Requisitos no funcionales
+
+- `RNF-01`: La operación debe ... [condición medible]
+
+### Reglas de negocio
+
+- `RN-01`: ...
 
 ## 6. Criterios de aceptación
 
