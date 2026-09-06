@@ -17,10 +17,22 @@ No implementes una solicitud directamente en `main` o `master`. No cambies de ra
 
 1. Comprueba `git status`, `git worktree list` y las ramas existentes sin alterar cambios.
 2. Actualiza referencias con `git fetch origin`.
-3. Desde el repositorio principal, crea un worktree nuevo basado en `origin/main`: `git worktree add <directorio-aislado> -b <rama> origin/main`.
-4. Usa la rama `<agente>/<id-de-spec-en-minúsculas>-<slug>`, por ejemplo `gemini/lp-feat-004-seo` o `codex/lp-fix-002-login`.
-5. Trabaja, valida, confirma y publica únicamente los archivos de esa spec. No incluyas cambios encontrados en otro worktree.
-6. Abre una pull request hacia `main`. La descripción debe enlazar spec e issue, incluir la evidencia y declarar si `PROJECT_CONTEXT.md` necesitó actualización.
+3. Calcula la raíz principal compartida: `lapela_root=$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")`.
+4. Crea siempre el worktree dentro del workspace autorizado: `git -C "$lapela_root" worktree add "$lapela_root/.worktrees/<id-de-spec-en-minúsculas>" -b <rama> origin/main`.
+5. La ubicación por defecto y canónica es `<raíz-de-la-pela>/.worktrees/<id-de-spec-en-minúsculas>`. No uses una carpeta hermana como `lapela-next-worktrees`; queda fuera del workspace predeterminado de algunos agentes y provoca solicitudes repetidas de permisos.
+6. Usa la rama `<agente>/<id-de-spec-en-minúsculas>-<slug>`, por ejemplo `gemini/lp-feat-004-seo` o `codex/lp-fix-002-login`.
+7. Trabaja, valida, confirma y publica únicamente los archivos de esa spec. No incluyas cambios encontrados en otro worktree.
+8. Abre una pull request hacia `main`. La descripción debe enlazar spec e issue, incluir la evidencia y declarar si `PROJECT_CONTEXT.md` necesitó actualización.
+
+Ejemplo completo desde cualquier worktree existente:
+
+```sh
+lapela_root=$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")
+git -C "$lapela_root" fetch origin
+git -C "$lapela_root" worktree add "$lapela_root/.worktrees/lp-feat-006" -b gemini/lp-feat-006-ejemplo origin/main
+```
+
+Al estar `.worktrees/` bajo la raíz autorizada y en `.gitignore`, el agente mantiene acceso normal sin añadir la copia aislada al repositorio.
 
 Si la rama o el worktree ya existen, reutilízalos tras comprobar que corresponden a la misma spec. Si otro agente los está usando, no escribas en ellos: coordina el relevo o crea un worktree distinto sobre la misma rama solo después de que deje de estar activa.
 

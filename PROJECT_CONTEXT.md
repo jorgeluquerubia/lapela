@@ -298,4 +298,6 @@ La spec continúa siendo la fuente de verdad para requisitos, criterios de acept
 
 `main` contiene únicamente trabajo integrado. Cada spec se implementa en una rama `<agente>/<id-de-spec-en-minúsculas>-<slug>` creada desde `origin/main`, por ejemplo `codex/lp-infra-003-agent-branches`. Cuando hay varios agentes, cada uno usa además un Git worktree diferente; compartir directorio aunque se usen ramas distintas no se considera aislamiento.
 
+La ubicación canónica es `<raíz-de-la-pela>/.worktrees/<id-de-spec-en-minúsculas>`. Está dentro del workspace autorizado para evitar peticiones repetidas de permisos y `/.worktrees/` está excluido en `.gitignore`. No deben crearse nuevos worktrees en la antigua carpeta hermana `lapela-next-worktrees`. Los existentes allí se conservan solamente hasta que termine la tarea asociada y después pueden retirarse con `git worktree remove`.
+
 La entrega se integra mediante pull request. La PR enlaza la spec y la issue, contiene la evidencia de validación e indica si cambió este contexto. El workflow de gobernanza valida el nombre de la rama y que su ID corresponda a una spec registrada. La issue permanece abierta hasta la integración en `main`.

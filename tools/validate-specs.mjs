@@ -240,6 +240,18 @@ for (const file of markdownFiles) {
   }
 }
 
+const agentsContent = readFileSync(join(root, 'AGENTS.md'), 'utf8');
+const gitignoreContent = readFileSync(join(root, '.gitignore'), 'utf8');
+if (!gitignoreContent.split(/\r?\n/).includes('/.worktrees/')) {
+  fail(`.gitignore: falta la exclusión canónica '/.worktrees/'.`);
+}
+if (!agentsContent.includes('.worktrees/<id-de-spec-en-minúsculas>')) {
+  fail(`AGENTS.md: falta la ubicación canónica de worktrees dentro del workspace.`);
+}
+if (agentsContent.includes('/Users/jorgeluque/lapela-next-worktrees')) {
+  fail(`AGENTS.md: no debe recomendar la antigua carpeta externa 'lapela-next-worktrees'.`);
+}
+
 const changedFromIndex = process.argv.indexOf('--changed-from');
 if (changedFromIndex !== -1) {
   const base = process.argv[changedFromIndex + 1];
