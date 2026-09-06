@@ -1,0 +1,66 @@
+# Registro de especificaciones de La Pela
+
+Este es el registro canónico de trabajo de producto para La Pela. Cualquier IA debe leerlo antes de proponer, implementar o revisar un cambio. Las fichas completas viven en [`specs/`](specs/); la plantilla está en [`specs/SPEC_TEMPLATE.md`](specs/SPEC_TEMPLATE.md).
+
+## Cómo se usa
+
+Cada solicitud que afecte al producto se registra con una ficha propia antes de implementarse. El registro separa la intención de producto de la solución técnica y permite que otra IA retome el trabajo sin depender del historial de conversación.
+
+Cuando una solicitud contiene varios resultados independientes, se divide en varias fichas y se relacionan mediante `related_specs`. Una corrección que nace al implementar una feature conserva su propio ID `FIX` si tiene un problema y criterios de aceptación distintos.
+
+## Clasificación
+
+| Tipo | Se usa para | Ejemplo |
+|---|---|---|
+| `FEATURE` | Capacidad nueva visible para una persona usuaria o para la operación del producto | Recuperar una contraseña |
+| `FIX` | Corregir un comportamiento existente que no cumple lo esperado | No llega el correo de verificación |
+| `INFRA` | Hosting, despliegue, base de datos, configuración de servicios o entornos | Preparar un entorno de staging |
+| `SECURITY` | Autenticación, autorización, privacidad, fraude o protección de datos | Restringir el chat hasta el pago |
+| `TECH-DEBT` | Reducir complejidad o riesgo técnico sin cambiar el objetivo de producto | Sustituir una ruta legacy |
+| `EXPERIMENT` | Hipótesis que necesita validación antes de convertirse en producto | Probar una nueva ordenación |
+| `OPS` | Soporte, monitorización, migraciones operativas o procedimientos | Revisar entregas pendientes |
+| `DOC` | Documentación, gobierno del trabajo o contrato para agentes | Mantener este registro |
+
+Una petición puede tener impacto en varias áreas, pero debe elegir un `type` principal. Los impactos secundarios se anotan en `cross_cutting_concerns`.
+
+## Estados y prioridad
+
+Estados permitidos: `DRAFT`, `READY`, `IN_PROGRESS`, `BLOCKED`, `IMPLEMENTED`, `VERIFIED`, `CANCELLED`.
+
+- `DRAFT`: falta concretar alcance o criterios.
+- `READY`: se puede implementar sin preguntas críticas abiertas.
+- `IN_PROGRESS`: hay trabajo activo.
+- `BLOCKED`: una dependencia externa impide avanzar y está documentada.
+- `IMPLEMENTED`: el cambio está hecho, pero falta completar la validación.
+- `VERIFIED`: los criterios de aceptación se han comprobado y la evidencia está anotada.
+- `CANCELLED`: se decidió no realizarlo; conserva el motivo.
+
+Prioridades: `P0` bloquea una operación esencial o implica un riesgo grave; `P1` afecta a un flujo importante; `P2` mejora una experiencia o reduce riesgo; `P3` es una mejora conveniente.
+
+## Registro
+
+| ID | Tipo | Título | Estado | Prioridad | Solicitado | Especificación |
+|---|---|---|---|---|---|---|
+| `LP-FEAT-001` | `FEATURE` | Reconstrucción del marketplace sin regateos | `VERIFIED` | `P1` | 2026-09-06 | [Abrir ficha](specs/LP-FEAT-001-marketplace-rebuild.md) |
+| `LP-FEAT-002` | `FEATURE` | Pagos simulados durante la beta | `VERIFIED` | `P1` | 2026-09-06 | [Abrir ficha](specs/LP-FEAT-002-simulated-payments.md) |
+| `LP-FIX-001` | `FIX` | Recuperación del correo de verificación | `VERIFIED` | `P1` | 2026-09-06 | [Abrir ficha](specs/LP-FIX-001-email-verification.md) |
+| `LP-FEAT-003` | `FEATURE` | Recuperación de contraseña | `VERIFIED` | `P1` | 2026-09-06 | [Abrir ficha](specs/LP-FEAT-003-password-recovery.md) |
+| `LP-DOC-001` | `DOC` | Registro de specs para agentes de IA | `IMPLEMENTED` | `P1` | 2026-09-06 | [Abrir ficha](specs/LP-DOC-001-ai-spec-governance.md) |
+
+## Flujo para una solicitud nueva
+
+1. Capturar la petición con su fecha y fuente, sin reinterpretarla como una tarea técnica.
+2. Elegir el tipo principal y asignar el siguiente ID disponible.
+3. Escribir problema, resultado esperado, alcance, reglas de negocio, dependencias y criterios de aceptación.
+4. Resolver preguntas que bloqueen la decisión y marcar la ficha como `READY`.
+5. Implementar manteniendo la ficha y este índice actualizados.
+6. Validar los criterios con pruebas, revisión visual, comprobaciones de API, despliegue u otra evidencia adecuada.
+7. Marcar `VERIFIED` solo cuando no queden criterios sin comprobar; anotar riesgos, deuda y trabajo futuro.
+
+## Definition of Ready
+
+Una ficha está lista cuando una IA que no conoce la conversación puede explicar qué problema se resuelve, para quién, qué queda dentro y fuera, qué dependencias existen y cómo se decidirá si está terminado.
+
+## Definition of Done
+
+Una ficha está terminada cuando el resultado desplegado o documentado cumple todos sus criterios, las comprobaciones tienen fecha y evidencia, los cambios relevantes están enlazados y el estado de este registro coincide con la ficha.
