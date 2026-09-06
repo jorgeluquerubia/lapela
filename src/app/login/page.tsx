@@ -13,6 +13,8 @@ export default function Login() {
   const [showResend, setShowResend] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [resending, setResending] = useState(false);
+  const [forgotMode, setForgotMode] = useState(false);
+  const [forgotLoading, setForgotLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const { session, loading: authLoading } = useAuth();
@@ -70,14 +72,54 @@ export default function Login() {
     setResending(false);
   };
 
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setMessage(null);
+    setForgotLoading(true);
+    const { error: resetError } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+      redirectTo: typeof window !== 'undefined' ? `${window.location.origin}/reset-password` : undefined,
+    });
+    if (resetError) {
+      setError(/rate limit|too many|frecuencia/i.test(resetError.message)
+        ? 'Has solicitado varios correos seguidos. Espera unos minutos antes de volver a intentarlo.'
+        : resetError.message);
+    } else {
+      setMessage('Si existe una cuenta con ese correo, te enviaremos un enlace para cambiar la contraseña. Revisa también Spam o Promociones.');
+    }
+    setForgotLoading(false);
+  };
+
   if (authLoading || session) {
     return <p>Cargando...</p>;
   }
 
   return (
     <section className="login-form-container">
-      <h1>Iniciar Sesión</h1>
-      <form className="login-form" onSubmit={handleSignIn}>
+      <h1>{forgotMode ? 'Recuperar contraseña' : 'Iniciar Sesión'}</h1>
+      {forgotMode ? <form className="login-form" onSubmit={handleForgotPassword}>
+        <p className="muted">Te enviaremos un enlace para elegir una contraseña nueva.</p>
+        <label htmlFor="email">Email</label>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          required
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          disabled={forgotLoading}
+          autoFocus
+        />
+
+        {error && <p className="text-red-600 text-center" role="alert">{error}</p>}
+        {message && <p className="text-green-600 text-center" role="status">{message}</p>}
+        <button type="submit" className="button primary" disabled={forgotLoading || !email.trim()}>
+          {forgotLoading ? 'Enviando…' : 'Enviar enlace de recuperación'}
+        </button>
+        <button type="button" className="text-link" onClick={() => { setForgotMode(false); setError(null); setMessage(null); }}>
+          Volver a iniciar sesión
+        </button>
+      </form> : <form className="login-form" onSubmit={handleSignIn}>
         <label htmlFor="email">Email</label>
         <input
           type="email"
@@ -100,6 +142,10 @@ export default function Login() {
           disabled={loading}
         />
 
+        <button type="button" className="text-link forgot-link" onClick={() => { setForgotMode(true); setError(null); setMessage(null); setShowResend(false); }}>
+          ¿Has olvidado tu contraseña?
+        </button>
+
         {error && <p className="text-red-600 text-center" role="alert">{error}</p>}
         {message && <p className="text-green-600 text-center" role="status">{message}</p>}
 
@@ -116,7 +162,7 @@ export default function Login() {
         <p className="signup-link">
           ¿No tienes cuenta? <Link href="/register">Regístrate aquí</Link>
         </p>
-      </form>
+      </form>}
     </section>
   );
 }

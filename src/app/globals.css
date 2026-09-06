@@ -6,3 +6,4 @@
 
 .sandbox-banner{background:#f1f6de;color:#405315;text-align:center;padding:9px 20px;font-size:12px;letter-spacing:.035em;border-bottom:1px solid #dce5c6}
 .auth-actions{display:flex;flex-direction:column;align-items:center;gap:8px;margin:16px 0 8px}.auth-actions .button{width:100%}.auth-actions .text-link{margin-top:0}
+.forgot-link{align-self:flex-end;margin-top:-5px}
