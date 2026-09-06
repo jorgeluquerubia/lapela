@@ -1,5 +1,7 @@
 # Análisis Funcional de la Aplicación (Marketplace)
 
+> **Documento histórico:** este análisis describe la versión anterior del marketplace y varias rutas que hoy están retiradas o bloqueadas. No debe usarse como fuente de verdad para nuevas implementaciones. Consulta [`PROJECT_CONTEXT.md`](PROJECT_CONTEXT.md) para el producto y la infraestructura vigentes y [`SPEC_REGISTRY.md`](SPEC_REGISTRY.md) para las decisiones por solicitud.
+
 Este documento detalla el análisis funcional de la aplicación de marketplace, describiendo sus entidades principales, flujos de trabajo y funcionalidades clave.
 
 ## 1. Resumen del Proyecto

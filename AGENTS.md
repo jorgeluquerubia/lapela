@@ -4,10 +4,11 @@ Este archivo es el punto de entrada para cualquier IA que trabaje en el reposito
 
 ## Antes de cambiar nada
 
-1. Lee [`SPEC_REGISTRY.md`](SPEC_REGISTRY.md), que es el registro canónico de solicitudes y decisiones de producto.
-2. Abre la especificación relacionada dentro de [`specs/`](specs/). Si no existe, crea una antes de implementar.
-3. Clasifica la petición como `FEATURE`, `FIX`, `INFRA`, `SECURITY`, `TECH-DEBT`, `EXPERIMENT`, `OPS` o `DOC`.
-4. Comprueba el estado, el alcance, las dependencias y los criterios de aceptación. No mezcles objetivos distintos en una sola especificación.
+1. Lee [`PROJECT_CONTEXT.md`](PROJECT_CONTEXT.md) para conocer el producto, las funcionalidades vigentes y la infraestructura real.
+2. Lee [`SPEC_REGISTRY.md`](SPEC_REGISTRY.md), que es el registro canónico de solicitudes y decisiones de producto.
+3. Abre la especificación relacionada dentro de [`specs/`](specs/). Si no existe, crea una antes de implementar.
+4. Clasifica la petición como `FEATURE`, `FIX`, `INFRA`, `SECURITY`, `TECH-DEBT`, `EXPERIMENT`, `OPS` o `DOC`.
+5. Comprueba el estado, el alcance, las dependencias y los criterios de aceptación. No mezcles objetivos distintos en una sola especificación.
 
 ## Regla de trabajo
 
@@ -29,11 +30,14 @@ Una respuesta de implementación solo está completa cuando:
 - Distingue siempre el problema de producto, la solución aceptada y la implementación técnica. La implementación no sustituye a los criterios de aceptación.
 - No marques una ficha como `VERIFIED` sin indicar cómo se comprobó.
 - No incluyas secretos, tokens, contraseñas ni datos personales en las fichas, los logs o los commits.
+- Si una spec cambia una funcionalidad, servicio, variable, ruta, estado o limitación transversal, actualiza también `PROJECT_CONTEXT.md`.
 
 ## Archivos de referencia rápida
 
+- Contexto vigente de producto e infraestructura: [`PROJECT_CONTEXT.md`](PROJECT_CONTEXT.md)
 - Registro e índice: [`SPEC_REGISTRY.md`](SPEC_REGISTRY.md)
 - Plantilla: [`specs/SPEC_TEMPLATE.md`](specs/SPEC_TEMPLATE.md)
 - Fichas individuales: [`specs/`](specs/)
-- Contexto funcional existente: [`ANALISIS_FUNCIONAL.md`](ANALISIS_FUNCIONAL.md)
+- Análisis funcional histórico: [`ANALISIS_FUNCIONAL.md`](ANALISIS_FUNCIONAL.md)
 - Arquitectura y estado del portal: [`README.md`](README.md)
+- Variables de entorno sin secretos: [`.env.example`](.env.example)

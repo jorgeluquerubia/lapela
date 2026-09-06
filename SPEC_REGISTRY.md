@@ -1,6 +1,6 @@
 # Registro de especificaciones de La Pela
 
-Este es el registro canónico de trabajo de producto para La Pela. Cualquier IA debe leerlo antes de proponer, implementar o revisar un cambio. Las fichas completas viven en [`specs/`](specs/); la plantilla está en [`specs/SPEC_TEMPLATE.md`](specs/SPEC_TEMPLATE.md).
+Este es el registro canónico de trabajo de producto para La Pela. Cualquier IA debe leer primero el estado vigente en [`PROJECT_CONTEXT.md`](PROJECT_CONTEXT.md) y después este registro antes de proponer, implementar o revisar un cambio. Las fichas completas viven en [`specs/`](specs/); la plantilla está en [`specs/SPEC_TEMPLATE.md`](specs/SPEC_TEMPLATE.md).
 
 ## Cómo se usa
 
@@ -46,6 +46,7 @@ Prioridades: `P0` bloquea una operación esencial o implica un riesgo grave; `P1
 | `LP-FIX-001` | `FIX` | Recuperación del correo de verificación | `VERIFIED` | `P1` | 2026-09-06 | [Abrir ficha](specs/LP-FIX-001-email-verification.md) |
 | `LP-FEAT-003` | `FEATURE` | Recuperación de contraseña | `VERIFIED` | `P1` | 2026-09-06 | [Abrir ficha](specs/LP-FEAT-003-password-recovery.md) |
 | `LP-DOC-001` | `DOC` | Registro de specs para agentes de IA | `IMPLEMENTED` | `P1` | 2026-09-06 | [Abrir ficha](specs/LP-DOC-001-ai-spec-governance.md) |
+| `LP-DOC-002` | `DOC` | Contexto canónico de producto e infraestructura | `VERIFIED` | `P1` | 2026-09-06 | [Abrir ficha](specs/LP-DOC-002-project-context.md) |
 
 ## Flujo para una solicitud nueva
 

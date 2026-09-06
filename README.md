@@ -2,7 +2,7 @@
 
 Marketplace español de segunda mano para comprar a precio cerrado o participar en subastas, sin regateos.
 
-> **Para cualquier agente de IA:** empieza por [`AGENTS.md`](AGENTS.md) y [`SPEC_REGISTRY.md`](SPEC_REGISTRY.md). Toda solicitud de producto, corrección o infraestructura debe tener una ficha en [`specs/`](specs/) antes de implementarse.
+> **Para cualquier agente de IA:** empieza por [`AGENTS.md`](AGENTS.md), lee el contexto vigente en [`PROJECT_CONTEXT.md`](PROJECT_CONTEXT.md) y consulta [`SPEC_REGISTRY.md`](SPEC_REGISTRY.md). Toda solicitud de producto, corrección o infraestructura debe tener una ficha en [`specs/`](specs/) antes de implementarse.
 
 La web se ha reconstruido alrededor de una regla sencilla: el precio queda fijado en el anuncio. El chat no aparece antes de la compra; se habilita únicamente cuando el pedido está pagado y sirve para organizar envío o recogida.
 
