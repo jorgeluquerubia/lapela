@@ -4,6 +4,8 @@ Marketplace español de segunda mano para comprar a precio cerrado o participar 
 
 > **Para cualquier agente de IA:** empieza por [`AGENTS.md`](AGENTS.md), lee el contexto vigente en [`PROJECT_CONTEXT.md`](PROJECT_CONTEXT.md) y consulta [`SPEC_REGISTRY.md`](SPEC_REGISTRY.md). Toda solicitud de producto, corrección o infraestructura debe tener una ficha en [`specs/`](specs/) antes de implementarse.
 
+El trabajo se sigue en [GitHub Issues](https://github.com/jorgeluquerubia/lapela/issues). Cada issue está vinculada a una spec, que conserva el detalle funcional y técnico.
+
 La web se ha reconstruido alrededor de una regla sencilla: el precio queda fijado en el anuncio. El chat no aparece antes de la compra; se habilita únicamente cuando el pedido está pagado y sirve para organizar envío o recogida.
 
 ## Estado actual

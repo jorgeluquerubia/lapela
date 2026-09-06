@@ -32,6 +32,9 @@ La propuesta combina la sencillez de uso de un marketplace móvil con dos mecani
 ### Exploración y catálogo
 
 - Catálogo responsive con paginación de 12 artículos.
+- Rutas semánticas para categorías (`/categoria/[slug]`), subastas (`/subastas`) y fichas de producto con slug descriptivo (`/articulos/[slug]`).
+- Redirección 301 de compatibilidad desde rutas históricas `/ad-detail/[slug]`.
+- Optimización SEO integral: SSR con `generateMetadata`, Open Graph, Twitter Cards, Schema.org JSON-LD (`Product`, `BreadcrumbList`, `WebSite`), `sitemap.xml` dinámico y `robots.txt`.
 - Búsqueda por título y descripción.
 - Filtros por categoría, modalidad, rango de precio y ubicación.
 - Orden por fecha, precio y próxima finalización de subasta.
@@ -138,6 +141,7 @@ Servicios externos
 | Archivos | Supabase Storage | Bucket público `product-images`; las subidas nuevas pasan por el backend |
 | Pagos | Stripe SDK y Stripe Connect | Preparado para modo real; beta en simulación |
 | Repositorio | GitHub | `github.com/jorgeluquerubia/lapela`, rama principal `main` |
+| Gestión del trabajo | GitHub Issues | Una issue por spec, con etiquetas de tipo, prioridad y estado |
 | CI | GitHub Actions y Playwright | Workflow en `.github/workflows/playwright.yml` |
 | Pruebas | Jest, Testing Library, Playwright y SQL | La cobertura existente incluye pruebas legacy; ver limitaciones de validación |
 
@@ -264,6 +268,7 @@ No hay todavía un panel de administración, alertas centralizadas, métricas de
 | `SPEC_REGISTRY.md` | Índice y estado de las specs |
 | `.env.example` | Inventario seguro de configuración local y de despliegue |
 | `tools/validate-specs.mjs` | Validador automático del registro, fichas y enlaces documentales |
+| `.github/ISSUE_TEMPLATE/spec.yml` | Formulario manual para crear una issue vinculada a una spec |
 
 ## 15. Jerarquía documental
 
@@ -278,3 +283,9 @@ No hay todavía un panel de administración, alertas centralizadas, métricas de
 Cuando una spec cambia una capacidad, servicio, variable, ruta, estado o limitación transversal, el mismo cambio debe actualizar este documento.
 
 La gobernanza documental se comprueba localmente con `npm run specs:check` y en GitHub Actions. El control de cambios de CI exige que una modificación de implementación actualice al menos una ficha y `SPEC_REGISTRY.md`; la decisión de actualizar este contexto se toma aplicando la regla transversal anterior.
+
+## 16. Seguimiento operativo del trabajo
+
+Cada solicitud que requiere una spec tiene una GitHub Issue en `github.com/jorgeluquerubia/lapela/issues`. La ficha contiene el enlace en `github_issue`. Se usan etiquetas `type:*`, `priority:*` y `status:*`; una issue permanece abierta mientras haya trabajo y se cierra cuando la ficha pasa a `VERIFIED` o `CANCELLED`.
+
+La spec continúa siendo la fuente de verdad para requisitos, criterios de aceptación, decisiones y validación. GitHub Issues aporta la vista operativa y no debe contener una copia independiente de toda la ficha.

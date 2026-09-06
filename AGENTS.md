@@ -7,8 +7,9 @@ Este archivo es el punto de entrada para cualquier IA que trabaje en el reposito
 1. Lee [`PROJECT_CONTEXT.md`](PROJECT_CONTEXT.md) para conocer el producto, las funcionalidades vigentes y la infraestructura real.
 2. Lee [`SPEC_REGISTRY.md`](SPEC_REGISTRY.md), que es el registro canónico de solicitudes y decisiones de producto.
 3. Abre la especificación relacionada dentro de [`specs/`](specs/). Si no existe, crea una antes de implementar.
-4. Clasifica la petición como `FEATURE`, `FIX`, `INFRA`, `SECURITY`, `TECH-DEBT`, `EXPERIMENT`, `OPS` o `DOC`.
-5. Comprueba el estado, el alcance, las dependencias y los criterios de aceptación. No mezcles objetivos distintos en una sola especificación.
+4. Crea o localiza su GitHub Issue y anota la URL en `github_issue`. Si GitHub no está disponible, usa temporalmente `pending` y no marques la ficha como `VERIFIED`.
+5. Clasifica la petición como `FEATURE`, `FIX`, `INFRA`, `SECURITY`, `TECH-DEBT`, `EXPERIMENT`, `OPS` o `DOC`.
+6. Comprueba el estado, el alcance, las dependencias y los criterios de aceptación. No mezcles objetivos distintos en una sola especificación.
 
 ## Cómo interpretar una petición
 
@@ -25,6 +26,8 @@ Si el usuario pide “un RF”, localiza primero la ficha que contiene ese objet
 
 Cada petición del usuario que cambie el producto, el comportamiento, los datos, la seguridad, la operación o la documentación debe tener una especificación con ID estable. La ficha se crea o actualiza antes de escribir código. Durante la implementación se mantienen al día el estado, las decisiones, los enlaces a cambios y la validación.
 
+La misma petición debe tener una GitHub Issue con el título `[ID] Título`, las etiquetas `type:*`, `priority:*` y `status:*`, y un enlace a la spec. La issue sirve para seguimiento, asignación y conversación; la spec conserva el alcance, los requisitos, criterios, decisiones y evidencia. Al cambiar el estado de la ficha se actualiza su etiqueta. Las fichas `VERIFIED` y `CANCELLED` se cierran en GitHub con el motivo correspondiente.
+
 Una respuesta de implementación solo está completa cuando:
 
 - la especificación tiene criterios de aceptación verificables;
@@ -32,6 +35,7 @@ Una respuesta de implementación solo está completa cuando:
 - las comprobaciones realizadas están anotadas en la ficha;
 - las preguntas abiertas y los riesgos restantes están explícitos;
 - `SPEC_REGISTRY.md` enlaza la ficha y muestra su estado actual.
+- la GitHub Issue está enlazada, etiquetada y en un estado coherente con la ficha.
 
 ## Convenciones obligatorias
 
@@ -41,6 +45,7 @@ Una respuesta de implementación solo está completa cuando:
 - Distingue siempre el problema de producto, la solución aceptada y la implementación técnica. La implementación no sustituye a los criterios de aceptación.
 - No marques una ficha como `VERIFIED` sin indicar cómo se comprobó.
 - No incluyas secretos, tokens, contraseñas ni datos personales en las fichas, los logs o los commits.
+- No dupliques la spec completa en GitHub: incluye el enlace, un resumen operativo y las novedades que faciliten coordinar el trabajo.
 - Si una spec cambia una funcionalidad, servicio, variable, ruta, estado o limitación transversal, actualiza también `PROJECT_CONTEXT.md`.
 - Ejecuta `npm run specs:check` antes de dar por terminada una solicitud. Si la comprobación falla, corrige la ficha, el registro o los enlaces antes de continuar.
 

@@ -6,6 +6,8 @@ Este es el registro canónico de trabajo de producto para La Pela. Cualquier IA 
 
 Cada solicitud que afecte al producto se registra con una ficha propia antes de implementarse. El registro separa la intención de producto de la solución técnica y permite que otra IA retome el trabajo sin depender del historial de conversación.
 
+Cada ficha tiene además una GitHub Issue. La spec es la fuente de verdad del producto; la issue es su vista operativa para responsables, estado y conversación. El campo `github_issue` conserva el enlace. Si GitHub no está disponible puede permanecer `pending` mientras se trabaja, pero nunca cuando el estado sea `VERIFIED` o `CANCELLED`.
+
 Cuando una solicitud contiene varios resultados independientes, se divide en varias fichas y se relacionan mediante `related_specs`. Una corrección que nace al implementar una feature conserva su propio ID `FIX` si tiene un problema y criterios de aceptación distintos.
 
 ## Clasificación
@@ -50,16 +52,19 @@ Prioridades: `P0` bloquea una operación esencial o implica un riesgo grave; `P1
 | `LP-DOC-001` | `DOC` | Registro de specs para agentes de IA | `VERIFIED` | `P1` | 2026-09-06 | [Abrir ficha](specs/LP-DOC-001-ai-spec-governance.md) |
 | `LP-DOC-002` | `DOC` | Contexto canónico de producto e infraestructura | `VERIFIED` | `P1` | 2026-09-06 | [Abrir ficha](specs/LP-DOC-002-project-context.md) |
 | `LP-INFRA-001` | `INFRA` | Controles automáticos para specs y acceso de agentes | `VERIFIED` | `P1` | 2026-09-06 | [Abrir ficha](specs/LP-INFRA-001-spec-guardrails.md) |
+| `LP-INFRA-002` | `INFRA` | Trazabilidad de specs mediante GitHub Issues | `VERIFIED` | `P1` | 2026-09-06 | [Abrir ficha](specs/LP-INFRA-002-github-issues.md) |
+| `LP-FEAT-004` | `FEATURE` | Optimización SEO y rutas semánticas | `IN_PROGRESS` | `P2` | 2026-09-06 | [Abrir ficha](specs/LP-FEAT-004-seo-semantic-urls.md) |
 
 ## Flujo para una solicitud nueva
 
 1. Capturar la petición con su fecha y fuente, sin reinterpretarla como una tarea técnica.
 2. Elegir el tipo principal y asignar el siguiente ID disponible.
-3. Escribir problema, resultado esperado, alcance, reglas de negocio, dependencias y criterios de aceptación.
-4. Resolver preguntas que bloqueen la decisión y marcar la ficha como `READY`.
-5. Implementar manteniendo la ficha y este índice actualizados.
-6. Validar los criterios con pruebas, revisión visual, comprobaciones de API, despliegue u otra evidencia adecuada.
-7. Marcar `VERIFIED` solo cuando no queden criterios sin comprobar; anotar riesgos, deuda y trabajo futuro.
+3. Crear o localizar la GitHub Issue `[ID] Título`, aplicar sus etiquetas y guardar la URL en la ficha.
+4. Escribir problema, resultado esperado, alcance, reglas de negocio, dependencias y criterios de aceptación.
+5. Resolver preguntas que bloqueen la decisión y marcar la ficha como `READY`.
+6. Implementar manteniendo ficha, índice e issue actualizados.
+7. Validar los criterios con pruebas, revisión visual, comprobaciones de API, despliegue u otra evidencia adecuada.
+8. Marcar `VERIFIED` solo cuando no queden criterios sin comprobar; anotar riesgos, cerrar la issue y registrar deuda o trabajo futuro.
 
 Antes de cerrar el trabajo se ejecuta `npm run specs:check`. En CI, la misma comprobación valida la estructura, los IDs, la sincronización del registro, los enlaces locales y que un cambio de implementación incluya una actualización de su ficha y del índice.
 

@@ -7,6 +7,7 @@ requested_at: 2026-09-06
 requested_by: usuario
 source: conversación
 owner: producto
+github_issue: https://github.com/jorgeluquerubia/lapela/issues/4
 related_specs: [LP-FEAT-003]
 dependencies: [Supabase Auth]
 cross_cutting_concerns: [SECURITY, OPS]

@@ -1,0 +1,37 @@
+name: Trabajo vinculado a una spec
+description: Crear la representación operativa de una spec de La Pela
+title: "[LP-TIPO-000] "
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        La spec debe existir antes de crear esta issue. Consulta `AGENTS.md` y `SPEC_REGISTRY.md`.
+  - type: input
+    id: spec_id
+    attributes:
+      label: ID de spec
+      description: Identificador estable del registro.
+      placeholder: LP-FEAT-004
+    validations:
+      required: true
+  - type: input
+    id: spec_url
+    attributes:
+      label: Enlace a la spec
+      description: URL del archivo dentro del repositorio.
+      placeholder: https://github.com/jorgeluquerubia/lapela/blob/main/specs/LP-FEAT-004-ejemplo.md
+    validations:
+      required: true
+  - type: textarea
+    id: summary
+    attributes:
+      label: Resumen operativo
+      description: Explica brevemente el resultado esperado; no copies toda la spec.
+    validations:
+      required: true
+  - type: textarea
+    id: coordination
+    attributes:
+      label: Coordinación y bloqueos
+      description: Responsable, dependencias o información necesaria para continuar.

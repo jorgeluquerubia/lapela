@@ -7,6 +7,7 @@ requested_at: YYYY-MM-DD
 requested_by: usuario
 source: conversación | issue | soporte | decisión interna
 owner: producto
+github_issue: pending
 related_specs: []
 dependencies: []
 cross_cutting_concerns: []

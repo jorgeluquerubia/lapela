@@ -7,6 +7,7 @@ requested_at: 2026-09-06
 requested_by: usuario
 source: conversación
 owner: producto
+github_issue: https://github.com/jorgeluquerubia/lapela/issues/7
 related_specs: [LP-DOC-001, LP-FEAT-001, LP-FEAT-002]
 dependencies: []
 cross_cutting_concerns: [INFRA, OPS, SECURITY]

@@ -43,6 +43,7 @@ const requiredFields = [
   'requested_by',
   'source',
   'owner',
+  'github_issue',
   'related_specs',
   'dependencies',
   'cross_cutting_concerns',
@@ -117,6 +118,13 @@ for (const fileName of specFiles) {
   if (!allowedPriorities.has(metadata.priority)) fail(`${file}: prioridad no permitida '${metadata.priority ?? ''}'.`);
   if (!/^\d{4}-\d{2}-\d{2}$/.test(metadata.requested_at ?? '')) {
     fail(`${file}: requested_at debe usar YYYY-MM-DD.`);
+  }
+  const validIssueUrl = /^https:\/\/github\.com\/jorgeluquerubia\/lapela\/issues\/\d+$/.test(metadata.github_issue ?? '');
+  if (metadata.github_issue !== 'pending' && !validIssueUrl) {
+    fail(`${file}: github_issue debe ser una URL de issue de La Pela o 'pending'.`);
+  }
+  if (['VERIFIED', 'CANCELLED'].includes(metadata.status) && !validIssueUrl) {
+    fail(`${file}: una ficha ${metadata.status} debe tener una GitHub Issue enlazada.`);
   }
 
   const acceptanceCriteria = assertUniqueMarkers(
