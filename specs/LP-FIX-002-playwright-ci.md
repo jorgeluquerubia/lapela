@@ -1,7 +1,7 @@
 ---
 id: LP-FIX-002
 type: FIX
-status: IN_PROGRESS
+status: IMPLEMENTED
 priority: P1
 requested_at: 2026-09-06
 requested_by: usuario
@@ -102,7 +102,7 @@ Las pull requests arrancan la aplicación con una configuración de prueba segur
 
 - **Archivos o módulos:** `.github/workflows/playwright.yml`, `tests/navigation.spec.ts`, `PROJECT_CONTEXT.md`.
 - **Migraciones/configuración:** variables sintéticas en el job de CI.
-- **Commit o despliegue:** pendiente.
+- **Commit o despliegue:** commit `7df1bcb`; PR [#18](https://github.com/jorgeluquerubia/lapela/pull/18).
 - **Notas de implementación:** rama `codex/lp-fix-002-playwright-ci`.
 
 ## 12. Historial
@@ -111,3 +111,4 @@ Las pull requests arrancan la aplicación con una configuración de prueba segur
 |---|---|---|---|
 | 2026-09-06 | `IN_PROGRESS` | Diagnóstico y creación de la ficha | Codex |
 | 2026-09-06 | `IN_PROGRESS` | Configuración sintética y smoke test validados localmente | Codex |
+| 2026-09-06 | `IMPLEMENTED` | PR #18 abierta; validación de GitHub pendiente | Codex |
