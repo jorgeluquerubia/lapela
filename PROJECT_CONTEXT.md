@@ -70,6 +70,7 @@ La propuesta combina la sencillez de uso de un marketplace móvil con dos mecani
 - Reserva temporal de 48 horas mientras el pago está pendiente (actualizado desde los 31 minutos iniciales).
 - Política de compras pública y canónica en `/politica-de-compras` enlazada desde el diálogo de confirmación y el pie de página.
 - En beta, confirmación explícita de un pago simulado sin cargo.
+- Confirmación de cobro en persona por parte del vendedor (`pay-in-person`), marcando el pedido como completado (`completed`, `payment_mode = 'in_person'`) y el artículo como vendido (`sold`).
 - Envío con información de seguimiento o coordinación de recogida.
 - Confirmación de recepción por el comprador.
 - Estados del modelo de pedido: `pending_payment`, `paid`, `shipped`, `completed`, `cancelled`, `refunded` y `disputed`. Las acciones de usuario actuales cubren pago, envío y recepción; disputa y reembolso todavía requieren operación futura.
@@ -86,7 +87,7 @@ La propuesta combina la sencillez de uso de un marketplace móvil con dos mecani
 
 ### Conversación y confianza
 
-- Chat privado solo para comprador y vendedor de un pedido en estado pagado o posterior.
+- Chat privado exclusivo para comprador y vendedor de un pedido activo: se abre desde el momento de la reserva (`pending_payment`) para acordar el método de pago (en persona o por plataforma) y la entrega, manteniéndose durante los estados pagados y posteriores.
 - Límite de veinte mensajes por minuto y usuario.
 - Preguntas y respuestas públicas en la ficha de producto con paginación de 10 elementos, aviso anti-regateo, bloqueo de datos de contacto y notificaciones de preguntas pendientes para el vendedor.
 - Seguimiento de compras, ventas, pujas y anuncios en `Mi actividad`.
@@ -209,9 +210,10 @@ Las claves secretas no deben usar el prefijo `NEXT_PUBLIC_`, aparecer en specs, 
 - `lp_close_auctions`: cierra subastas y adjudica al mejor postor.
 - `lp_confirm_payment`: valida evento, sesión, importe e idempotencia de Stripe.
 - `lp_simulate_payment`: confirma únicamente pedidos sandbox del comprador.
+- `lp_confirm_in_person_payment`: permite al vendedor confirmar el cobro recibido en persona, completando el pedido y vendiendo el artículo.
 - `lp_transition`: controla envío y recepción según actor y estado.
 - `lp_release`: cancela reservas caducadas y libera el anuncio.
-- `lp_send_message`: autoriza chat solo entre las partes después del pago.
+- `lp_send_message`: autoriza chat solo entre las partes durante la reserva o tras el pago.
 - `lp_ask_question`: valida y registra una pregunta pública impidiendo la auto-pregunta del vendedor.
 - `lp_answer_question`: autoriza únicamente al vendedor para publicar la respuesta oficial.
 
@@ -235,7 +237,8 @@ El bucket `product-images` es público porque contiene fotografías de anuncios.
 | `POST /api/market/answer/:id` | Vendedor del artículo | Responder públicamente a una pregunta |
 | `POST /api/market/checkout/:id` | Comprador | Reservar o continuar un pago |
 | `POST /api/market/simulate-payment/:id` | Comprador, sandbox | Confirmar pago simulado |
-| `POST /api/market/message/:id` | Partes, pedido pagado | Enviar mensaje sobre la entrega |
+| `POST /api/market/pay-in-person/:id` | Vendedor | Confirmar cobro en persona y completar pedido |
+| `POST /api/market/message/:id` | Partes, pedido en reserva o pagado | Enviar mensaje sobre la entrega o pago |
 | `POST /api/market/ship/:id` | Vendedor | Marcar envío o entrega preparada |
 | `POST /api/market/complete/:id` | Comprador | Confirmar recepción |
 | `POST /api/market/withdraw/:id` | Vendedor | Retirar anuncio disponible sin pujas |

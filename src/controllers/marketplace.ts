@@ -61,6 +61,7 @@ export async function handle(request:Request,path:string[]){try{
   await result(db.from('lp_orders').update({stripe_session_id:session.id,expires_at:new Date((session.expires_at+60)*1000).toISOString()}).eq('id',o.id).eq('status','pending_payment'));return ok({url:session.url});
  }
  if(action==='simulate-payment'&&uuid(id||'')){if(!simulated())return ok({error:'La simulación está desactivada'},403);return ok(await rpc('lp_simulate_payment',{p_order:id,p_actor:user.id}))}
+ if(action==='pay-in-person'&&uuid(id||''))return ok(await rpc('lp_confirm_in_person_payment',{p_order:id,p_actor:user.id}));
  if(action==='message'&&uuid(id||'')){const content=text(body.content,1,2000);const recent=await db.from('lp_messages').select('id',{count:'exact',head:true}).eq('sender_id',user.id).gte('created_at',new Date(Date.now()-60000).toISOString());if((recent.count||0)>=20)return ok({error:'Espera un momento antes de enviar más mensajes.'},429);return ok(await rpc('lp_send_message',{p_order:id,p_actor:user.id,p_content:content}),201)}
  if(['ship','complete'].includes(action)&&uuid(id||''))return ok(await rpc('lp_transition',{p_order:id,p_actor:user.id,p_action:action,p_tracking:body.tracking?text(body.tracking,2,200):null}));
  if(action==='withdraw'&&uuid(id||'')){const rows=await result(db.from('lp_listings').update({status:'withdrawn'}).eq('id',id).eq('seller_id',user.id).eq('status','available').eq('bid_count',0).select('id'));if(!rows.length)throw Error('Solo puedes retirar anuncios disponibles sin pujas.');return ok({success:true})}

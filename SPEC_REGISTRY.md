@@ -59,6 +59,7 @@ Prioridades: `P0` bloquea una operación esencial o implica un riesgo grave; `P1
 | `LP-FIX-002` | `FIX` | Playwright funcional en pull requests | `VERIFIED` | `P1` | 2026-09-06 | [Abrir ficha](specs/LP-FIX-002-playwright-ci.md) |
 | `LP-FEAT-005` | `FEATURE` | Preguntas y respuestas públicas en producto | `VERIFIED` | `P2` | 2026-09-06 | [Abrir ficha](specs/LP-FEAT-005-preguntas-respuestas-producto.md) |
 | `LP-FEAT-006` | `FEATURE` | Confirmación de compra, reserva de 48h y política de compras | `VERIFIED` | `P1` | 2026-09-09 | [Abrir ficha](specs/LP-FEAT-006-confirmacion-reserva-politica-compras.md) |
+| `LP-FEAT-007` | `FEATURE` | Chat en reserva y confirmación de cobro en persona por el vendedor | `VERIFIED` | `P1` | 2026-09-09 | [Abrir ficha](specs/LP-FEAT-007-chat-reserva-cobro-en-persona.md) |
 
 
 ## Flujo para una solicitud nueva
