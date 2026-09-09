@@ -97,6 +97,7 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
             </div>
             <div>
               <Link href="/como-funciona">Cómo funciona</Link>
+              <Link href="/politica-de-compras">Política de compras</Link>
               <Link href="/como-funciona#reglas">Reglas de la comunidad</Link>
               <span>© {new Date().getFullYear()} La Pela</span>
             </div>

@@ -14,7 +14,7 @@ begin
  if q.answer<>'Sí, incluye caja y cargador.' or q.answered_at is null then raise exception 'FAIL seller answer';end if;
  blocked:=false;begin perform lp_reserve(item,seller);exception when others then blocked:=true;end;if not blocked then raise exception 'FAIL self purchase';end if;
  ord:=lp_reserve(item,buyer);
- if ord.amount_cents<>2000 or ord.status<>'pending_payment' then raise exception 'FAIL reservation';end if;
+ if ord.amount_cents<>2000 or ord.status<>'pending_payment' or ord.expires_at < now() + interval '47 hours' then raise exception 'FAIL reservation';end if;
  blocked:=false;begin perform lp_reserve(item,outsider);exception when others then blocked:=true;end;if not blocked then raise exception 'FAIL double reservation';end if;
  blocked:=false;begin perform lp_send_message(ord.id,buyer,'Mensaje antes de pagar');exception when others then blocked:=true;end;if not blocked then raise exception 'FAIL unpaid chat';end if;
  update lp_orders set stripe_session_id='test_session_'||ord.id where id=ord.id;

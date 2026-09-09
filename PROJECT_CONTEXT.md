@@ -64,9 +64,11 @@ La propuesta combina la sencillez de uso de un marketplace móvil con dos mecani
 
 ### Compra directa y pedidos
 
+- Diálogo interactivo de confirmación previa con desglose del pedido, advertencia de reserva de 48 horas y aviso de penalización por impago antes de formalizar la compra.
 - Reserva atómica del artículo y creación de un único pedido activo.
 - Impedimento de comprar el propio artículo.
-- Reserva temporal mientras el pago está pendiente.
+- Reserva temporal de 48 horas mientras el pago está pendiente (actualizado desde los 31 minutos iniciales).
+- Política de compras pública y canónica en `/politica-de-compras` enlazada desde el diálogo de confirmación y el pie de página.
 - En beta, confirmación explícita de un pago simulado sin cargo.
 - Envío con información de seguimiento o coordinación de recogida.
 - Confirmación de recepción por el comprador.
