@@ -45,4 +45,20 @@ describe('ProductCard', () => {
     expect(image).toBeInTheDocument();
     expect(image).toHaveAttribute('src', 'https://example.com/image.jpg');
   });
+
+  it('shows BrandSpinner while image is loading and displays image on load', () => {
+    const { fireEvent } = require('@testing-library/react');
+    render(<ProductCard product={mockProduct} />);
+
+    // BrandSpinner is displayed initially
+    expect(screen.getByRole('status', { name: /Cargando imagen de Producto de Prueba…/i })).toBeInTheDocument();
+
+    // Trigger image load
+    const image = screen.getByAltText('Producto de Prueba');
+    fireEvent.load(image);
+
+    // Spinner is removed and image receives loaded class
+    expect(screen.queryByRole('status', { name: /Cargando imagen de Producto de Prueba…/i })).not.toBeInTheDocument();
+    expect(image).toHaveClass('product-image-loaded');
+  });
 });

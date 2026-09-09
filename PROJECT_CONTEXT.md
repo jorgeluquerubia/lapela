@@ -42,6 +42,7 @@ La propuesta combina la sencillez de uso de un marketplace móvil con dos mecani
 - Ficha de artículo con fotografías, estado, ubicación, entrega, precio y reglas de compra.
 - Rutas semánticas para categorías (`/categoria/:slug`), subastas (`/subastas`) y artículos (`/articulos/:slug-con-id`).
 - Metadatos canónicos y sociales, Schema.org, `robots.txt` y sitemap dinámico para indexación.
+- Indicador no bloqueante con spinner de marca (moneda de La Pela girando en 3D) durante transiciones asíncronas de catálogo y carga diferida de imágenes en tarjetas.
 
 ### Cuenta y autenticación
 
@@ -89,7 +90,7 @@ La propuesta combina la sencillez de uso de un marketplace móvil con dos mecani
 
 - Chat privado exclusivo para comprador y vendedor de un pedido activo: se abre desde el momento de la reserva (`pending_payment`) para acordar el método de pago (en persona o por plataforma) y la entrega, manteniéndose durante los estados pagados y posteriores.
 - Límite de veinte mensajes por minuto y usuario.
-- Preguntas y respuestas públicas en la ficha de producto con paginación de 10 elementos, aviso anti-regateo, bloqueo de datos de contacto y notificaciones de preguntas pendientes para el vendedor.
+- Preguntas y respuestas públicas en la ficha de producto con paginación de 10 elementos, banner normativo con viñetas claras, validación reforzada contra propuestas económicas, ofertas numéricas o trueques, bloqueo de datos de contacto y notificaciones de preguntas pendientes para el vendedor.
 - Seguimiento de compras, ventas, pujas y anuncios en `Mi actividad`.
 - Denuncia de anuncios para revisión.
 
