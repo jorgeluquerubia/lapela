@@ -22,6 +22,7 @@ export default function ProductDetailInteractive({initialItem, slug, demo = fals
   );
   const [selected, setSelected] = useState(0);
   const [confirm, setConfirm] = useState(false);
+  const [confirmBuy, setConfirmBuy] = useState(false);
   const [notice, setNotice] = useState('');
   const [report, setReport] = useState(false);
   const [reason, setReason] = useState('');
@@ -218,18 +219,56 @@ export default function ProductDetailInteractive({initialItem, slug, demo = fals
                 </button>
               </div>
             )}
-            {(!auction || item.buy_now_cents) && (
-              <button
-                className={`button ${auction ? 'secondary' : 'primary'} w-full mt-3`}
-                disabled={busy}
-                onClick={() => action('checkout')}
-              >
-                {busy
-                  ? 'Preparando…'
-                  : `Comprar ahora · ${money(
-                      (auction ? item.buy_now_cents : item.price_cents) + item.shipping_cents
-                    )}`}
-              </button>
+            {confirmBuy ? (
+              <div className="confirmation mt-3" role="dialog" aria-labelledby="confirm-buy-title">
+                <strong id="confirm-buy-title" className="block text-base mb-1">
+                  ¿Confirmar la compra de este artículo?
+                </strong>
+                <p className="mb-2">
+                  Total a abonar:{' '}
+                  <strong>
+                    {money((auction ? item.buy_now_cents : item.price_cents) + item.shipping_cents)}
+                  </strong>
+                  {item.shipping_cents > 0 ? ' (envío incluido)' : ' (recogida en persona)'}.
+                </p>
+                <div className="notice text-xs mb-3">
+                  Al confirmar, el artículo quedará <strong>reservado para ti durante 48 horas</strong> para formalizar el pago y acordar la entrega. Recuerda que no abonar una reserva en plazo puede conllevar <strong>penalizaciones en tu cuenta</strong> según nuestra{' '}
+                  <Link href="/politica-de-compras" target="_blank" className="underline font-semibold">
+                    política de compras
+                  </Link>.
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    className="button primary flex-1"
+                    disabled={busy}
+                    onClick={() => action('checkout')}
+                  >
+                    {busy ? 'Reservando…' : 'Confirmar y reservar'}
+                  </button>
+                  <button
+                    type="button"
+                    className="button"
+                    disabled={busy}
+                    onClick={() => setConfirmBuy(false)}
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </div>
+            ) : (
+              (!auction || item.buy_now_cents) && (
+                <button
+                  className={`button ${auction ? 'secondary' : 'primary'} w-full mt-3`}
+                  disabled={busy}
+                  onClick={() => setConfirmBuy(true)}
+                >
+                  {busy
+                    ? 'Preparando…'
+                    : `Comprar ahora · ${money(
+                        (auction ? item.buy_now_cents : item.price_cents) + item.shipping_cents
+                      )}`}
+                </button>
+              )
             )}
           </>
         )}
@@ -239,9 +278,14 @@ export default function ProductDetailInteractive({initialItem, slug, demo = fals
             El chat se habilita cuando el pago está confirmado. Úsalo para acordar el envío o la
             recogida.
           </p>
-          <Link href="/como-funciona" className="underline">
-            Ver cómo funciona
-          </Link>
+          <div className="flex flex-col gap-1 mt-2 text-sm">
+            <Link href="/como-funciona" className="underline">
+              Ver cómo funciona
+            </Link>
+            <Link href="/politica-de-compras" className="underline">
+              Política de compras y reservas de 48 h
+            </Link>
+          </div>
         </div>
         {!demo && user && (
           <button className="text-link" onClick={() => setReport(!report)}>

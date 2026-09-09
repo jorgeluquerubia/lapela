@@ -58,6 +58,8 @@ Prioridades: `P0` bloquea una operación esencial o implica un riesgo grave; `P1
 | `LP-INFRA-004` | `INFRA` | Worktrees dentro del workspace autorizado | `VERIFIED` | `P1` | 2026-09-06 | [Abrir ficha](specs/LP-INFRA-004-worktree-location.md) |
 | `LP-FIX-002` | `FIX` | Playwright funcional en pull requests | `VERIFIED` | `P1` | 2026-09-06 | [Abrir ficha](specs/LP-FIX-002-playwright-ci.md) |
 | `LP-FEAT-005` | `FEATURE` | Preguntas y respuestas públicas en producto | `VERIFIED` | `P2` | 2026-09-06 | [Abrir ficha](specs/LP-FEAT-005-preguntas-respuestas-producto.md) |
+| `LP-FEAT-006` | `FEATURE` | Confirmación de compra, reserva de 48h y política de compras | `VERIFIED` | `P1` | 2026-09-09 | [Abrir ficha](specs/LP-FEAT-006-confirmacion-reserva-politica-compras.md) |
+
 
 ## Flujo para una solicitud nueva
 
