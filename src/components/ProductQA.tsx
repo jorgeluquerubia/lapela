@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { api } from '@/lib/api';
+import BrandSpinner from './BrandSpinner';
 
 export interface QuestionItem {
   id: string;
@@ -131,7 +132,7 @@ export default function ProductQA({ listingId, isSeller, user, demo = false }: P
 
       <div className="qa-rule-banner">
         <strong>Normativa de la sección de preguntas:</strong>
-        <ul>
+        <ul className="list-disc pl-5 space-y-1.5 mt-2">
           <li>
             Las preguntas deben ceñirse a la <strong>naturaleza, detalles, especificaciones o estado</strong> del producto.
           </li>
@@ -206,7 +207,10 @@ export default function ProductQA({ listingId, isSeller, user, demo = false }: P
       {/* Listado de preguntas */}
       <div className="qa-list">
         {loading ? (
-          <p className="muted py-4">Cargando preguntas…</p>
+          <div className="flex items-center gap-3 py-6 text-stone-600 font-medium" role="status">
+            <BrandSpinner size="sm" label="Cargando preguntas…" />
+            <span>Cargando preguntas…</span>
+          </div>
         ) : questions.length === 0 ? (
           <div className="empty-state">
             <p className="m-0 font-medium">Aún no hay preguntas sobre este artículo.</p>

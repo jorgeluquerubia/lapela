@@ -9,11 +9,39 @@
 .forgot-link{align-self:flex-end;margin-top:-5px}
 
 .qa-section{margin-top:40px;border-top:1px solid var(--line);padding-top:30px}
-.qa-rule-banner{background:#f4f7f4;border:1px solid #d2ded5;border-radius:12px;padding:16px 20px;font-size:14px;margin-bottom:24px;color:var(--ink)}
-.qa-rule-banner strong{display:block;color:var(--green-dark);margin-bottom:6px;font-size:15px}
-.qa-rule-banner ul{margin:6px 0 0 18px;padding:0;color:#374942}
-.qa-rule-banner li{margin-bottom:3px}
+.qa-rule-banner{background:#f4f7f4;border:1px solid #d2ded5;border-left:4px solid var(--green);border-radius:12px;padding:16px 20px;font-size:14px;margin-bottom:24px;color:var(--ink)}
+.qa-rule-banner strong{display:block;color:var(--green-dark);margin-bottom:8px;font-size:15px;font-weight:700}
+.qa-rule-banner ul{list-style:disc !important;list-style-type:disc !important;margin:8px 0 0 20px !important;padding-left:4px !important;color:#374942}
+.qa-rule-banner li{margin-bottom:6px;line-height:1.5;list-style:disc !important}
 .qa-form{margin-bottom:32px;background:var(--surface);padding:22px;border-radius:14px;border:1px solid var(--line)}
+
+/* BrandSpinner */
+.brand-spinner{display:inline-flex;align-items:center;justify-content:center}
+.brand-spinner-coin{position:relative;display:inline-flex;align-items:center;justify-content:center;border-radius:50%;border:2px solid var(--green);color:var(--green);background:#fff;box-shadow:0 2px 6px rgba(18,100,71,.12);animation:brand-coin-spin 1.2s cubic-bezier(.45,.05,.55,.95) infinite;user-select:none;line-height:1}
+.brand-spinner-sm{width:22px;height:22px;font-size:12px;border-width:1.5px;letter-spacing:-1.5px;padding-right:2px}
+.brand-spinner-sm .brand-spinner-arrow{position:absolute;right:-4px;top:-6px;font-size:11px;background:#fff;line-height:1;padding:1px}
+.brand-spinner-md{width:36px;height:36px;font-size:19px;border-width:2px;letter-spacing:-2.5px;padding-right:4px}
+.brand-spinner-md .brand-spinner-arrow{position:absolute;right:-5px;top:-8px;font-size:17px;background:#fff;line-height:1;padding:1px}
+.brand-spinner-lg{width:54px;height:54px;font-size:27px;border-width:2.5px;letter-spacing:-3px;padding-right:6px}
+.brand-spinner-lg .brand-spinner-arrow{position:absolute;right:-7px;top:-11px;font-size:23px;background:#fff;line-height:1;padding:2px}
+.brand-spinner-lp{font-weight:800}
+
+@keyframes brand-coin-spin{
+  0%{transform:perspective(400px) rotateY(0deg)}
+  50%{transform:perspective(400px) rotateY(180deg)}
+  100%{transform:perspective(400px) rotateY(360deg)}
+}
+
+@media (prefers-reduced-motion: reduce){
+  .brand-spinner-coin{animation-duration:4s}
+}
+
+.product-image-loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:var(--surface);z-index:1;transition:opacity .2s ease-out}
+.product-image-loaded{opacity:1;transition:opacity .25s ease-in}
+.product-image-unloaded{opacity:0}
+
+.catalog-updating-banner{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--green);font-weight:600;background:#edf4ed;padding:4px 10px;border-radius:20px}
+.catalog-grid-updating{opacity:.6;pointer-events:auto;transition:opacity .15s ease}
 .qa-form textarea{min-height:95px;resize:vertical}
 .qa-card{border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin-bottom:16px;background:white}
 .qa-question{display:flex;flex-direction:column;gap:6px}

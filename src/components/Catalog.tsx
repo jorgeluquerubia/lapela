@@ -4,6 +4,7 @@ import {useSearchParams} from 'next/navigation';
 import Link from 'next/link';
 import {Product} from '@/types';
 import ProductCard from './ProductCard';
+import BrandSpinner from './BrandSpinner';
 import {demoProducts} from '@/lib/demo-products';
 import {categoryToSlug, slugify} from '@/lib/slugs';
 
@@ -140,7 +141,16 @@ export default function Catalog({initialCategory, initialMode}: CatalogProps = {
 
       <section aria-label="Productos">
         <div className="catalog-toolbar">
-          <span className="muted">{loading?'Buscando artículos…':`${count} artículos${category!=='Todas'?' en '+category:''}`}</span>
+          <div className="flex items-center gap-3">
+            {loading ? (
+              <div className="catalog-updating-banner" role="status">
+                <BrandSpinner size="sm" label="Actualizando catálogo" />
+                <span>Buscando artículos…</span>
+              </div>
+            ) : (
+              <span className="muted">{`${count} artículos${category!=='Todas'?' en '+category:''}`}</span>
+            )}
+          </div>
           <button className="button mobile-filters" aria-expanded={filters} onClick={()=>setFilters(!filters)}>Filtros</button>
           <select aria-label="Ordenar productos" value={sort} onChange={e=>{setSort(e.target.value);setPage(1)}}>
             <option value="recent">Más recientes</option>
@@ -159,9 +169,16 @@ export default function Catalog({initialCategory, initialMode}: CatalogProps = {
           </div>
         ) : (
           <>
-            <div className="product-grid">
-              {loading?Array.from({length:6},(_,i)=><div className="loading-card" key={i}/>):products.map(p=><ProductCard key={p.id} product={p}/>)}
-            </div>
+            {loading && !products.length ? (
+              <div className="empty-state py-16" role="status">
+                <BrandSpinner size="lg" label="Cargando artículos de La Pela…" />
+                <p className="mt-4 font-medium text-stone-600">Buscando los mejores artículos de segunda mano…</p>
+              </div>
+            ) : (
+              <div className={`product-grid ${loading ? 'catalog-grid-updating' : ''}`}>
+                {products.map(p=><ProductCard key={p.id} product={p}/>)}
+              </div>
+            )}
 
             {!loading&&!products.length&&(
               <div className="empty-state">

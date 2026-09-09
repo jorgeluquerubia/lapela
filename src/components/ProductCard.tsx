@@ -1,14 +1,29 @@
+'use client';
+import {useState} from 'react';
 import Link from 'next/link';
 import {Product} from '@/types';
 import {productSlug} from '@/lib/slugs';
+import BrandSpinner from './BrandSpinner';
 
 export default function ProductCard({product:p}:{product:Product}){
+  const [imageLoaded, setImageLoaded] = useState(false);
   const auction=p.type==='auction';
   const time=p.auction_ends_at?Math.max(0,Math.ceil((Date.parse(p.auction_ends_at)-Date.now())/3600000)):null;
   const href=`/articulos/${p.slug||productSlug(p.id,p.name)}`;
   return <article className="product-card">
     <Link href={href} className="product-image">
-      <img src={p.image} alt={p.name} loading="lazy"/>
+      {!imageLoaded && (
+        <div className="product-image-loading">
+          <BrandSpinner size="sm" label={`Cargando imagen de ${p.name}…`} />
+        </div>
+      )}
+      <img
+        src={p.image}
+        alt={p.name}
+        loading="lazy"
+        onLoad={() => setImageLoaded(true)}
+        className={imageLoaded ? 'product-image-loaded' : 'product-image-unloaded'}
+      />
       <span className={`sale-tag ${auction?'auction':''}`}>{auction?'↗ Subasta':'Precio cerrado'}</span>
     </Link>
     <div className="product-info">
