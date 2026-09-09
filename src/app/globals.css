@@ -55,3 +55,11 @@
 .qa-pagination{display:flex;justify-content:space-between;align-items:center;margin-top:24px;gap:12px;flex-wrap:wrap}
 .qa-badge{display:inline-block;background:var(--green);color:white;font-size:11px;font-weight:700;padding:2px 7px;border-radius:10px;margin-left:6px;vertical-align:middle}
 .seller-alert-banner{background:#ebf5ef;border:1px solid #9dc7af;color:#0e4e36;padding:14px 18px;border-radius:12px;margin-bottom:24px;font-size:14px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.activity-dot{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;background:#d97706;color:white;font-size:11px;font-weight:700;border-radius:9px;margin-left:6px;vertical-align:middle;line-height:1}
+.activity-tab-badge{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;background:#d97706;color:white;font-size:11px;font-weight:700;border-radius:9px;margin-left:6px;vertical-align:middle;line-height:1}
+.notification-chip{display:inline-flex;align-items:center;gap:6px;background:#fef3c7;border:1px solid #fcd34d;color:#92400e;padding:3px 9px;border-radius:12px;font-size:12px;font-weight:600;margin-top:6px}
+.notification-chip-message{background:#e0e7ff;border-color:#c7d2fe;color:#3730a3}
+.notification-chip-sale{background:#ecfdf5;border-color:#a7f3d0;color:#065f46}
+.notification-chip-outbid{background:#fee2e2;border-color:#fecaca;color:#991b1b}
+.notification-chip-status{background:#f3f4f6;border-color:#e5e7eb;color:#1f2937}
+.notification-dot{width:7px;height:7px;border-radius:50%;background:currentColor;display:inline-block}

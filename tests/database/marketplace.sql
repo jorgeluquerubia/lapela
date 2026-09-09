@@ -16,7 +16,11 @@ begin
  ord:=lp_reserve(item,buyer);
  if ord.amount_cents<>2000 or ord.status<>'pending_payment' or ord.expires_at < now() + interval '47 hours' then raise exception 'FAIL reservation';end if;
  blocked:=false;begin perform lp_reserve(item,outsider);exception when others then blocked:=true;end;if not blocked then raise exception 'FAIL double reservation';end if;
+ if not exists(select 1 from lp_notifications where user_id=seller and order_id=ord.id and type='order_created' and read=false) then raise exception 'FAIL seller order notification'; end if;
  perform lp_send_message(ord.id,buyer,'Mensaje durante la reserva');
+ if not exists(select 1 from lp_notifications where user_id=seller and order_id=ord.id and type='new_message' and read=false) then raise exception 'FAIL message notification'; end if;
+ perform lp_mark_order_notifications_read(ord.id,seller);
+ if exists(select 1 from lp_notifications where user_id=seller and order_id=ord.id and read=false) then raise exception 'FAIL mark order notifications read'; end if;
  blocked:=false;begin perform lp_send_message(ord.id,outsider,'Intruso reserva');exception when others then blocked:=true;end;if not blocked then raise exception 'FAIL outsider reservation chat';end if;
  update lp_orders set stripe_session_id='test_session_'||ord.id where id=ord.id;
  blocked:=false;begin perform lp_confirm_payment('bad_'||ord.id,ord.id,'test_session_'||ord.id,'test_payment_'||ord.id,1,null);exception when others then blocked:=true;end;if not blocked then raise exception 'FAIL amount mismatch';end if;
@@ -38,13 +42,17 @@ begin
  blocked:=false;begin perform lp_bid(auction,seller,1100);exception when others then blocked:=true;end;if not blocked then raise exception 'FAIL self bid';end if;
  l:=lp_bid(auction,buyer,1000);if l.ends_at<now()+interval '119 seconds' then raise exception 'FAIL anti sniping';end if;
  blocked:=false;begin perform lp_bid(auction,outsider,1001);exception when others then blocked:=true;end;if not blocked then raise exception 'FAIL minimum increment';end if;
- perform lp_bid(auction,outsider,1100);update lp_listings set ends_at=now()-interval '1 second' where id=auction;
+ perform lp_bid(auction,outsider,1100);
+ if not exists(select 1 from lp_notifications where user_id=buyer and listing_id=auction and type='outbid' and read=false) then raise exception 'FAIL outbid notification'; end if;
+ perform lp_mark_listing_notifications_read(auction,buyer);
+ if exists(select 1 from lp_notifications where user_id=buyer and listing_id=auction and read=false) then raise exception 'FAIL mark listing notifications read'; end if;
+ update lp_listings set ends_at=now()-interval '1 second' where id=auction;
  blocked:=false;begin perform lp_bid(auction,buyer,1200);exception when others then blocked:=true;end;if not blocked then raise exception 'FAIL expired bid';end if;
  perform lp_close_auctions();perform lp_close_auctions();
  if (select count(*) from lp_orders where listing_id=auction)<>1 then raise exception 'FAIL close idempotency';end if;
  if not exists(select 1 from lp_orders where listing_id=auction and buyer_id=outsider and amount_cents=1100) then raise exception 'FAIL winner';end if;
- if has_table_privilege('anon','lp_messages','SELECT') or has_table_privilege('authenticated','lp_orders','UPDATE') or has_function_privilege('authenticated','lp_confirm_payment(text,uuid,text,text,integer,jsonb)','EXECUTE') or has_function_privilege('authenticated','lp_confirm_in_person_payment(uuid,uuid)','EXECUTE') or has_table_privilege('anon','lp_questions','SELECT') or has_function_privilege('authenticated','lp_ask_question(uuid,uuid,text)','EXECUTE') then raise exception 'FAIL direct privilege';end if;
+ if has_table_privilege('anon','lp_messages','SELECT') or has_table_privilege('authenticated','lp_orders','UPDATE') or has_function_privilege('authenticated','lp_confirm_payment(text,uuid,text,text,integer,jsonb)','EXECUTE') or has_function_privilege('authenticated','lp_confirm_in_person_payment(uuid,uuid)','EXECUTE') or has_table_privilege('anon','lp_questions','SELECT') or has_function_privilege('authenticated','lp_ask_question(uuid,uuid,text)','EXECUTE') or has_table_privilege('anon','lp_notifications','SELECT') then raise exception 'FAIL direct privilege';end if;
 end $$;
 rollback;
-select 'PASS: ownership, questions, reservations, payment amount, payment idempotency, chat authorization, in-person payment, transitions, increments, expiry, anti-sniping, auction close, direct permissions' as result;
+select 'PASS: ownership, questions, reservations, payment amount, payment idempotency, chat authorization, in-person payment, notifications, outbid, mark read, transitions, increments, expiry, anti-sniping, auction close, direct permissions' as result;
 

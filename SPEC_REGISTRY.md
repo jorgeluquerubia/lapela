@@ -61,6 +61,7 @@ Prioridades: `P0` bloquea una operación esencial o implica un riesgo grave; `P1
 | `LP-FEAT-006` | `FEATURE` | Confirmación de compra, reserva de 48h y política de compras | `VERIFIED` | `P1` | 2026-09-09 | [Abrir ficha](specs/LP-FEAT-006-confirmacion-reserva-politica-compras.md) |
 | `LP-FEAT-007` | `FEATURE` | Chat en reserva y confirmación de cobro en persona por el vendedor | `VERIFIED` | `P1` | 2026-09-09 | [Abrir ficha](specs/LP-FEAT-007-chat-reserva-cobro-en-persona.md) |
 | `LP-FEAT-008` | `FEATURE` | Spinner de marca no bloqueante y mejoras en preguntas y respuestas | `VERIFIED` | `P2` | 2026-09-09 | [Abrir ficha](specs/LP-FEAT-008-spinner-marca-mejoras-qa.md) |
+| `LP-FEAT-009` | `FEATURE` | Badges de novedades en artículos y ajustes informativos de reserva | `VERIFIED` | `P1` | 2026-09-09 | [Abrir ficha](specs/LP-FEAT-009-notificaciones-articulos.md) |
 
 
 ## Flujo para una solicitud nueva

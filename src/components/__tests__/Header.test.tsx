@@ -11,7 +11,7 @@ jest.mock('@/utils/supabase', () => ({
           data: { subscription: { unsubscribe: jest.fn() } },
         };
       }),
-      getSession: jest.fn(() => ({
+      getSession: jest.fn(() => Promise.resolve({
         data: { session: null },
       })),
     },
@@ -40,7 +40,7 @@ describe('Header', () => {
       </AuthProvider>
     );
 
-    const titleElement = await screen.findByText(/lapela/i);
-    expect(titleElement).toBeInTheDocument();
+    const titleElements = await screen.findAllByText(/la pela/i);
+    expect(titleElements.length).toBeGreaterThan(0);
   });
 });
