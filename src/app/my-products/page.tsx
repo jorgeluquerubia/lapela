@@ -77,6 +77,27 @@ export default function Activity() {
   const pendingQuestionsCount = data?.pendingQuestionsCount || 0;
   const sellerQuestions = data?.sellerQuestions || [];
   const buyerQuestions = data?.buyerQuestions || [];
+  const notifications: any[] = data?.notifications || [];
+
+  const purchasesUnreadCount = data?.orders
+    ? data.orders
+        .filter((o: any) => o.buyer_id === user?.id)
+        .filter((o: any) => notifications.some((n: any) => n.order_id === o.id)).length
+    : 0;
+
+  const salesUnreadCount = data?.orders
+    ? data.orders
+        .filter((o: any) => o.seller_id === user?.id)
+        .filter((o: any) => notifications.some((n: any) => n.order_id === o.id)).length
+    : 0;
+
+  const bidsUnreadCount = data?.bids
+    ? data.bids.filter((b: any) =>
+        notifications.some(
+          (n: any) => n.listing_id === (b.listing_id || b.id) && n.type === 'outbid'
+        )
+      ).length
+    : 0;
 
   return (
     <>
@@ -111,9 +132,9 @@ export default function Activity() {
 
       <div className="mode-tabs activity-tabs">
         {[
-          ['purchases', 'Compras'],
-          ['sales', 'Ventas'],
-          ['bids', 'Mis pujas'],
+          ['purchases', `Compras${purchasesUnreadCount > 0 ? ` (${purchasesUnreadCount})` : ''}`],
+          ['sales', `Ventas${salesUnreadCount > 0 ? ` (${salesUnreadCount})` : ''}`],
+          ['bids', `Mis pujas${bidsUnreadCount > 0 ? ` (${bidsUnreadCount})` : ''}`],
           ['listings', 'Mis anuncios'],
           ['questions', `Preguntas${pendingQuestionsCount > 0 ? ` (${pendingQuestionsCount})` : ''}`],
         ].map(([v, t]) => (
@@ -230,6 +251,30 @@ export default function Activity() {
           {rows.map((r: any) => {
             const l = r.listing || r;
             const slug = productSlug(r.listing_id || r.id, l.title);
+            const itemNotes = notifications.filter((n: any) => {
+              if (tab === 'purchases' || tab === 'sales') {
+                return n.order_id === r.id;
+              }
+              if (tab === 'bids') {
+                return n.listing_id === (r.listing_id || r.id) && n.type === 'outbid';
+              }
+              if (tab === 'listings') {
+                return n.listing_id === r.id;
+              }
+              return false;
+            });
+
+            const firstNote = itemNotes[0];
+            const chipClass = firstNote
+              ? firstNote.type === 'new_message'
+                ? 'notification-chip notification-chip-message'
+                : firstNote.type === 'order_created'
+                ? 'notification-chip notification-chip-sale'
+                : firstNote.type === 'outbid'
+                ? 'notification-chip notification-chip-outbid'
+                : 'notification-chip notification-chip-status'
+              : '';
+
             return (
               <article key={r.id} className="activity-row">
                 <img src={l.images[0]} alt={l.title} />
@@ -249,6 +294,15 @@ export default function Activity() {
                     {labels[r.status || l.status] || r.status} ·{' '}
                     {new Date(r.created_at).toLocaleDateString('es-ES')}
                   </p>
+                  {firstNote && (
+                    <div>
+                      <span className={chipClass} role="status">
+                        <span className="notification-dot" />
+                        {firstNote.title}
+                        {itemNotes.length > 1 ? ` (+${itemNotes.length - 1})` : ''}
+                      </span>
+                    </div>
+                  )}
                 </div>
                 <strong>{money(r.amount_cents || r.price_cents)}</strong>
                 {tab === 'listings' ? (

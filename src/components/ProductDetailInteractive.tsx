@@ -125,7 +125,7 @@ export default function ProductDetailInteractive({initialItem, slug, demo = fals
           <p>
             {item.delivery === 'shipping'
               ? `Envío a España · ${money(item.shipping_cents)}. El vendedor organiza el envío.`
-              : `Recogida en persona en ${item.location}. La dirección exacta se acuerda tras el pago.`}
+              : `Recogida en persona en ${item.location}. La dirección exacta se acuerda por el chat tras la reserva.`}
           </p>
         </div>
 
@@ -163,7 +163,25 @@ export default function ProductDetailInteractive({initialItem, slug, demo = fals
           </p>
         )}
         {item.status !== 'available' ? (
-          <div className="notice">Este artículo ya no está disponible.</div>
+          item.mine && item.status === 'reserved' ? (
+            <div className="seller-alert-banner" style={{ background: '#ecfdf5', borderColor: '#a7f3d0', flexDirection: 'column', alignItems: 'stretch' }}>
+              <div>
+                <strong className="text-emerald-950 block mb-1">Artículo reservado · Tienes una venta en curso</strong>
+                <p className="m-0 text-xs text-emerald-900">
+                  Un comprador ha reservado este artículo. Entra a Mi actividad para chatear, acordar la entrega o confirmar el cobro en persona.
+                </p>
+              </div>
+              <Link href="/my-products" className="button primary text-xs py-2 px-3 text-center mt-2">
+                Ir a Mi actividad para chatear →
+              </Link>
+            </div>
+          ) : (
+            <div className="notice">
+              {item.status === 'reserved'
+                ? 'Este artículo está reservado actualmente (48 horas de reserva).'
+                : 'Este artículo ya no está disponible.'}
+            </div>
+          )
         ) : demo ? (
           <Link className="button primary w-full" href="/register">
             Crear mi cuenta
@@ -275,8 +293,7 @@ export default function ProductDetailInteractive({initialItem, slug, demo = fals
         <div className="purchase-promise">
           <strong>Un trato claro, de principio a fin.</strong>
           <p>
-            El chat se habilita cuando el pago está confirmado. Úsalo para acordar el envío o la
-            recogida.
+            El chat se habilita al reservar el artículo. Úsalo para acordar la forma de pago (en persona o por plataforma) y los detalles de entrega.
           </p>
           <div className="flex flex-col gap-1 mt-2 text-sm">
             <Link href="/como-funciona" className="underline">

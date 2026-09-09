@@ -200,21 +200,24 @@ Las claves secretas no deben usar el prefijo `NEXT_PUBLIC_`, aparecer en specs, 
 - `lp_orders`: comprador, vendedor, importe, pago, dirección, seguimiento y estado.
 - `lp_messages`: conversación ligada al pedido.
 - `lp_questions`: preguntas y respuestas públicas del producto y estado de notificación.
+- `lp_notifications`: registro y persistencia de lectura de novedades por usuario y artículo/pedido (ventas, chat, sobrepujas y cambios de estado).
 - `lp_accounts`: cuenta Stripe Connect del vendedor.
 - `lp_reports`: denuncias de anuncios o pedidos.
 - `lp_payment_events`: idempotencia de eventos Stripe.
 
 ### Funciones transaccionales
 
-- `lp_bid`: valida y registra una puja bajo bloqueo de fila.
-- `lp_reserve`: crea una reserva única y evita la autocompra y la doble venta.
+- `lp_bid`: valida y registra una puja bajo bloqueo de fila, y notifica por sobrepuja (`outbid`) al pujador previo superado.
+- `lp_reserve`: crea una reserva única por 48h, evita la autocompra y la doble venta, y notifica al vendedor de la nueva venta.
 - `lp_close_auctions`: cierra subastas y adjudica al mejor postor.
 - `lp_confirm_payment`: valida evento, sesión, importe e idempotencia de Stripe.
 - `lp_simulate_payment`: confirma únicamente pedidos sandbox del comprador.
 - `lp_confirm_in_person_payment`: permite al vendedor confirmar el cobro recibido en persona, completando el pedido y vendiendo el artículo.
-- `lp_transition`: controla envío y recepción según actor y estado.
+- `lp_transition`: controla envío y recepción según actor y estado, notificando a la otra parte.
 - `lp_release`: cancela reservas caducadas y libera el anuncio.
-- `lp_send_message`: autoriza chat solo entre las partes durante la reserva o tras el pago.
+- `lp_send_message`: autoriza chat solo entre las partes durante la reserva o tras el pago, y notifica al interlocutor de nuevo mensaje.
+- `lp_mark_order_notifications_read`: marca como leídas las notificaciones de un pedido para un usuario al acceder al pedido.
+- `lp_mark_listing_notifications_read`: marca como leídas las notificaciones de un artículo para un usuario al acceder al anuncio.
 - `lp_ask_question`: valida y registra una pregunta pública impidiendo la auto-pregunta del vendedor.
 - `lp_answer_question`: autoriza únicamente al vendedor para publicar la respuesta oficial.
 
@@ -229,11 +232,13 @@ El bucket `product-images` es público porque contiene fotografías de anuncios.
 | `GET /api/products` | Público | Catálogo filtrado del entorno activo |
 | `GET /api/market/listing/:id` | Público | Detalle seguro del anuncio |
 | `GET /api/market/questions/:id` | Público | Preguntas y respuestas paginadas (10 por página) |
-| `GET /api/market/activity` | Autenticado | Compras, ventas, pujas, anuncios y preguntas pendientes |
-| `GET /api/market/order/:id` | Partes del pedido | Pedido, mensajes y datos autorizados |
+| `GET /api/market/activity` | Autenticado | Compras, ventas, pujas, anuncios, preguntas y notificaciones no leídas |
+| `GET /api/market/notifications` | Autenticado | Contador y lista de notificaciones no leídas para la cabecera |
+| `GET /api/market/order/:id` | Partes del pedido | Pedido, mensajes y datos autorizados (marca notificaciones de la orden como leídas) |
 | `POST /api/market/upload` | Autenticado | Subir una fotografía validada |
 | `POST /api/market/publish` | Autenticado | Crear un anuncio |
 | `POST /api/market/bid/:id` | Autenticado | Registrar una puja |
+| `POST /api/market/mark-listing-read/:id` | Autenticado | Marcar notificaciones de un anuncio como leídas |
 | `POST /api/market/question/:id` | Comprador potencial | Formular pregunta pública sin regateos ni datos privados |
 | `POST /api/market/answer/:id` | Vendedor del artículo | Responder públicamente a una pregunta |
 | `POST /api/market/checkout/:id` | Comprador | Reservar o continuar un pago |
