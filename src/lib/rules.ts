@@ -7,5 +7,5 @@ export function noContact(value:string){if(/https?:|www\.|\b[\w.+-]+@[\w.-]+\.[a
 export function noBargaining(value:string){if(/(?:^|[^\p{L}\p{N}])(?:regate[ao]|regatear|te doy|te ofrezco|rebaj[ao]|rebajas|rebajar|descuento|[uú]ltimo precio|precio m[ií]nimo|bajar(?:lo|le)? el precio|negociable|contraoferta)(?:$|[^\p{L}\p{N}])/iu.test(value))throw Error('En La Pela el precio no es negociable. Las preguntas deben tratar sobre las características o estado del producto.');return value}
 
 export const uuid=(s:string)=>/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(s);
-export function canMessage(status:string,actor:string,buyer:string,seller:string){return ['paid','shipped','completed','disputed'].includes(status)&&[buyer,seller].includes(actor)}
+export function canMessage(status:string,actor:string,buyer:string,seller:string){return ['pending_payment','paid','shipped','completed','disputed'].includes(status)&&[buyer,seller].includes(actor)}
 
