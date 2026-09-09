@@ -23,7 +23,7 @@ jobs:
       run: npm ci
     - name: Install Playwright Browsers
       run: |
-        sudo rm -f /etc/apt/sources.list.d/google-chrome.list
+        sudo rm -f /etc/apt/sources.list.d/*chrome* /etc/apt/sources.list.d/*google*
         npx playwright install --with-deps
     - name: Run Playwright tests
       run: npx playwright test
