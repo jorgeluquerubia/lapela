@@ -1,6 +1,6 @@
 # Contexto canónico de La Pela
 
-> Estado documentado: 2026-09-06. Este es el resumen vigente del producto y su infraestructura. Para cambios y decisiones por solicitud consulta [`SPEC_REGISTRY.md`](SPEC_REGISTRY.md). `ANALISIS_FUNCIONAL.md` es un documento histórico de la versión anterior.
+> Estado documentado: 2026-09-10. Este es el resumen vigente del producto y su infraestructura. Para cambios y decisiones por solicitud consulta [`SPEC_REGISTRY.md`](SPEC_REGISTRY.md). `ANALISIS_FUNCIONAL.md` es un documento histórico de la versión anterior.
 
 ## 1. Descripción del proyecto
 
@@ -82,7 +82,7 @@ La propuesta combina la sencillez de uso de un marketplace móvil con dos mecani
 - Incremento mínimo de 1 € a partir de la primera puja.
 - Prohibición de pujar por un artículo propio.
 - Extensión anti-sniping: una puja en los dos últimos minutos amplía el cierre hasta dos minutos después de esa puja.
-- Cierre idempotente: sin pujas, el anuncio expira; con pujas, se crea un pedido para el ganador.
+- Cierre idempotente: sin pujas, el anuncio expira y avisa al vendedor; con pujas, crea un pedido y avisa al ganador y al vendedor.
 - El ganador dispone de 24 horas para pagar.
 - Compra inmediata opcional durante una subasta.
 
@@ -91,7 +91,7 @@ La propuesta combina la sencillez de uso de un marketplace móvil con dos mecani
 - Chat privado exclusivo para comprador y vendedor de un pedido activo: se abre desde el momento de la reserva (`pending_payment`) para acordar el método de pago (en persona o por plataforma) y la entrega, manteniéndose durante los estados pagados y posteriores.
 - Límite de veinte mensajes por minuto y usuario.
 - Preguntas y respuestas públicas en la ficha de producto con paginación de 10 elementos, banner normativo con viñetas claras, validación reforzada contra propuestas económicas, ofertas numéricas o trueques, bloqueo de datos de contacto y notificaciones de preguntas pendientes para el vendedor.
-- Seguimiento de compras, ventas, pujas y anuncios en `Mi actividad`.
+- Seguimiento de compras, ventas, pujas y anuncios en `Mi actividad`, con badges persistentes y una campana de novedades contextuales.
 - Denuncia de anuncios para revisión.
 
 ## 5. Funcionalidades no activas o pendientes
@@ -200,7 +200,7 @@ Las claves secretas no deben usar el prefijo `NEXT_PUBLIC_`, aparecer en specs, 
 - `lp_orders`: comprador, vendedor, importe, pago, dirección, seguimiento y estado.
 - `lp_messages`: conversación ligada al pedido.
 - `lp_questions`: preguntas y respuestas públicas del producto y estado de notificación.
-- `lp_notifications`: registro y persistencia de lectura de novedades por usuario y artículo/pedido (ventas, chat, sobrepujas y cambios de estado).
+- `lp_notifications`: registro y persistencia de lectura de novedades por usuario y artículo/pedido (ventas, chat, sobrepujas, cierre de subasta, pagos, expiraciones y cambios de estado).
 - `lp_accounts`: cuenta Stripe Connect del vendedor.
 - `lp_reports`: denuncias de anuncios o pedidos.
 - `lp_payment_events`: idempotencia de eventos Stripe.
@@ -209,12 +209,12 @@ Las claves secretas no deben usar el prefijo `NEXT_PUBLIC_`, aparecer en specs, 
 
 - `lp_bid`: valida y registra una puja bajo bloqueo de fila, y notifica por sobrepuja (`outbid`) al pujador previo superado.
 - `lp_reserve`: crea una reserva única por 48h, evita la autocompra y la doble venta, y notifica al vendedor de la nueva venta.
-- `lp_close_auctions`: cierra subastas y adjudica al mejor postor.
-- `lp_confirm_payment`: valida evento, sesión, importe e idempotencia de Stripe.
-- `lp_simulate_payment`: confirma únicamente pedidos sandbox del comprador.
+- `lp_close_auctions`: cierra subastas, adjudica al mejor postor y notifica el resultado a las partes afectadas.
+- `lp_confirm_payment`: valida evento, sesión, importe e idempotencia de Stripe, y avisa al vendedor del pago confirmado.
+- `lp_simulate_payment`: confirma únicamente pedidos sandbox del comprador y avisa al vendedor del pago confirmado.
 - `lp_confirm_in_person_payment`: permite al vendedor confirmar el cobro recibido en persona, completando el pedido y vendiendo el artículo.
 - `lp_transition`: controla envío y recepción según actor y estado, notificando a la otra parte.
-- `lp_release`: cancela reservas caducadas y libera el anuncio.
+- `lp_release`: cancela reservas caducadas, libera el anuncio y avisa a comprador y vendedor.
 - `lp_send_message`: autoriza chat solo entre las partes durante la reserva o tras el pago, y notifica al interlocutor de nuevo mensaje.
 - `lp_mark_order_notifications_read`: marca como leídas las notificaciones de un pedido para un usuario al acceder al pedido.
 - `lp_mark_listing_notifications_read`: marca como leídas las notificaciones de un artículo para un usuario al acceder al anuncio.
@@ -233,7 +233,7 @@ El bucket `product-images` es público porque contiene fotografías de anuncios.
 | `GET /api/market/listing/:id` | Público | Detalle seguro del anuncio |
 | `GET /api/market/questions/:id` | Público | Preguntas y respuestas paginadas (10 por página) |
 | `GET /api/market/activity` | Autenticado | Compras, ventas, pujas, anuncios, preguntas y notificaciones no leídas |
-| `GET /api/market/notifications` | Autenticado | Contador y lista de notificaciones no leídas para la cabecera |
+| `GET /api/market/notifications` | Autenticado | Contador y lista de notificaciones no leídas con contexto de artículo y pedido para la campana de cabecera |
 | `GET /api/market/order/:id` | Partes del pedido | Pedido, mensajes y datos autorizados (marca notificaciones de la orden como leídas) |
 | `POST /api/market/upload` | Autenticado | Subir una fotografía validada |
 | `POST /api/market/publish` | Autenticado | Crear un anuncio |
