@@ -27,4 +27,15 @@ describe('Header notifications',()=>{
     fireEvent.keyDown(window,{key:'Escape'});
     expect(screen.queryByText('¿Sigue disponible?')).not.toBeInTheDocument();
   });
+
+  it('keeps the unread notification visible when article metadata is unavailable',async()=>{
+    global.fetch=jest.fn().mockResolvedValue({json:()=>Promise.resolve({
+      unreadCount:1,
+      notifications:[{id:'note-without-listing',listing_id:'123e4567-e89b-12d3-a456-426614174000',type:'new_message',title:'Nuevo mensaje'}]
+    })});
+    render(<Header/>);
+    fireEvent.click(await screen.findByRole('button',{name:'1 novedades sin leer'}));
+    expect(await screen.findByText('Nuevo mensaje')).toBeInTheDocument();
+    expect(screen.getAllByRole('link',{name:'Ver artículo'})[0]).toHaveAttribute('href','/articulos/articulo-123e4567-e89b-12d3-a456-426614174000');
+  });
 });

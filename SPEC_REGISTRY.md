@@ -63,6 +63,7 @@ Prioridades: `P0` bloquea una operación esencial o implica un riesgo grave; `P1
 | `LP-FEAT-008` | `FEATURE` | Spinner de marca no bloqueante y mejoras en preguntas y respuestas | `VERIFIED` | `P2` | 2026-09-09 | [Abrir ficha](specs/LP-FEAT-008-spinner-marca-mejoras-qa.md) |
 | `LP-FEAT-009` | `FEATURE` | Badges de novedades en artículos y ajustes informativos de reserva | `VERIFIED` | `P1` | 2026-09-09 | [Abrir ficha](specs/LP-FEAT-009-notificaciones-articulos.md) |
 | `LP-FEAT-010` | `FEATURE` | Notificaciones contextuales y cierre de subastas | `VERIFIED` | `P1` | 2026-09-10 | [Abrir ficha](specs/LP-FEAT-010-notificaciones-contextuales.md) |
+| `LP-FIX-003` | `FIX` | Entrega fiable de novedades en la campana | `VERIFIED` | `P1` | 2026-09-10 | [Abrir ficha](specs/LP-FIX-003-panel-notificaciones.md) |
 
 
 ## Flujo para una solicitud nueva
