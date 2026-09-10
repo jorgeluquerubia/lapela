@@ -65,5 +65,6 @@
 .notification-chip-message{background:#e0e7ff;border-color:#c7d2fe;color:#3730a3}
 .notification-chip-sale{background:#ecfdf5;border-color:#a7f3d0;color:#065f46}
 .notification-chip-outbid{background:#fee2e2;border-color:#fecaca;color:#991b1b}
+.notification-chip-bid{background:#eff6ff;border-color:#bfdbfe;color:#1d4ed8}
 .notification-chip-status{background:#f3f4f6;border-color:#e5e7eb;color:#1f2937}
 .notification-dot{width:7px;height:7px;border-radius:50%;background:currentColor;display:inline-block}

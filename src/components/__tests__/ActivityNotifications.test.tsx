@@ -104,6 +104,13 @@ describe('Activity Badges and Notifications (LP-FEAT-009)', () => {
           title: 'Puja superada',
           read: false,
         },
+        {
+          id: 'note-4',
+          listing_id: 'listing-1',
+          type: 'bid_received',
+          title: 'Nueva puja',
+          read: false,
+        },
       ],
     };
 
@@ -144,6 +151,12 @@ describe('Activity Badges and Notifications (LP-FEAT-009)', () => {
     await waitFor(() => {
       expect(screen.getByText('Reloj Vintage')).toBeInTheDocument();
       expect(screen.getByText('Puja superada')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByText('Mis anuncios'));
+    await waitFor(() => {
+      expect(screen.getByText('Bicicleta de montaña')).toBeInTheDocument();
+      expect(screen.getByText('Nueva puja')).toBeInTheDocument();
     });
   });
 });
