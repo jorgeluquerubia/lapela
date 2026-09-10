@@ -114,7 +114,7 @@ La persona usuaria ve una campana con contador y una lista de novedades persiste
 
 - **Archivos o módulos:** `supabase/migrations/202609100001_contextual_notifications.sql`, `src/components/Header.tsx`, `src/app/my-products/page.tsx`, `src/controllers/marketplace.ts`, `src/app/globals.css`, `tests/database/marketplace.sql` y `src/components/__tests__/HeaderNotifications.test.tsx`.
 - **Migraciones/configuración:** `202609100001_contextual_notifications.sql`, aplicada en Supabase el 2026-09-10.
-- **Commit o despliegue:** Pendiente de PR.
+- **Commit o despliegue:** [PR #28](https://github.com/jorgeluquerubia/lapela/pull/28), commit `1084752`.
 
 ## 12. Historial
 
@@ -123,3 +123,4 @@ La persona usuaria ve una campana con contador y una lista de novedades persiste
 | 2026-09-10 | `DRAFT` | Creación de la ficha a partir de la revisión de LP-FEAT-009 | Codex |
 | 2026-09-10 | `IN_PROGRESS` | Issue #27 creada y rama de implementación asignada | Codex |
 | 2026-09-10 | `VERIFIED` | Migración aplicada; eventos, enlaces, interfaz y compilación validados | Codex |
+| 2026-09-10 | `VERIFIED` | PR #28 preparada para integrar en `main` | Codex |
