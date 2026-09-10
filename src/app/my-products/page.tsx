@@ -296,11 +296,11 @@ export default function Activity() {
                   </p>
                   {firstNote && (
                     <div>
-                      <span className={chipClass} role="status">
+                      <Link className={chipClass} role="status" href={'/articulos/' + slug} aria-label={`${firstNote.title}: ver artículo ${l.title}`}>
                         <span className="notification-dot" />
                         {firstNote.title}
                         {itemNotes.length > 1 ? ` (+${itemNotes.length - 1})` : ''}
-                      </span>
+                      </Link>
                     </div>
                   )}
                 </div>
