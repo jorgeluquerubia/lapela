@@ -80,6 +80,7 @@ La propuesta combina la sencillez de uso de un marketplace móvil con dos mecani
 
 - Primera puja igual o superior al precio de salida.
 - Incremento mínimo de 1 € a partir de la primera puja.
+- Cada puja válida avisa al vendedor de la subasta.
 - Prohibición de pujar por un artículo propio.
 - Extensión anti-sniping: una puja en los dos últimos minutos amplía el cierre hasta dos minutos después de esa puja.
 - Cierre idempotente: sin pujas, el anuncio expira y avisa al vendedor; con pujas, crea un pedido y avisa al ganador y al vendedor.
@@ -200,14 +201,14 @@ Las claves secretas no deben usar el prefijo `NEXT_PUBLIC_`, aparecer en specs, 
 - `lp_orders`: comprador, vendedor, importe, pago, dirección, seguimiento y estado.
 - `lp_messages`: conversación ligada al pedido.
 - `lp_questions`: preguntas y respuestas públicas del producto y estado de notificación.
-- `lp_notifications`: registro y persistencia de lectura de novedades por usuario y artículo/pedido (ventas, chat, sobrepujas, cierre de subasta, pagos, expiraciones y cambios de estado).
+- `lp_notifications`: registro y persistencia de lectura de novedades por usuario y artículo/pedido (ventas, chat, pujas recibidas y superadas, cierre de subasta, pagos, expiraciones y cambios de estado).
 - `lp_accounts`: cuenta Stripe Connect del vendedor.
 - `lp_reports`: denuncias de anuncios o pedidos.
 - `lp_payment_events`: idempotencia de eventos Stripe.
 
 ### Funciones transaccionales
 
-- `lp_bid`: valida y registra una puja bajo bloqueo de fila, y notifica por sobrepuja (`outbid`) al pujador previo superado.
+- `lp_bid`: valida y registra una puja bajo bloqueo de fila, notifica la nueva puja al vendedor (`bid_received`) y la sobrepuja (`outbid`) al pujador previo superado.
 - `lp_reserve`: crea una reserva única por 48h, evita la autocompra y la doble venta, y notifica al vendedor de la nueva venta.
 - `lp_close_auctions`: cierra subastas, adjudica al mejor postor y notifica el resultado a las partes afectadas.
 - `lp_confirm_payment`: valida evento, sesión, importe e idempotencia de Stripe, y avisa al vendedor del pago confirmado.

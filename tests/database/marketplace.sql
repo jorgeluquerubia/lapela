@@ -44,6 +44,7 @@ begin
  insert into public.lp_listings(seller_id,title,description,category,condition,location,images,mode,price_cents,delivery,ends_at) values(seller,'Subasta de prueba','Descripción completa de una subasta sintética para validación.','Hogar','Buen estado','Madrid',array['https://example.invalid/test.jpg'],'auction',1000,'pickup',now()+interval '60 seconds') returning id into auction;
  blocked:=false;begin perform lp_bid(auction,seller,1100);exception when others then blocked:=true;end;if not blocked then raise exception 'FAIL self bid';end if;
  l:=lp_bid(auction,buyer,1000);if l.ends_at<now()+interval '119 seconds' then raise exception 'FAIL anti sniping';end if;
+ if not exists(select 1 from lp_notifications where user_id=seller and listing_id=auction and type='bid_received' and read=false) then raise exception 'FAIL seller bid notification'; end if;
  blocked:=false;begin perform lp_bid(auction,outsider,1001);exception when others then blocked:=true;end;if not blocked then raise exception 'FAIL minimum increment';end if;
  perform lp_bid(auction,outsider,1100);
  if not exists(select 1 from lp_notifications where user_id=buyer and listing_id=auction and type='outbid' and read=false) then raise exception 'FAIL outbid notification'; end if;

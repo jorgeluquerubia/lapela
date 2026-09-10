@@ -272,6 +272,8 @@ export default function Activity() {
                 ? 'notification-chip notification-chip-sale'
                 : firstNote.type === 'outbid'
                 ? 'notification-chip notification-chip-outbid'
+                : firstNote.type === 'bid_received'
+                ? 'notification-chip notification-chip-bid'
                 : 'notification-chip notification-chip-status'
               : '';
 
