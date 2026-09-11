@@ -243,6 +243,7 @@ El bucket `product-images` es público porque contiene fotografías de anuncios.
 | `GET /api/market/questions/:id` | Público | Preguntas y respuestas paginadas (10 por página) |
 | `GET /api/market/activity` | Autenticado | Compras, ventas, pujas, anuncios, preguntas y notificaciones no leídas |
 | `GET /api/market/notifications` | Autenticado | Contador y lista de notificaciones no leídas con contexto de artículo y pedido para la campana de cabecera |
+| `POST /api/market/mark-notification-read/:id` | Destinatario autenticado | Marcar una novedad concreta como leída |
 | `GET /api/market/order/:id` | Partes del pedido | Pedido, mensajes y datos autorizados (marca notificaciones de la orden como leídas) |
 | `POST /api/market/upload` | Autenticado | Subir una fotografía validada |
 | `POST /api/market/publish` | Autenticado | Crear un anuncio |
