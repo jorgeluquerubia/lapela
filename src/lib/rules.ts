@@ -16,6 +16,11 @@ export function noBargaining(value:string){
   return value;
 }
 
+export function publicAlias(value:unknown){
+ const normalized=typeof value==='string'?value.trim().toLowerCase():'';
+ if(!/^[a-z0-9][a-z0-9_-]{2,29}$/.test(normalized)||normalized.startsWith('usuario-'))throw Error('El alias debe tener entre 3 y 30 caracteres: letras minúsculas, números, guiones o guiones bajos.');
+ return normalized;
+}
+
 export const uuid=(s:string)=>/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(s);
 export function canMessage(status:string,actor:string,buyer:string,seller:string){return ['pending_payment','paid','shipped','completed','disputed'].includes(status)&&[buyer,seller].includes(actor)}
-

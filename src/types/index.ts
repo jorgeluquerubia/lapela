@@ -4,6 +4,7 @@ export interface Product {
   price: number;
   type: string;
   seller: string;
+  sellerProfile?: { alias: string };
   location: string;
   time: string;
   image: string;
@@ -16,7 +17,7 @@ export interface Product {
     username: string;
   } | null;
   updated_at: string;
-  user_id: string; // Added for ownership checks
+  user_id?: string; // Private legacy field; never returned by the public catalogue.
   current_bid?: number;
   bid_count?: number;
   category?: string;
