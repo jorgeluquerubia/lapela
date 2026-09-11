@@ -118,7 +118,7 @@ Cada cuenta dispone de un alias público único y estable. Los anuncios, pujas, 
 
 - **Archivos o módulos:** Modelo, controlador, componentes de catálogo/ficha/pedido/cuenta/actividad, ruta de perfiles, estilos y pruebas.
 - **Migraciones/configuración:** Nueva migración aditiva de perfiles y valoraciones.
-- **Commit o despliegue:** Pendiente de commit, publicación y pull request.
+- **Commit o despliegue:** `579c1ea` en la rama `codex/lp-feat-013-public-profiles-reviews`; [PR #42](https://github.com/jorgeluquerubia/lapela/pull/42) contra `main`.
 - **Notas de implementación:** Se preservan las reglas de chat y no contacto existentes; el alias no abre ningún canal de comunicación.
 
 ## 12. Historial
@@ -127,3 +127,4 @@ Cada cuenta dispone de un alias público único y estable. Los anuncios, pujas, 
 |---|---|---|---|
 | 2026-09-11 | `IN_PROGRESS` | Creación de ficha e issue #36 | Codex |
 | 2026-09-11 | `IMPLEMENTED` | Implementación lista; falta aplicar migración y validar en un entorno con Supabase | Codex |
+| 2026-09-11 | `IMPLEMENTED` | PR #42 abierta para revisión | Codex |
