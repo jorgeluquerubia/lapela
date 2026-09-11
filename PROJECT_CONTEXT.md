@@ -51,6 +51,7 @@ La propuesta combina la sencillez de uso de un marketplace móvil con dos mecani
 - Reenvío de confirmación para cuentas pendientes.
 - Detección y explicación de un registro repetido de una cuenta existente.
 - Recuperación de contraseña desde el acceso y pantalla para guardar la nueva contraseña.
+- Alias público único personalizable desde `Mi cuenta`, con perfil público no indexable y compras ocultas por defecto.
 
 ### Publicación y venta
 
@@ -93,6 +94,8 @@ La propuesta combina la sencillez de uso de un marketplace móvil con dos mecani
 - Límite de veinte mensajes por minuto y usuario.
 - Preguntas y respuestas públicas en la ficha de producto con paginación de 10 elementos, banner normativo con viñetas claras, validación reforzada contra propuestas económicas, ofertas numéricas o trueques, bloqueo de datos de contacto y notificaciones de preguntas pendientes para el vendedor.
 - Seguimiento de compras, ventas, pujas y anuncios en `Mi actividad`, con badges persistentes y una campana de novedades contextuales.
+- Identidad contextual mediante alias en anuncios, pujas, pedidos, chat y actividad privada; el comprador nunca se publica en el anuncio vendido.
+- Valoraciones mutuas de una a cinco estrellas, con comentario opcional, únicamente tras completar un pedido.
 - Denuncia de anuncios para revisión.
 
 ## 5. Funcionalidades no activas o pendientes
@@ -101,7 +104,6 @@ La propuesta combina la sencillez de uso de un marketplace móvil con dos mecani
 - SMTP de producción y garantías de entrega de correo.
 - Seguro de compra o depósito en garantía.
 - Regateo, contraofertas o chat libre entre usuarios.
-- Reputación, valoraciones y perfiles públicos completos.
 - Panel operativo de moderación, disputas y reembolsos.
 - Condiciones del servicio, privacidad y proceso de soporte definitivos.
 - Entorno de staging separado y observabilidad centralizada.
@@ -200,6 +202,8 @@ Las claves secretas no deben usar el prefijo `NEXT_PUBLIC_`, aparecer en specs, 
 - `lp_bids`: historial de pujas.
 - `lp_orders`: comprador, vendedor, importe, pago, dirección, seguimiento y estado.
 - `lp_messages`: conversación ligada al pedido.
+- `lp_profiles`: alias público, preferencia de visibilidad de compras y fechas de perfil.
+- `lp_reviews`: valoraciones entre las partes de un pedido completado.
 - `lp_questions`: preguntas y respuestas públicas del producto y estado de notificación.
 - `lp_notifications`: registro y persistencia de lectura de novedades por usuario y artículo/pedido (ventas, chat, pujas recibidas y superadas, cierre de subasta, pagos, expiraciones y cambios de estado).
 - `lp_accounts`: cuenta Stripe Connect del vendedor.
@@ -221,6 +225,8 @@ Las claves secretas no deben usar el prefijo `NEXT_PUBLIC_`, aparecer en specs, 
 - `lp_mark_listing_notifications_read`: marca como leídas las notificaciones de un artículo para un usuario al acceder al anuncio.
 - `lp_ask_question`: valida y registra una pregunta pública impidiendo la auto-pregunta del vendedor.
 - `lp_answer_question`: autoriza únicamente al vendedor para publicar la respuesta oficial.
+- `lp_ensure_profile` y `lp_update_profile`: crean el alias temporal seguro y personalizan una sola vez el perfil público.
+- `lp_create_review`: autoriza una valoración única y mutua solo cuando el pedido está completado.
 
 Las tablas `lp_*` tienen RLS activado, pero `anon` y `authenticated` no tienen acceso directo. Las operaciones pasan por el backend con `service_role`, que valida al usuario mediante Supabase Auth. El middleware devuelve HTTP 410 para mutaciones legacy. `next.config.mjs` añade cabeceras de seguridad contra sniffing, framing y permisos de cámara, micrófono y geolocalización.
 
@@ -232,6 +238,8 @@ El bucket `product-images` es público porque contiene fotografías de anuncios.
 |---|---|---|
 | `GET /api/products` | Público | Catálogo filtrado del entorno activo |
 | `GET /api/market/listing/:id` | Público | Detalle seguro del anuncio |
+| `GET /api/market/profile/:alias` | Público | Perfil, anuncios, ventas y valoraciones públicas; no incluye compras salvo consentimiento |
+| `GET /api/market/profile/me` | Autenticado | Perfil propio para personalización |
 | `GET /api/market/questions/:id` | Público | Preguntas y respuestas paginadas (10 por página) |
 | `GET /api/market/activity` | Autenticado | Compras, ventas, pujas, anuncios, preguntas y notificaciones no leídas |
 | `GET /api/market/notifications` | Autenticado | Contador y lista de notificaciones no leídas con contexto de artículo y pedido para la campana de cabecera |
@@ -239,6 +247,8 @@ El bucket `product-images` es público porque contiene fotografías de anuncios.
 | `GET /api/market/order/:id` | Partes del pedido | Pedido, mensajes y datos autorizados (marca notificaciones de la orden como leídas) |
 | `POST /api/market/upload` | Autenticado | Subir una fotografía validada |
 | `POST /api/market/publish` | Autenticado | Crear un anuncio |
+| `POST /api/market/profile` | Autenticado | Personalizar el alias y la visibilidad de compras |
+| `POST /api/market/review/:orderId` | Parte del pedido completado | Crear una valoración única para la contraparte |
 | `POST /api/market/bid/:id` | Autenticado | Registrar una puja |
 | `POST /api/market/mark-listing-read/:id` | Autenticado | Marcar notificaciones de un anuncio como leídas |
 | `POST /api/market/question/:id` | Comprador potencial | Formular pregunta pública sin regateos ni datos privados |

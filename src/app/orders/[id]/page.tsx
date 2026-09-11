@@ -14,6 +14,8 @@ export default function Order(){
   const [busy,setBusy]=useState(false);
   const [confirmPayment,setConfirmPayment]=useState(false);
   const [confirmInPerson,setConfirmInPerson]=useState(false);
+  const [reviewScore,setReviewScore]=useState(5);
+  const [reviewComment,setReviewComment]=useState('');
 
   const load=useCallback(()=>api('order/'+id).then(setData).catch(e=>setError(e.message)),[id]);
 
@@ -27,7 +29,7 @@ export default function Order(){
     setBusy(true);
     setError('');
     try{
-      const r=await api(kind+'/'+id,kind==='message'?{content}:kind==='checkout'?{order:true}:{tracking});
+      const r=await api(kind+'/'+id,kind==='message'?{content}:kind==='checkout'?{order:true}:kind==='review'?{score:reviewScore,comment:reviewComment}:{tracking});
       if(r.url){
         window.location.assign(r.url);
         return;
@@ -71,6 +73,7 @@ export default function Order(){
         <span>Pedido {id.slice(0,8)}</span>
       </div>
       <h1>{labels[o.status]||o.status}</h1>
+      <p className="order-counterparts"><span>Vendedor: <Link className="profile-link" href={`/usuarios/${o.seller.alias}`}>@{o.seller.alias}</Link></span><span>Comprador: <Link className="profile-link" href={`/usuarios/${o.buyer.alias}`}>@{o.buyer.alias}</Link></span></p>
       {(data.simulated||o.payment_mode==='simulation')&&(
         <div className="notice">Pedido de prueba · Pago simulado, sin cargo real.</div>
       )}
@@ -154,6 +157,7 @@ export default function Order(){
               </p>
             </div>
           )}
+          {o.status==='completed'&&<section className="order-reviews"><h3>Valoraciones</h3>{data.reviews.map((review:any)=><div className="review-card" key={review.id}><strong>@{review.author.alias}</strong><span className="review-stars">{'★'.repeat(review.score)+'☆'.repeat(5-review.score)}</span>{review.comment&&<p>{review.comment}</p>}</div>)}{data.canReview&&<form onSubmit={e=>{e.preventDefault();action('review')}}><label htmlFor="review-score">Valora a @{buyer?o.seller.alias:o.buyer.alias}</label><select id="review-score" className="field-input" value={reviewScore} onChange={e=>setReviewScore(Number(e.target.value))}>{[5,4,3,2,1].map(score=><option key={score} value={score}>{score} estrella{score===1?'':'s'}</option>)}</select><label htmlFor="review-comment">Comentario opcional</label><textarea id="review-comment" className="field-input" value={reviewComment} onChange={e=>setReviewComment(e.target.value)} maxLength={500} rows={3}/><button className="button primary" disabled={busy}>Publicar valoración</button></form>}</section>}
         </section>
 
         <section className="order-chat">
@@ -170,7 +174,7 @@ export default function Order(){
                 )}
                 {data.messages.map((m:any)=>(
                   <div key={m.id} className={'message '+(m.sender_id===data.userId?'own':'')}>
-                    <strong>{m.sender_id===data.userId?'Tú':buyer?'Vendedor':'Comprador'}</strong>
+                    <strong>{m.sender_id===data.userId?'Tú':`@${m.sender?.alias||'usuario'}`}</strong>
                     <p>{m.content}</p>
                     <small>{new Date(m.created_at).toLocaleString('es-ES')}</small>
                   </div>
@@ -193,4 +197,3 @@ export default function Order(){
     </>
   );
 }
-

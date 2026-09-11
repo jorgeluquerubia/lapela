@@ -1,7 +1,7 @@
 begin;
 -- Everything in this test is rolled back, including the synthetic accounts.
 do $$
-declare seller uuid:=gen_random_uuid(); buyer uuid:=gen_random_uuid(); outsider uuid:=gen_random_uuid(); item uuid; item2 uuid; item3 uuid; auction uuid; auction_without_bids uuid; ord public.lp_orders; ord2 public.lp_orders; ord3 public.lp_orders; l public.lp_listings; q public.lp_questions; blocked boolean;
+declare seller uuid:=gen_random_uuid(); buyer uuid:=gen_random_uuid(); outsider uuid:=gen_random_uuid(); item uuid; item2 uuid; item3 uuid; auction uuid; auction_without_bids uuid; ord public.lp_orders; ord2 public.lp_orders; ord3 public.lp_orders; l public.lp_listings; q public.lp_questions; p public.lp_profiles; review public.lp_reviews; blocked boolean;
 begin
  insert into auth.users(id,email,raw_user_meta_data,raw_app_meta_data,aud,role,created_at,updated_at)
  values(seller,'lp-test-seller-'||seller||'@example.invalid','{}','{}','authenticated','authenticated',now(),now()),(buyer,'lp-test-buyer-'||buyer||'@example.invalid','{}','{}','authenticated','authenticated',now(),now()),(outsider,'lp-test-other-'||outsider||'@example.invalid','{}','{}','authenticated','authenticated',now(),now());
@@ -33,6 +33,13 @@ begin
  blocked:=false;begin perform lp_send_message(ord.id,outsider,'Acceso no permitido');exception when others then blocked:=true;end;if not blocked then raise exception 'FAIL outsider chat';end if;
  blocked:=false;begin perform lp_transition(ord.id,buyer,'ship',null);exception when others then blocked:=true;end;if not blocked then raise exception 'FAIL buyer ships';end if;
  perform lp_transition(ord.id,seller,'ship','Preparado');perform lp_transition(ord.id,buyer,'complete',null);
+ perform lp_ensure_profile(seller); perform lp_ensure_profile(buyer); perform lp_ensure_profile(outsider);
+ p:=lp_update_profile(seller,'vendedor-prueba',false); if p.alias<>'vendedor-prueba' or not p.alias_customized then raise exception 'FAIL profile custom alias'; end if;
+ blocked:=false;begin perform lp_update_profile(seller,'otro-vendedor',false);exception when others then blocked:=true;end;if not blocked then raise exception 'FAIL immutable custom alias';end if;
+ review:=lp_create_review(ord.id,buyer,5,'Todo correcto.'); if review.recipient_id<>seller or review.score<>5 then raise exception 'FAIL buyer review';end if;
+ review:=lp_create_review(ord.id,seller,4,'Comprador puntual.'); if review.recipient_id<>buyer then raise exception 'FAIL seller review';end if;
+ blocked:=false;begin perform lp_create_review(ord.id,buyer,5,'Duplicada');exception when others then blocked:=true;end;if not blocked then raise exception 'FAIL duplicate review';end if;
+ blocked:=false;begin perform lp_create_review(ord.id,outsider,5,'Intruso');exception when others then blocked:=true;end;if not blocked then raise exception 'FAIL outsider review';end if;
  insert into public.lp_listings(seller_id,title,description,category,condition,location,images,mode,price_cents,delivery) values(seller,'Artículo cobro en persona','Descripción válida para comprobar el cobro en persona.','Tecnología','Como nuevo','Madrid',array['https://example.invalid/ip.jpg'],'sale',1500,'pickup') returning id into item2;
  ord2:=lp_reserve(item2,buyer);
  blocked:=false;begin perform lp_confirm_in_person_payment(ord2.id,buyer);exception when others then blocked:=true;end;if not blocked then raise exception 'FAIL buyer confirm in person';end if;
@@ -62,7 +69,7 @@ begin
  insert into public.lp_listings(seller_id,title,description,category,condition,location,images,mode,price_cents,delivery) values(seller,'Artículo reserva caducada','Descripción completa de una reserva que caduca para validación.','Hogar','Buen estado','Madrid',array['https://example.invalid/expired.jpg'],'sale',1200,'pickup') returning id into item3;
  ord3:=lp_reserve(item3,buyer); update lp_orders set expires_at=now()-interval '1 second' where id=ord3.id; perform lp_release(ord3.id);
  if (select count(*) from lp_notifications where order_id=ord3.id and type='reservation_expired')<>2 then raise exception 'FAIL expired reservation notifications';end if;
- if has_table_privilege('anon','lp_messages','SELECT') or has_table_privilege('authenticated','lp_orders','UPDATE') or has_function_privilege('authenticated','lp_confirm_payment(text,uuid,text,text,integer,jsonb)','EXECUTE') or has_function_privilege('authenticated','lp_confirm_in_person_payment(uuid,uuid)','EXECUTE') or has_table_privilege('anon','lp_questions','SELECT') or has_function_privilege('authenticated','lp_ask_question(uuid,uuid,text)','EXECUTE') or has_table_privilege('anon','lp_notifications','SELECT') then raise exception 'FAIL direct privilege';end if;
+ if has_table_privilege('anon','lp_messages','SELECT') or has_table_privilege('authenticated','lp_orders','UPDATE') or has_function_privilege('authenticated','lp_confirm_payment(text,uuid,text,text,integer,jsonb)','EXECUTE') or has_function_privilege('authenticated','lp_confirm_in_person_payment(uuid,uuid)','EXECUTE') or has_table_privilege('anon','lp_questions','SELECT') or has_function_privilege('authenticated','lp_ask_question(uuid,uuid,text)','EXECUTE') or has_table_privilege('anon','lp_notifications','SELECT') or has_table_privilege('anon','lp_profiles','SELECT') or has_table_privilege('authenticated','lp_reviews','INSERT') or has_function_privilege('authenticated','lp_create_review(uuid,uuid,smallint,text)','EXECUTE') then raise exception 'FAIL direct privilege';end if;
 end $$;
 rollback;
-select 'PASS: ownership, questions, reservations, payment amount, payment idempotency, chat authorization, in-person payment, notifications, outbid, mark read, transitions, increments, expiry, anti-sniping, auction close, direct permissions' as result;
+select 'PASS: ownership, public profile aliases, reviews, questions, reservations, payment amount, payment idempotency, chat authorization, in-person payment, notifications, outbid, mark read, transitions, increments, expiry, anti-sniping, auction close, direct permissions' as result;
