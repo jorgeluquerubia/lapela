@@ -5,23 +5,59 @@ create extension if not exists pg_trgm with schema extensions;
 
 create or replace function public.lp_unaccent(value text)
 returns text
-language sql
+language plpgsql
 immutable
 strict
 parallel safe
 set search_path = extensions
-as $$ select unaccent('unaccent', value) $$;
+as $$ begin return unaccent('unaccent', value); end; $$;
+
+create or replace function public.lp_tags_text(value text[])
+returns text
+language plpgsql
+immutable
+strict
+parallel safe
+as $$ begin return array_to_string(value, ' '); end; $$;
 
 alter table public.lp_listings
   add column if not exists tags text[] not null default '{}'::text[] check(cardinality(tags)<=5),
-  add column if not exists search_title text generated always as (public.lp_unaccent(lower(title))) stored,
-  add column if not exists search_tags text generated always as (public.lp_unaccent(lower(array_to_string(tags,' ')))) stored,
-  add column if not exists search_vector tsvector generated always as (
+  add column if not exists search_title text not null default '',
+  add column if not exists search_tags text not null default '',
+  add column if not exists search_vector tsvector not null default ''::tsvector;
+
+create or replace function public.lp_listings_refresh_search_document()
+returns trigger
+language plpgsql
+security definer
+set search_path = public, extensions
+as $$
+begin
+  new.search_title := public.lp_unaccent(lower(new.title));
+  new.search_tags := public.lp_unaccent(lower(public.lp_tags_text(new.tags)));
+  new.search_vector :=
+    setweight(to_tsvector('spanish', public.lp_unaccent(new.title)), 'A') ||
+    setweight(to_tsvector('spanish', public.lp_unaccent(public.lp_tags_text(new.tags))), 'B') ||
+    setweight(to_tsvector('spanish', public.lp_unaccent(new.category)), 'C') ||
+    setweight(to_tsvector('spanish', public.lp_unaccent(new.description)), 'D');
+  return new;
+end;
+$$;
+
+drop trigger if exists lp_listings_refresh_search_document on public.lp_listings;
+create trigger lp_listings_refresh_search_document
+before insert or update of title, tags, category, description on public.lp_listings
+for each row execute function public.lp_listings_refresh_search_document();
+
+update public.lp_listings
+set
+  search_title = public.lp_unaccent(lower(title)),
+  search_tags = public.lp_unaccent(lower(public.lp_tags_text(tags))),
+  search_vector =
     setweight(to_tsvector('spanish', public.lp_unaccent(title)), 'A') ||
-    setweight(to_tsvector('spanish', public.lp_unaccent(array_to_string(tags,' '))), 'B') ||
+    setweight(to_tsvector('spanish', public.lp_unaccent(public.lp_tags_text(tags))), 'B') ||
     setweight(to_tsvector('spanish', public.lp_unaccent(category)), 'C') ||
-    setweight(to_tsvector('spanish', public.lp_unaccent(description)), 'D')
-  ) stored;
+    setweight(to_tsvector('spanish', public.lp_unaccent(description)), 'D');
 
 create table if not exists public.lp_search_aliases(
   alias text primary key check(alias=public.lp_unaccent(lower(trim(alias))) and length(alias) between 2 and 100),

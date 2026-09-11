@@ -110,7 +110,7 @@ Una persona puede introducir términos naturales, abreviaturas frecuentes o pequ
 | Especificación y alcance | IDs, requisitos y criterios válidos | `npm run specs:check` correcto | 2026-09-11 |
 | Vocabulario | Normalización, tags controlados y aliases correctos | `src/lib/__tests__/search.test.ts`: 3 pruebas correctas | 2026-09-11 |
 | Compilación | Rutas, tipos y componentes compilan | `npm run build` correcto con valores de marcador no persistidos para Supabase | 2026-09-11 |
-| Consulta PostgreSQL | Índices usados y ranking correcto para exacto, alias y errata | Pendiente de aplicar migración y ejecutar `EXPLAIN` en Supabase | Pendiente |
+| Consulta PostgreSQL | Alias, documento e índice de búsqueda operativos | Migración aplicada en el proyecto Supabase `lapela-app` el 2026-09-11. `lp_search_listings('bici', 'sandbox', ...)` devolvió `Bicicleta urbana roja` con relevancia `3.63043`; queda pendiente revisar `EXPLAIN` y el umbral de erratas. | 2026-09-11 |
 | API e interfaz | Límites, entorno, sugerencias y teclado correctos | Pendiente de pruebas de integración y Playwright con la migración aplicada | Pendiente |
 | Rendimiento | p95 de sugerencias inferior a 250 ms con datos de referencia | Pendiente de medición en Supabase | Pendiente |
 
@@ -123,9 +123,9 @@ Una persona puede introducir términos naturales, abreviaturas frecuentes o pequ
 ## 11. Implementación y trazabilidad
 
 - **Archivos o módulos:** Previsiblemente `supabase/migrations/`, `src/controllers/marketplace.ts`, `src/models/marketplace.ts`, `src/components/Header.tsx`, `src/components/Catalog.tsx`, `src/app/publish-ad/page.tsx`, tipos y pruebas asociadas.
-- **Migraciones/configuración:** Pendiente; podría requerir habilitar `pg_trgm` y usar la configuración española de texto completo disponible en PostgreSQL/Supabase.
-- **Commit o despliegue:** PR [#40](https://github.com/jorgeluquerubia/lapela/pull/40); pendiente de aplicar la migración y desplegar.
-- **Notas de implementación:** `202609110001_product_search.sql` añade tags, aliases, vector e índices; `/api/search/suggestions` no ejecuta mantenimiento ni conteo exacto. La validación contra Supabase queda pendiente antes de marcar la ficha como `VERIFIED`.
+- **Migraciones/configuración:** `202609110001_product_search.sql` se aplicó en Supabase `lapela-app` el 2026-09-11: habilita `unaccent` y `pg_trgm`, crea tags, aliases, índices y la RPC. El documento de búsqueda se mantiene mediante un trigger antes de guardar el anuncio, por compatibilidad con las restricciones de inmutabilidad del PostgreSQL del proyecto.
+- **Commit o despliegue:** PR [#40](https://github.com/jorgeluquerubia/lapela/pull/40); migración aplicada, pendiente de integrar y desplegar la aplicación.
+- **Notas de implementación:** `202609110001_product_search.sql` añade tags, aliases, documento de búsqueda e índices; `/api/search/suggestions` no ejecuta mantenimiento ni conteo exacto. Faltan pruebas integradas de API/interfaz, `EXPLAIN` y medición de rendimiento antes de marcar la ficha como `VERIFIED`.
 
 ## 12. Historial
 
@@ -136,3 +136,4 @@ Una persona puede introducir términos naturales, abreviaturas frecuentes o pequ
 | 2026-09-11 | `READY` | Criterios, datos, seguridad y validación concretados | Codex |
 | 2026-09-11 | `IN_PROGRESS` | Inicio de la implementación: datos, ranking y API | Codex |
 | 2026-09-11 | `IMPLEMENTED` | Migración, ranking, publicación con tags y sugerencias implementados; falta validación integrada en Supabase | Codex |
+| 2026-09-11 | `IMPLEMENTED` | Migración aplicada y alias `bici` validado contra `Bicicleta urbana roja` en Supabase; se usa trigger para mantener el documento de búsqueda por compatibilidad del motor. | Codex |
