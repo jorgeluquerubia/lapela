@@ -97,7 +97,7 @@ Al abrir una novedad desde la campana, esa novedad se marca como leída, desapar
 
 - **Archivos o módulos:** `src/components/Header.tsx`, `src/controllers/marketplace.ts`, pruebas de cabecera.
 - **Migraciones/configuración:** No aplica.
-- **Commit o despliegue:** `f3f0da7` · [PR #39](https://github.com/jorgeluquerubia/lapela/pull/39) preparada para `main`.
+- **Commit o despliegue:** [PR #39](https://github.com/jorgeluquerubia/lapela/pull/39) preparada para `main`.
 
 ## 12. Historial
 
