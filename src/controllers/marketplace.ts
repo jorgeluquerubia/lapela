@@ -92,6 +92,10 @@ export async function handle(request:Request,path:string[]){try{
   const updated=await rpc('lp_answer_question',{p_question_id:id,p_actor:user.id,p_answer:ans});
   return ok(updated);
  }
+ if(action==='mark-notification-read'&&uuid(id||'')){
+  const updated=await result(db.from('lp_notifications').update({read:true,read_at:new Date().toISOString()}).eq('id',id).eq('user_id',user.id).eq('read',false).select('id'));
+  return ok({success:true,marked:updated.length>0});
+ }
   if(action==='mark-listing-read'&&targetId&&uuid(targetId)){
    await rpc('lp_mark_listing_notifications_read',{p_listing:targetId,p_actor:user.id});
    return ok({success:true});
