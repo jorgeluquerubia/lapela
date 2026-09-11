@@ -66,6 +66,7 @@ Prioridades: `P0` bloquea una operación esencial o implica un riesgo grave; `P1
 | `LP-FIX-003` | `FIX` | Entrega fiable de novedades en la campana | `VERIFIED` | `P1` | 2026-09-10 | [Abrir ficha](specs/LP-FIX-003-panel-notificaciones.md) |
 | `LP-FEAT-011` | `FEATURE` | Aviso de nuevas pujas al vendedor | `VERIFIED` | `P1` | 2026-09-10 | [Abrir ficha](specs/LP-FEAT-011-aviso-pujas-vendedor.md) |
 | `LP-FIX-004` | `FIX` | Ruta correcta para la campana de notificaciones | `VERIFIED` | `P0` | 2026-09-11 | [Abrir ficha](specs/LP-FIX-004-ruta-campana-notificaciones.md) |
+| `LP-FEAT-012` | `FEATURE` | Escalado y centrado de imágenes en anuncios | `IMPLEMENTED` | `P2` | 2026-09-11 | [Abrir ficha](specs/LP-FEAT-012-imagenes-centradas.md) |
 
 
 ## Flujo para una solicitud nueva

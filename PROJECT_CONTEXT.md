@@ -56,6 +56,7 @@ La propuesta combina la sencillez de uso de un marketplace móvil con dos mecani
 
 - Publicación de un artículo como precio cerrado o subasta.
 - Entre una y seis imágenes JPG, PNG o WebP, de hasta 5 MB por archivo.
+- Las imágenes nuevas se normalizan al subirlas, conservando proporción y centrado dentro de un formato 4:3 para su presentación en los anuncios.
 - Categoría, estado, ubicación, descripción, modalidad de entrega y gastos de envío.
 - Precio entre 1 € y 10.000 €; compra inmediata opcional en subastas por encima de la salida.
 - Subastas entre una hora y treinta días.
