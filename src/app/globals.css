@@ -8,6 +8,15 @@
 .auth-actions{display:flex;flex-direction:column;align-items:center;gap:8px;margin:16px 0 8px}.auth-actions .button{width:100%}.auth-actions .text-link{margin-top:0}
 .forgot-link{align-self:flex-end;margin-top:-5px}
 
+/* LP-FEAT-012: keep listing photos complete and centered in every ad surface. */
+.product-image img,.detail-photo img,.photo-thumbs img,.activity-row img,.order-summary>img{object-fit:contain;object-position:center;background:var(--surface)}
+.product-image img{padding:12px}
+.product-card:hover .product-image img{transform:none}
+.detail-photo img{padding:18px}
+.photo-thumbs img{padding:5px}
+.activity-row img{padding:6px}
+.order-summary>img{padding:10px}
+
 .qa-section{margin-top:40px;border-top:1px solid var(--line);padding-top:30px}
 .qa-rule-banner{background:#f4f7f4;border:1px solid #d2ded5;border-left:4px solid var(--green);border-radius:12px;padding:16px 20px;font-size:14px;margin-bottom:24px;color:var(--ink)}
 .qa-rule-banner strong{display:block;color:var(--green-dark);margin-bottom:8px;font-size:15px;font-weight:700}
