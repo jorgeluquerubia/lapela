@@ -123,7 +123,7 @@ Una persona puede introducir términos naturales, abreviaturas frecuentes o pequ
 
 - **Archivos o módulos:** Previsiblemente `supabase/migrations/`, `src/controllers/marketplace.ts`, `src/models/marketplace.ts`, `src/components/Header.tsx`, `src/components/Catalog.tsx`, `src/app/publish-ad/page.tsx`, tipos y pruebas asociadas.
 - **Migraciones/configuración:** Pendiente; podría requerir habilitar `pg_trgm` y usar la configuración española de texto completo disponible en PostgreSQL/Supabase.
-- **Commit o despliegue:** Pendiente.
+- **Commit o despliegue:** PR [#40](https://github.com/jorgeluquerubia/lapela/pull/40) de planificación; la implementación y su despliegue quedan pendientes.
 - **Notas de implementación:** La ruta de sugerencias debe ser independiente del mantenimiento `lp_close_auctions` y no reutilizar la carga paginada del catálogo.
 
 ## 12. Historial
