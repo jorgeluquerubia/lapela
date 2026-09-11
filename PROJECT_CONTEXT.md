@@ -35,7 +35,7 @@ La propuesta combina la sencillez de uso de un marketplace móvil con dos mecani
 - Rutas semánticas para categorías (`/categoria/[slug]`), subastas (`/subastas`) y fichas de producto con slug descriptivo (`/articulos/[slug]`).
 - Redirección 301 de compatibilidad desde rutas históricas `/ad-detail/[slug]`.
 - Optimización SEO integral: SSR con `generateMetadata`, Open Graph, Twitter Cards, Schema.org JSON-LD (`Product`, `BreadcrumbList`, `WebSite`), `sitemap.xml` dinámico y `robots.txt`.
-- Búsqueda por título y descripción.
+- Búsqueda relevante por título, etiquetas controladas, categoría y descripción, con alias frecuentes, tolerancia conservadora a erratas y sugerencias mientras se escribe.
 - Filtros por categoría, modalidad, rango de precio y ubicación.
 - Orden por fecha, precio y próxima finalización de subasta.
 - Catálogo de ejemplo como alternativa cuando no hay conexión o resultados.
@@ -196,7 +196,8 @@ Las claves secretas no deben usar el prefijo `NEXT_PUBLIC_`, aparecer en specs, 
 
 ### Tablas activas
 
-- `lp_listings`: anuncios, modalidad, precio, entrega, entorno y estado.
+- `lp_listings`: anuncios, modalidad, precio, entrega, entorno, estado y etiquetas de búsqueda normalizadas.
+- `lp_search_aliases`: equivalencias controladas de términos de búsqueda frecuentes.
 - `lp_bids`: historial de pujas.
 - `lp_orders`: comprador, vendedor, importe, pago, dirección, seguimiento y estado.
 - `lp_messages`: conversación ligada al pedido.
@@ -230,7 +231,8 @@ El bucket `product-images` es público porque contiene fotografías de anuncios.
 
 | Método y ruta | Acceso | Función |
 |---|---|---|
-| `GET /api/products` | Público | Catálogo filtrado del entorno activo |
+| `GET /api/products` | Público | Catálogo filtrado del entorno activo y ordenado por relevancia cuando recibe una búsqueda |
+| `GET /api/search/suggestions` | Público | Sugerencias ligeras de consulta, categoría y artículo mientras se escribe |
 | `GET /api/market/listing/:id` | Público | Detalle seguro del anuncio |
 | `GET /api/market/questions/:id` | Público | Preguntas y respuestas paginadas (10 por página) |
 | `GET /api/market/activity` | Autenticado | Compras, ventas, pujas, anuncios, preguntas y notificaciones no leídas |
