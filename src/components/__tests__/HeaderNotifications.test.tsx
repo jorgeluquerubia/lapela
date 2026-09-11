@@ -20,6 +20,7 @@ describe('Header notifications',()=>{
   it('shows the bell, article link and contextual chat action',async()=>{
     render(<Header/>);
     const bell=await screen.findByRole('button',{name:'2 novedades sin leer'});
+    expect(global.fetch).toHaveBeenCalledWith('/api/market/notifications');
     fireEvent.click(bell);
     await waitFor(()=>expect(screen.getByText('Nuevo mensaje')).toBeInTheDocument());
     expect(screen.getByRole('link',{name:/nuevo mensaje.*cámara de prueba/i})).toHaveAttribute('href','/articulos/camara-de-prueba-123e4567-e89b-12d3-a456-426614174000');

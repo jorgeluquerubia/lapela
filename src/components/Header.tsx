@@ -19,7 +19,7 @@ export default function Header(){
   useEffect(()=>{
     if(!user){setUnreadCount(0);setNotifications([]);setOpen(false);return}
     let active=true;
-    const fetchNotifications=()=>fetch('/api/marketplace?action=notifications').then(r=>r.json()).then(d=>{
+    const fetchNotifications=()=>fetch('/api/market/notifications').then(r=>r.json()).then(d=>{
       if(active&&typeof d.unreadCount==='number'){setUnreadCount(d.unreadCount);setNotifications(Array.isArray(d.notifications)?d.notifications:[])}
     }).catch(()=>{});
     fetchNotifications();
