@@ -265,6 +265,7 @@ export default function Activity() {
             });
 
             const firstNote = itemNotes[0];
+            const counterpart=tab==='purchases'?r.seller:tab==='sales'?r.buyer:tab==='bids'?r.seller:null;
             const chipClass = firstNote
               ? firstNote.type === 'new_message'
                 ? 'notification-chip notification-chip-message'
@@ -296,6 +297,7 @@ export default function Activity() {
                     {labels[r.status || l.status] || r.status} ·{' '}
                     {new Date(r.created_at).toLocaleDateString('es-ES')}
                   </p>
+                  {counterpart?.alias&&<Link className="profile-link" href={`/usuarios/${counterpart.alias}`}>{tab==='purchases'?'Vendido por':tab==='sales'?'Comprado por':'Subasta de'} @{counterpart.alias}</Link>}
                   {firstNote && (
                     <div>
                       <Link className={chipClass} role="status" href={'/articulos/' + slug} aria-label={`${firstNote.title}: ver artículo ${l.title}`}>

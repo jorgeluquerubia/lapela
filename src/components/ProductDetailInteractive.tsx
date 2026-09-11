@@ -142,6 +142,7 @@ export default function ProductDetailInteractive({initialItem, slug, demo = fals
           {auction ? 'Subasta' : 'Precio cerrado'}
         </span>
         <h1>{item.title}</h1>
+        {item.seller?.alias&&<Link className="profile-link detail-seller" href={`/usuarios/${item.seller.alias}`}>Vendido por @{item.seller.alias}</Link>}
         <div className="detail-price">{money(item.price_cents)}</div>
         <p className="muted">
           {auction
@@ -162,6 +163,14 @@ export default function ProductDetailInteractive({initialItem, slug, demo = fals
             {error}
           </p>
         )}
+        {auction&&<section className="bid-history" aria-label="Historial de pujas">
+          <h2>Últimas pujas</h2>
+          {item.bids?.length?item.bids.map((entry:any)=><div className="bid-row" key={entry.id}>
+            <Link className="profile-link" href={`/usuarios/${entry.bidder.alias}`}>@{entry.bidder.alias}</Link>
+            <strong>{money(entry.amount_cents)}</strong>
+            <small>{new Date(entry.created_at).toLocaleString('es-ES')}</small>
+          </div>):<p className="muted">Todavía no hay pujas.</p>}
+        </section>}
         {item.status !== 'available' ? (
           item.mine && item.status === 'reserved' ? (
             <div className="seller-alert-banner" style={{ background: '#ecfdf5', borderColor: '#a7f3d0', flexDirection: 'column', alignItems: 'stretch' }}>

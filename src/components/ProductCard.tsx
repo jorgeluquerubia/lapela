@@ -36,6 +36,7 @@ export default function ProductCard({product:p}:{product:Product}){
         <span>{p.location||'España'}</span>
         <span>{auction&&time!==null?(time===0?'Finalizada':`Quedan ${time} h`):'Segunda mano'}</span>
       </div>
+      {p.sellerProfile?.alias&&<Link className="profile-link product-seller" href={`/usuarios/${p.sellerProfile.alias}`}>Vendido por @{p.sellerProfile.alias}</Link>}
     </div>
   </article>;
 }
