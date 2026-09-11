@@ -1,7 +1,7 @@
 ---
 id: LP-FEAT-012
 type: FEATURE
-status: IMPLEMENTED
+status: VERIFIED
 priority: P2
 requested_at: 2026-09-11
 requested_by: usuario
@@ -104,7 +104,7 @@ Las fotos subidas se normalizan conservando su proporción dentro de un lienzo e
 - **Archivos o módulos:** `src/lib/image-processing.ts`, `src/app/publish-ad/page.tsx`, `src/app/globals.css` y pruebas focalizadas.
 - **Rama:** `codex/lp-feat-012-imagenes-centradas`.
 - **Issue:** https://github.com/jorgeluquerubia/lapela/issues/35.
-- **Pull request:** Pendiente de publicación.
+- **Pull request:** https://github.com/jorgeluquerubia/lapela/pull/41.
 
 ## 12. Historial
 
@@ -112,3 +112,4 @@ Las fotos subidas se normalizan conservando su proporción dentro de un lienzo e
 |---|---|---|---|
 | 2026-09-11 | `IN_PROGRESS` | Creación de la ficha, issue #35 y rama de implementación | Codex |
 | 2026-09-11 | `IMPLEMENTED` | Normalización de imágenes, estilos centrados y validación focalizada | Codex |
+| 2026-09-11 | `VERIFIED` | Pull request #41 preparada; criterios de aceptación, build, specs y revisión visual comprobados | Codex |
