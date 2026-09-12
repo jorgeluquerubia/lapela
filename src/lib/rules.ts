@@ -1,6 +1,7 @@
 export const categories=['Tecnología','Hogar','Moda','Deporte','Coleccionismo','Otros'];
 export const conditions=['Como nuevo','Buen estado','Con señales de uso'];
 export const money=(cents:number)=>new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR'}).format(cents/100);
+export {PESETAS_PER_EURO, PESETA_DISCLAIMER, eurosToPesetas, centsToPesetas, formatPesetas, pesetaEquivalence, trackPesetaHelp} from './pesetas';
 export function cents(value:unknown){const n=Number(value);if(!Number.isFinite(n)||n<1||n>10000||Math.abs(n*100-Math.round(n*100))>0.00001)throw Error('Indica un importe entre 1 y 10.000 €, con un máximo de dos decimales.');return Math.round(n*100)}
 export function text(value:unknown,min:number,max:number){if(typeof value!=='string'||value.trim().length<min||value.trim().length>max)throw Error(`El texto debe tener entre ${min} y ${max} caracteres.`);return value.trim()}
 export function noContact(value:string){if(/https?:|www\.|\b[\w.+-]+@[\w.-]+\.[a-z]{2,}|(?:\+34[\s.-]*)?(?:\d[\s.-]*){9,}|whats?app|telegram|instagram|@[a-z0-9_]{3,}/i.test(value))throw Error('No incluyas teléfonos, enlaces ni datos de contacto.');return value}

@@ -112,4 +112,24 @@ describe('Order page - Chat in reservation & in-person payment (LP-FEAT-007)', (
     // Buyer should NOT see seller's in-person payment button
     expect(screen.queryByRole('button', { name: /Marcar pago recibido en persona/i })).not.toBeInTheDocument();
   });
+
+  it('renders peseta equivalence and payment disclaimer in order summary (LP-FEAT-016)', async () => {
+    (apiModule.api as jest.Mock).mockResolvedValue({
+      order: baseOrder,
+      messages: [],
+      userId: buyerId,
+      simulated: false,
+      canMessage: true,
+    });
+
+    render(<Order />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Pendiente de pago')).toBeInTheDocument();
+    });
+
+    // 50.00 € -> ≈ 8.319 ptas.
+    expect(screen.getByText('≈ 8.319 ptas.')).toBeInTheDocument();
+    expect(screen.getAllByText(/Equivalencia histórica · El pago se realiza en euros/i).length).toBeGreaterThanOrEqual(1);
+  });
 });

@@ -3,6 +3,7 @@ import {useState, useEffect} from 'react';
 import Link from 'next/link';
 import {api} from '@/lib/api';
 import {money} from '@/lib/rules';
+import {pesetaEquivalence, PESETA_DISCLAIMER, trackPesetaHelp} from '@/lib/pesetas';
 import {useAuth} from '@/context/AuthContext';
 import ProductQA from './ProductQA';
 
@@ -26,6 +27,10 @@ export default function ProductDetailInteractive({initialItem, slug, demo = fals
   const [notice, setNotice] = useState('');
   const [report, setReport] = useState(false);
   const [reason, setReason] = useState('');
+
+  useEffect(() => {
+    trackPesetaHelp('peseta_help_view', { source: 'product_detail', item_id: initialItem?.id });
+  }, [initialItem?.id]);
 
   // Fetch updated user-specific state (mine, isHighestBidder) if user is logged in
   useEffect(() => {
@@ -182,7 +187,20 @@ export default function ProductDetailInteractive({initialItem, slug, demo = fals
         </div>
         <h1>{item.title}</h1>
         {item.seller?.alias&&<Link className="profile-link detail-seller" href={`/usuarios/${item.seller.alias}`}>Vendido por @{item.seller.alias}</Link>}
-        <div className="detail-price">{money(item.price_cents)}</div>
+        <div className="detail-price-box">
+          <div className="detail-price">{money(item.price_cents)}</div>
+          <div className="peseta-badge-row">
+            <span className="peseta-approx">{pesetaEquivalence(item.price_cents, true)}</span>
+            <button
+              type="button"
+              className="peseta-help-tag"
+              title={PESETA_DISCLAIMER}
+              onClick={() => trackPesetaHelp('peseta_help_click', { source: 'detail_price_tag' })}
+            >
+              {PESETA_DISCLAIMER}
+            </button>
+          </div>
+        </div>
         <p className="muted">
           {auction
             ? `${item.bid_count} pujas · ${
@@ -206,7 +224,10 @@ export default function ProductDetailInteractive({initialItem, slug, demo = fals
           <h2>Últimas pujas</h2>
           {item.bids?.length?item.bids.map((entry:any)=><div className="bid-row" key={entry.id}>
             <Link className="profile-link" href={`/usuarios/${entry.bidder.alias}`}>@{entry.bidder.alias}</Link>
-            <strong>{money(entry.amount_cents)}</strong>
+            <div className="bid-price-cell text-right">
+              <strong>{money(entry.amount_cents)}</strong>
+              <span className="peseta-approx block text-xs">{pesetaEquivalence(entry.amount_cents, true)}</span>
+            </div>
             <small>{new Date(entry.created_at).toLocaleString('es-ES')}</small>
           </div>):<p className="muted">Todavía no hay pujas.</p>}
         </section>}
@@ -254,7 +275,14 @@ export default function ProductDetailInteractive({initialItem, slug, demo = fals
                   setConfirm(true);
                 }}
               >
-                <label htmlFor="bid">Tu puja (€)</label>
+                <div className="flex justify-between items-baseline">
+                  <label htmlFor="bid">Tu puja (€)</label>
+                  {Number(bid) > 0 && (
+                    <span className="peseta-approx text-xs">
+                      {pesetaEquivalence(Number(bid))}
+                    </span>
+                  )}
+                </div>
                 <input
                   className="field-input"
                   id="bid"
@@ -273,6 +301,12 @@ export default function ProductDetailInteractive({initialItem, slug, demo = fals
             {confirm && (
               <div className="confirmation" role="group" aria-label="Confirmar puja">
                 <strong>Confirmar una puja de {money(Math.round(Number(bid) * 100))}</strong>
+                <span className="peseta-approx block mt-1 text-xs">
+                  {pesetaEquivalence(Number(bid))}
+                </span>
+                <p className="text-xs text-stone-600 mt-1 mb-2 font-medium">
+                  {PESETA_DISCLAIMER}
+                </p>
                 <p>
                   Si ganas, tendrás 24 horas para pagar. Las pujas en los últimos 2 minutos amplían
                   el cierre otros 2 minutos.
@@ -290,12 +324,21 @@ export default function ProductDetailInteractive({initialItem, slug, demo = fals
                 <strong id="confirm-buy-title" className="block text-base mb-1">
                   ¿Confirmar la compra de este artículo?
                 </strong>
-                <p className="mb-2">
+                <p className="mb-1">
                   Total a abonar:{' '}
                   <strong>
                     {money((auction ? item.buy_now_cents : item.price_cents) + item.shipping_cents)}
                   </strong>
                   {item.shipping_cents > 0 ? ' (envío incluido)' : ' (recogida en persona)'}.
+                </p>
+                <p className="peseta-approx text-xs mb-1">
+                  {pesetaEquivalence(
+                    (auction ? item.buy_now_cents : item.price_cents) + item.shipping_cents,
+                    true
+                  )}
+                </p>
+                <p className="text-xs text-stone-600 mb-2 font-medium">
+                  {PESETA_DISCLAIMER}
                 </p>
                 <div className="notice text-xs mb-3">
                   Al confirmar, el artículo quedará <strong>reservado para ti durante 48 horas</strong> para formalizar el pago y acordar la entrega. Recuerda que no abonar una reserva en plazo puede conllevar <strong>penalizaciones en tu cuenta</strong> según nuestra{' '}
@@ -323,17 +366,25 @@ export default function ProductDetailInteractive({initialItem, slug, demo = fals
               </div>
             ) : (
               (!auction || item.buy_now_cents) && (
-                <button
-                  className={`button ${auction ? 'secondary' : 'primary'} w-full mt-3`}
-                  disabled={busy}
-                  onClick={() => setConfirmBuy(true)}
-                >
-                  {busy
-                    ? 'Preparando…'
-                    : `Comprar ahora · ${money(
-                        (auction ? item.buy_now_cents : item.price_cents) + item.shipping_cents
-                      )}`}
-                </button>
+                <div>
+                  <button
+                    className={`button ${auction ? 'secondary' : 'primary'} w-full mt-3`}
+                    disabled={busy}
+                    onClick={() => setConfirmBuy(true)}
+                  >
+                    {busy
+                      ? 'Preparando…'
+                      : `Comprar ahora · ${money(
+                          (auction ? item.buy_now_cents : item.price_cents) + item.shipping_cents
+                        )}`}
+                  </button>
+                  <span className="peseta-approx text-center block mt-1 text-xs">
+                    {pesetaEquivalence(
+                      (auction ? item.buy_now_cents : item.price_cents) + item.shipping_cents,
+                      true
+                    )}
+                  </span>
+                </div>
               )
             )}
           </>
