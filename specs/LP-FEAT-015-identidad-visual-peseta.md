@@ -111,9 +111,10 @@ La aplicación debe presentar una identidad visual renovada y coherente: una mar
 
 - **Archivos o módulos:** `src/components/Brand.tsx`, `src/components/Catalog.tsx`, `src/app/globals.css`, `src/app/layout.tsx`.
 - **Migraciones/configuración:** No aplica.
-- **Commit o despliegue:** Pendiente de commit y pull request.
+- **Commit o despliegue:** `e4143ad` · Pull request `https://github.com/jorgeluquerubia/lapela/pull/44`.
 - **Rama:** `codex/lp-feat-015-identidad-peseta`.
 - **Issue:** `https://github.com/jorgeluquerubia/lapela/issues/43`.
+- **Pull request:** `https://github.com/jorgeluquerubia/lapela/pull/44`.
 
 ## 12. Historial
 
@@ -121,3 +122,4 @@ La aplicación debe presentar una identidad visual renovada y coherente: una mar
 |---|---|---|---|
 | 2026-09-12 | `IN_PROGRESS` | Creación de la ficha y definición de dirección visual | Codex |
 | 2026-09-12 | `IMPLEMENTED` | Nuevo sello SVG, hero editorial, paleta y estilos globales aplicados; build y revisión visual superados | Codex |
+| 2026-09-12 | `IMPLEMENTED` | PR #44 preparada hacia `main`; queda pendiente resolver los fallos legacy de la suite frontend para marcar `VERIFIED` | Codex |
