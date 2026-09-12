@@ -178,6 +178,15 @@ export default function ProductDetailInteractive({initialItem, slug, demo = fals
       </section>
 
       <aside className="purchase-panel">
+        {item.featuredEdition && (
+          <Link
+            href={`/subastas/ediciones/${item.featuredEdition.slug}`}
+            className="featured-detail-chip"
+            aria-label={`Ver edición ${item.featuredEdition.title} de La Subasta de la Pela`}
+          >
+            ★ La Subasta de la Pela · {item.featuredEdition.title} ↗
+          </Link>
+        )}
         <span className={`sale-tag static-tag ${auction ? 'auction' : ''}`}>
           {auction ? 'Subasta' : 'Precio cerrado'}
         </span>

@@ -73,7 +73,21 @@ describe('ProductCard', () => {
     fireEvent.load(image);
 
     // Spinner is removed and image receives loaded class
-    expect(screen.queryByRole('status', { name: /Cargando imagen de Producto de Prueba…/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
     expect(image).toHaveClass('product-image-loaded');
+  });
+
+  it('muestra el distintivo de La Subasta de la Pela si el artículo está destacado (RF-03)', () => {
+    const featuredProduct: Product = {
+      ...mockProduct,
+      type: 'auction',
+      featuredEdition: {
+        id: 'ed-1',
+        slug: 'edicion-1',
+        title: 'Primera Edición',
+      },
+    };
+    render(<ProductCard product={featuredProduct} />);
+    expect(screen.getByText('★ Subasta de la Pela')).toBeInTheDocument();
   });
 });
