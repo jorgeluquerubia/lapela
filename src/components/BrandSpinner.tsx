@@ -18,8 +18,8 @@ export default function BrandSpinner({
       className={`brand-spinner ${className}`}
     >
       <div className={`brand-spinner-coin brand-spinner-${size}`} aria-hidden="true">
+        <span className="brand-spinner-value">1 P</span>
         <span className="brand-spinner-lp">lp</span>
-        <span className="brand-spinner-arrow">↗</span>
       </div>
       <span className="sr-only">{label}</span>
     </div>
