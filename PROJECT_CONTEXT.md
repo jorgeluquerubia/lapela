@@ -44,6 +44,9 @@ La propuesta combina la sencillez de uso de un marketplace móvil con dos mecani
 - Rutas semánticas para categorías (`/categoria/:slug`), subastas (`/subastas`) y artículos (`/articulos/:slug-con-id`).
 - Metadatos canónicos y sociales, Schema.org, `robots.txt` y sitemap dinámico para indexación.
 - Indicador no bloqueante con spinner de marca (moneda de La Pela girando en 3D) durante transiciones asíncronas de catálogo y carga diferida de imágenes en tarjetas.
+- Guardado y retirada de favoritos desde tarjetas de catálogo y ficha de producto, con vista privada en `Mi actividad` y ruta `/favoritos`.
+- Contador agregado de favoritos en anuncios para el vendedor, sin revelar identidades ni aliases de seguidores.
+- Alertas internas en la campana de novedades sobre cierre de subastas favoritas en su última hora, finalización e indisponibilidad.
 
 ### Cuenta y autenticación
 
