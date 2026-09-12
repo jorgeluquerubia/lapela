@@ -1,7 +1,7 @@
 ---
 id: LP-FEAT-019
 type: FEATURE
-status: READY
+status: IN_PROGRESS
 priority: P2
 requested_at: 2026-09-12
 requested_by: usuario
