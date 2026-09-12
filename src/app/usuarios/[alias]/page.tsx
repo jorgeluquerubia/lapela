@@ -12,7 +12,7 @@ export const metadata:Metadata={
 export default async function UserDashboard({params}:{params:Promise<{alias:string}>}){
   const {alias}=await params;
   const data=await getPublicProfile(alias);
-  if(!data)notFound();
+  if(!data){notFound();return null;}
   const stars=(score:number)=>'★'.repeat(score)+'☆'.repeat(5-score);
   return <section className="public-profile">
     <div className="profile-heading">
