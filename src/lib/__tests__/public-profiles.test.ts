@@ -8,16 +8,26 @@ describe('identidad pública',()=>{
     expect(publicAlias('  Ana_Vende-2 ')).toBe('ana_vende-2');
   });
 
-  it.each(['ab','usuario-123456789012','ana@example.com','ana vende','ana/venta'])('rechaza alias no públicos: %s',(alias)=>{
+  it.each(['ab','usuario-123456789012','ana@example.com','ana vende','ana/venta','-ana','_ana','a'.repeat(31)])('rechaza alias no públicos: %s',(alias)=>{
     expect(()=>publicAlias(alias)).toThrow('El alias debe tener');
+  });
+
+  it('acepta alias válidos en los límites de 3 y 30 caracteres',()=>{
+    expect(publicAlias('abc')).toBe('abc');
+    expect(publicAlias('a-1')).toBe('a-1');
+    expect(publicAlias('a_1')).toBe('a_1');
+    expect(publicAlias('a'.repeat(30))).toBe('a'.repeat(30));
   });
 
   it('genera un alias temporal opaco y no expone el identificador en una tarjeta',()=>{
     const identity=fallbackProfile('123e4567-e89b-12d3-a456-426614174000');
     const listing={id:'123e4567-e89b-42d3-a456-426614174000',seller_id:'123e4567-e89b-12d3-a456-426614174000',title:'Cámara réflex usada',description:'Cámara en buen estado con objetivo incluido.',price_cents:12000,mode:'sale',images:['https://example.com/camera.jpg'],location:'Madrid',category:'Tecnología',status:'available',bid_count:0,ends_at:null,created_at:'2026-09-11T10:00:00.000Z'};
     expect(identity.alias).toBe('usuario-123e4567e89b');
-    expect(card(listing,identity)).toMatchObject({seller:'usuario-123e4567e89b',sellerProfile:identity});
-    expect(card(listing,identity)).not.toHaveProperty('seller_id');
-    expect(card(listing,identity)).not.toHaveProperty('user_id');
+    const c=card(listing,identity);
+    expect(c).toMatchObject({seller:'usuario-123e4567e89b',sellerProfile:identity});
+    expect(c).not.toHaveProperty('seller_id');
+    expect(c).not.toHaveProperty('user_id');
+    expect(c).not.toHaveProperty('buyer_id');
+    expect(c).not.toHaveProperty('raw_user_meta_data');
   });
 });
