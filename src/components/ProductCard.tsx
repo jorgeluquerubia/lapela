@@ -7,6 +7,7 @@ import {Product} from '@/types';
 import {productSlug} from '@/lib/slugs';
 import {pesetaEquivalence} from '@/lib/pesetas';
 import BrandSpinner from './BrandSpinner';
+import toast from 'react-hot-toast';
 
 export default function ProductCard({product:p}:{product:Product}){
   const {user}=useAuth();
@@ -18,6 +19,7 @@ export default function ProductCard({product:p}:{product:Product}){
   const auction=p.type==='auction';
   const time=p.auction_ends_at?Math.max(0,Math.ceil((Date.parse(p.auction_ends_at)-Date.now())/3600000)):null;
   const href=`/articulos/${p.slug||productSlug(p.id,p.name)}`;
+  const isDemo = p.id.startsWith('demo-') || p.id.startsWith('ejemplo-');
 
   const toggleFavorite = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -41,12 +43,15 @@ export default function ProductCard({product:p}:{product:Product}){
       if (data.error) {
         setIsFavorite(!next);
         setFavoriteNotice(data.error);
+        toast.error(data.error);
       } else if (typeof data.is_favorite === 'boolean') {
         setIsFavorite(data.is_favorite);
+        toast.success(data.is_favorite ? 'Guardado en favoritos' : 'Eliminado de favoritos');
       }
     } catch {
       setIsFavorite(!next);
       setFavoriteNotice('Error al actualizar favoritos');
+      toast.error('Error al actualizar favoritos');
     } finally {
       setFavoriteBusy(false);
     }
@@ -72,18 +77,20 @@ export default function ProductCard({product:p}:{product:Product}){
           <span className="featured-tag">★ Subasta de la Pela</span>
         )}
       </Link>
-      <button
-        type="button"
-        className={`favorite-button ${isFavorite ? 'active' : ''}`}
-        onClick={toggleFavorite}
-        disabled={favoriteBusy}
-        aria-label={isFavorite ? 'Eliminar de favoritos' : 'Guardar en favoritos'}
-        aria-pressed={isFavorite}
-      >
-        <svg width="18" height="18" viewBox="0 0 24 24" fill={isFavorite ? '#dc2626' : 'none'} stroke={isFavorite ? '#dc2626' : 'currentColor'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-        </svg>
-      </button>
+      {!isDemo && (
+        <button
+          type="button"
+          className={`favorite-button ${isFavorite ? 'active' : ''}`}
+          onClick={toggleFavorite}
+          disabled={favoriteBusy}
+          aria-label={isFavorite ? 'Eliminar de favoritos' : 'Guardar en favoritos'}
+          aria-pressed={isFavorite}
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill={isFavorite ? '#dc2626' : 'none'} stroke={isFavorite ? '#dc2626' : 'currentColor'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+          </svg>
+        </button>
+      )}
       {favoriteNotice && <span className="sr-only" role="status">{favoriteNotice}</span>}
     </div>
     <div className="product-info">

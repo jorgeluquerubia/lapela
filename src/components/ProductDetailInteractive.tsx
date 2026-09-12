@@ -9,6 +9,8 @@ import {useAuth} from '@/context/AuthContext';
 import ProductQA from './ProductQA';
 import SocialShareModal from './SocialShareModal';
 
+import toast from 'react-hot-toast';
+
 interface ProductDetailInteractiveProps {
   initialItem: any;
   slug: string;
@@ -72,12 +74,15 @@ export default function ProductDetailInteractive({initialItem, slug, demo = fals
       if (res.error) {
         setIsFavorite(!next);
         setError(res.error);
+        toast.error(res.error);
       } else if (typeof res.is_favorite === 'boolean') {
         setIsFavorite(res.is_favorite);
+        toast.success(res.is_favorite ? 'Guardado en favoritos' : 'Eliminado de favoritos');
       }
     } catch (e) {
       setIsFavorite(!next);
       setError((e as Error).message);
+      toast.error((e as Error).message);
     } finally {
       setFavoriteBusy(false);
     }
