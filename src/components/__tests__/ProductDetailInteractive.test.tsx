@@ -130,5 +130,22 @@ describe('ProductDetailInteractive Confirmation and Purchase Policy (LP-FEAT-006
       expect(within(confirmGroup).getByText('≈ 12.479 ptas.')).toBeInTheDocument();
       expect(within(confirmGroup).getByText(/Equivalencia histórica · El pago se realiza en euros/i)).toBeInTheDocument();
     });
+
+    it('muestra el distintivo y enlace a la edición destacada (RF-03)', () => {
+      const featuredAuction = {
+        ...sampleItem,
+        mode: 'auction',
+        featuredEdition: {
+          id: 'ed-1',
+          slug: 'edicion-1',
+          title: 'Selección Septiembre',
+        },
+      };
+
+      render(<ProductDetailInteractive initialItem={featuredAuction} slug="bicicleta-sevilla" />);
+      const link = screen.getByRole('link', { name: /La Subasta de la Pela · Selección Septiembre/i });
+      expect(link).toBeInTheDocument();
+      expect(link).toHaveAttribute('href', '/subastas/ediciones/edicion-1');
+    });
   });
 });

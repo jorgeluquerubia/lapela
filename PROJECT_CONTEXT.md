@@ -90,6 +90,7 @@ La propuesta combina la sencillez de uso de un marketplace móvil con dos mecani
 - Cierre idempotente: sin pujas, el anuncio expira y avisa al vendedor; con pujas, crea un pedido y avisa al ganador y al vendedor.
 - El ganador dispone de 24 horas para pagar.
 - Compra inmediata opcional durante una subasta.
+- Subastas destacadas y coordinadas ("La Subasta de la Pela"): selección editorial con ventana coordinada, cuenta atrás informativa, distintivos en tarjetas y fichas, preservando el cierre real y anti-sniping de cada anuncio, y página de resultados dedicada tras su conclusión (`/subastas/ediciones/[slug]`).
 
 ### Conversación y confianza
 

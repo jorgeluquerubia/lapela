@@ -5,6 +5,7 @@ import Link from 'next/link';
 import {Product} from '@/types';
 import ProductCard from './ProductCard';
 import BrandSpinner from './BrandSpinner';
+import FeaturedAuctionSection from './FeaturedAuctionSection';
 import {demoProducts} from '@/lib/demo-products';
 import {categoryToSlug, slugify} from '@/lib/slugs';
 
@@ -91,6 +92,10 @@ export default function Catalog({initialCategory, initialMode}: CatalogProps = {
         El chat se abre después de comprar. Solo queda acordar la entrega.
       </div>
     </section>
+
+    {!q && page === 1 && (category === 'Todas' || mode === 'auction') && (
+      <FeaturedAuctionSection />
+    )}
 
     <div className="catalog-head">
       <div>

@@ -232,3 +232,70 @@ h1,h2{font-family:Georgia,'Times New Roman',serif;font-weight:700;letter-spacing
 .activity-price-box .peseta-approx{font-size:11px !important}
 .order-price-box .peseta-approx{font-size:13px !important;color:#455048 !important;font-weight:600 !important}
 
+/* LP-FEAT-019: Subastas destacadas y coordinadas */
+.featured-edition-block{margin-bottom:35px;border-radius:18px;border:1px solid var(--line);background:var(--paper);padding:26px 30px;box-shadow:0 2px 8px rgba(0,0,0,.03)}
+.featured-edition-hero{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;margin-bottom:24px;flex-wrap:wrap}
+.featured-edition-header{flex:1;min-width:280px}
+.featured-edition-header h2{font-size:1.8rem;margin:6px 0 8px;color:var(--green-dark)}
+.featured-edition-badges{display:flex;gap:10px;align-items:center;margin-bottom:8px}
+.featured-pill-brand{background:var(--green-dark);color:var(--lime);font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;letter-spacing:.05em;text-transform:uppercase}
+.featured-pill-status{font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px}
+.featured-pill-status.active{background:#dcf575;color:#0c4933}
+.featured-pill-status.upcoming{background:#e0e7ff;color:#3730a3}
+.featured-pill-status.ended{background:#f3f4f6;color:#4b5563}
+.featured-edition-desc{color:var(--muted);font-size:15px;margin:0;max-width:620px;line-height:1.45}
+.featured-edition-meta{display:flex;flex-direction:column;align-items:flex-end;gap:12px;text-align:right}
+.featured-countdown{background:white;border:1px solid var(--line);padding:12px 18px;border-radius:12px;display:flex;flex-direction:column;align-items:flex-end;gap:2px;min-width:230px}
+.countdown-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:700}
+.countdown-value{font-size:18px;color:var(--green-dark);font-weight:800}
+.countdown-absolute{font-size:11px;color:var(--muted);margin-top:2px}
+.featured-view-all{white-space:nowrap}
+.featured-products-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px}
+.featured-tag{position:absolute;right:10px;bottom:10px;background:var(--green-dark);color:var(--lime);font-size:10px;font-weight:700;padding:4px 8px;border-radius:6px;z-index:2;box-shadow:0 2px 4px rgba(0,0,0,.15)}
+.featured-detail-chip{display:inline-flex;align-items:center;gap:6px;background:var(--green-dark);color:var(--lime);padding:6px 14px;border-radius:20px;font-size:12px;font-weight:700;text-decoration:none;margin-bottom:12px;transition:opacity .15s ease}
+.featured-detail-chip:hover{opacity:.9}
+
+/* Edition Page */
+.edition-page-layout{max-width:1200px;margin:0 auto}
+.edition-hero{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:32px;margin-bottom:35px}
+.edition-hero-badges{display:flex;gap:10px;align-items:center;margin-bottom:12px}
+.edition-hero h1{font-size:clamp(2rem,3.5vw,2.8rem);color:var(--green-dark);margin:0 0 10px}
+.edition-desc{font-size:16px;color:var(--ink);max-width:700px;line-height:1.5;margin-bottom:24px}
+.edition-meta-banner{display:flex;justify-content:space-between;align-items:center;gap:24px;background:white;border:1px solid var(--line);border-radius:14px;padding:20px 24px;flex-wrap:wrap}
+.edition-dates{display:flex;gap:28px;flex-wrap:wrap}
+.edition-dates>div{display:flex;flex-direction:column;gap:3px}
+.edition-countdown-box{display:flex;flex-direction:column;align-items:flex-end;gap:3px;text-align:right}
+.meta-label{font-size:12px;color:var(--muted);text-transform:uppercase;font-weight:600;letter-spacing:.04em}
+.countdown-display{font-size:20px;color:var(--green-dark);font-weight:800}
+.edition-results-section{margin-top:30px}
+.results-header{margin-bottom:24px}
+.results-header h2{font-size:1.6rem;color:var(--green-dark);margin-bottom:4px}
+.results-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}
+.result-card{background:white;border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
+.result-image{position:relative;aspect-ratio:1.15;background:var(--surface);overflow:hidden}
+.result-image img{width:100%;height:100%;object-fit:contain;padding:12px}
+.result-tag{position:absolute;left:10px;bottom:10px;font-size:11px;font-weight:700;padding:4px 8px;border-radius:6px}
+.result-tag.sold{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0}
+.result-tag.unsold{background:#f3f4f6;color:#4b5563;border:1px solid #e5e7eb}
+.result-info{padding:16px;display:flex;flex-direction:column;flex:1;gap:6px}
+.result-info h3{font-size:15px;margin:0;line-height:1.4}
+.result-price-row{display:flex;align-items:baseline;gap:8px}
+.result-price-row strong{font-size:20px;color:var(--ink)}
+.result-details{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-top:4px}
+.result-outcome{font-weight:600;color:var(--green-dark)}
+
+@media(max-width:1000px){
+  .featured-products-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .results-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:650px){
+  .featured-edition-block{padding:20px}
+  .featured-edition-meta{align-items:stretch;width:100%;text-align:left}
+  .featured-countdown{align-items:flex-start}
+  .featured-products-grid{grid-template-columns:1fr}
+  .results-grid{grid-template-columns:1fr}
+  .edition-meta-banner{flex-direction:column;align-items:flex-start}
+  .edition-countdown-box{align-items:flex-start;text-align:left}
+}
+
+
