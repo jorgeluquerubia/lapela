@@ -19,6 +19,7 @@ async function getItem(slug: string) {
         id: demo.id,
         title: demo.name,
         description: demo.description,
+        story: demo.story || null,
         images: [demo.image],
         mode: demo.type,
         price_cents: demo.price * 100,

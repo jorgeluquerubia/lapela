@@ -5,7 +5,7 @@ import {useRouter} from 'next/navigation';
 import Link from 'next/link';
 import {useAuth} from '@/context/AuthContext';
 import {api} from '@/lib/api';
-import {categories,conditions} from '@/lib/rules';
+import {categories,conditions,validateStory} from '@/lib/rules';
 import {productSlug} from '@/lib/slugs';
 import {normalizeListingImage} from '@/lib/image-processing';
 
@@ -15,6 +15,7 @@ export default function Publish(){
   const [mode,setMode]=useState('sale');
   const [delivery,setDelivery]=useState('pickup');
   const [images,setImages]=useState<string[]>([]);
+  const [story,setStory]=useState('');
   const [uploading,setUploading]=useState(false);
   const [busy,setBusy]=useState(false);
   const [error,setError]=useState('');
@@ -43,7 +44,8 @@ export default function Publish(){
     setError('');
     const data=Object.fromEntries(new FormData(e.currentTarget));
     try{
-      const l=await api('publish',{...data,mode,delivery,images,ends_at:data.ends_at?new Date(String(data.ends_at)).toISOString():null});
+      const validatedStory = validateStory(story);
+      const l=await api('publish',{...data,mode,delivery,images,story:validatedStory,ends_at:data.ends_at?new Date(String(data.ends_at)).toISOString():null});
       router.push('/articulos/'+productSlug(l.id,String(data.title||'')));
     }catch(e){setError((e as Error).message)}finally{setBusy(false)}
   }
@@ -60,6 +62,27 @@ export default function Publish(){
       <label>Título<input name="title" placeholder="Por ejemplo: cámara réflex con objetivo 18–55 mm" minLength={5} maxLength={100} required/></label>
       <div className="form-pair"><label>Categoría<select name="category">{categories.map(c=><option key={c}>{c}</option>)}</select></label><label>Estado<select name="condition">{conditions.map(c=><option key={c}>{c}</option>)}</select></label></div>
       <label>Descripción y defectos<textarea name="description" rows={5} minLength={30} maxLength={4000} placeholder="Qué incluye, cuánto uso tiene y cualquier detalle o defecto que deba conocer quien lo compra." required/></label>
+      <div className="story-field-group">
+        <label htmlFor="story-input">
+          Historia de este objeto <span className="muted font-normal text-xs">(opcional)</span>
+        </label>
+        <p className="field-hint text-xs muted mb-1" id="story-hint">
+          ¿De dónde salió? ¿Qué recuerdos te trae, qué uso le has dado o por qué decides venderlo ahora? Cuenta su recorrido personal sin sustituir la descripción del estado ni los defectos.
+        </p>
+        <textarea
+          id="story-input"
+          name="story"
+          rows={4}
+          maxLength={1000}
+          value={story}
+          onChange={e=>setStory(e.target.value)}
+          placeholder="Por ejemplo: La compré en un anticuario del Rastro en 2018 para restaurarla durante las tardes de lluvia..."
+          aria-describedby="story-hint story-count"
+        />
+        <div className="char-counter text-right text-xs muted mb-4" id="story-count" aria-live="polite">
+          {story.length} / 1.000 caracteres
+        </div>
+      </div>
       <h2>2. Elige cómo vender</h2>
       <div className="choice-grid">{[['sale','Precio cerrado','Quien lo quiere, lo compra.'],['auction','Subasta','Decide el precio de salida y el cierre.']].map(([v,t,d])=><label key={v} className={mode===v?'choice selected':'choice'}><input type="radio" name="mode" value={v} checked={mode===v} onChange={()=>setMode(v)}/><strong>{t}</strong><span>{d}</span></label>)}</div>
       <div className="form-pair"><label>{mode==='sale'?'Precio (€)':'Precio de salida (€)'}<input type="number" name="price" required min="1" max="10000" step="0.01"/></label>{mode==='auction'&&<label>Comprar ahora (€), opcional<input type="number" name="buy_now" min="1" max="10000" step="0.01"/></label>}</div>

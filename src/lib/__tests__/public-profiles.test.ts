@@ -20,4 +20,17 @@ describe('identidad pública',()=>{
     expect(card(listing,identity)).not.toHaveProperty('seller_id');
     expect(card(listing,identity)).not.toHaveProperty('user_id');
   });
+
+  it('proyecta story y has_story correctamente en las tarjetas de producto (AC-02, AC-03)', () => {
+    const identity=fallbackProfile('123e4567-e89b-12d3-a456-426614174000');
+    const baseListing={id:'123e4567-e89b-42d3-a456-426614174000',seller_id:'123e4567-e89b-12d3-a456-426614174000',title:'Cámara réflex usada',description:'Cámara en buen estado con objetivo incluido.',price_cents:12000,mode:'sale',images:['https://example.com/camera.jpg'],location:'Madrid',category:'Tecnología',status:'available',bid_count:0,ends_at:null,created_at:'2026-09-11T10:00:00.000Z'};
+
+    const withStory = card({...baseListing, story: 'Comprada en 2018 para viajar.'}, identity);
+    expect(withStory.has_story).toBe(true);
+    expect(withStory.story).toBe('Comprada en 2018 para viajar.');
+
+    const withoutStory = card({...baseListing, story: null}, identity);
+    expect(withoutStory.has_story).toBe(false);
+    expect(withoutStory.story).toBeNull();
+  });
 });

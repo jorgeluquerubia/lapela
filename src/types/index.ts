@@ -23,6 +23,8 @@ export interface Product {
   category?: string;
   auction_ends_at?: string; // ISO 8601 string
   slug?: string;
+  story?: string | null;
+  has_story?: boolean;
 }
 
 export interface Profile {

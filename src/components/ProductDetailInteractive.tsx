@@ -70,6 +70,21 @@ export default function ProductDetailInteractive({initialItem, slug, demo = fals
     }
   }
 
+  async function removeStory() {
+    if (!item?.id) return;
+    setBusy(true);
+    setError('');
+    try {
+      await api('remove-story/' + item.id, {});
+      setItem((prev: any) => ({...prev, story: null}));
+      setNotice('La historia se ha retirado del anuncio.');
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
   if (!item) {
     return (
       <div className="empty-state">
@@ -119,8 +134,27 @@ export default function ProductDetailInteractive({initialItem, slug, demo = fals
             <span>{item.condition}</span>
             <span>{item.category}</span>
             <span>{item.location}</span>
+            {item.story && <span className="story-chip">Con historia</span>}
           </div>
           <p className="whitespace-pre-wrap">{item.description}</p>
+          {item.story && (
+            <section className="detail-story-box" aria-labelledby="story-heading">
+              <h3 id="story-heading">La historia de este objeto</h3>
+              <p className="whitespace-pre-wrap">{item.story}</p>
+              {item.mine && !demo && (
+                <div className="story-actions">
+                  <button
+                    type="button"
+                    onClick={removeStory}
+                    disabled={busy}
+                    className="button secondary text-xs py-1 px-3"
+                  >
+                    Retirar historia
+                  </button>
+                </div>
+              )}
+            </section>
+          )}
           <h3>Entrega</h3>
           <p>
             {item.delivery === 'shipping'
@@ -138,9 +172,14 @@ export default function ProductDetailInteractive({initialItem, slug, demo = fals
       </section>
 
       <aside className="purchase-panel">
-        <span className={`sale-tag static-tag ${auction ? 'auction' : ''}`}>
-          {auction ? 'Subasta' : 'Precio cerrado'}
-        </span>
+        <div className="detail-panel-tags">
+          <span className={`sale-tag static-tag ${auction ? 'auction' : ''}`}>
+            {auction ? 'Subasta' : 'Precio cerrado'}
+          </span>
+          {item.story && (
+            <span className="sale-tag static-tag story-badge-panel">Con historia</span>
+          )}
+        </div>
         <h1>{item.title}</h1>
         {item.seller?.alias&&<Link className="profile-link detail-seller" href={`/usuarios/${item.seller.alias}`}>Vendido por @{item.seller.alias}</Link>}
         <div className="detail-price">{money(item.price_cents)}</div>

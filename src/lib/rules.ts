@@ -22,5 +22,28 @@ export function publicAlias(value:unknown){
  return normalized;
 }
 
+export function noExternalPayment(value: string) {
+  const externalPaymentKeywords = /(?:^|[^\p{L}\p{N}])(?:bizum|paypal|verse|revolut|transferencia(?: bancaria)?|pago (?:por )?fuera|pago externo|cripto|bitcoin)(?:$|[^\p{L}\p{N}])/iu;
+  if (externalPaymentKeywords.test(value)) {
+    throw Error('No incluyas métodos de pago externos ni instrucciones fuera de la plataforma.');
+  }
+  return value;
+}
+
+export function validateStory(value: unknown): string | null {
+  if (value === undefined || value === null) return null;
+  if (typeof value !== 'string') throw Error('La historia debe ser un texto.');
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  if (trimmed.length > 1000) {
+    throw Error('La historia no puede superar los 1.000 caracteres.');
+  }
+  noContact(trimmed);
+  noBargaining(trimmed);
+  noExternalPayment(trimmed);
+  return trimmed;
+}
+
 export const uuid=(s:string)=>/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(s);
 export function canMessage(status:string,actor:string,buyer:string,seller:string){return ['pending_payment','paid','shipped','completed','disputed'].includes(status)&&[buyer,seller].includes(actor)}
+

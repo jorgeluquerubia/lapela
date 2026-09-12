@@ -71,4 +71,65 @@ describe('ProductDetailInteractive Confirmation and Purchase Policy (LP-FEAT-006
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Comprar ahora/i })).toBeInTheDocument();
   });
+
+  describe('Object Stories (LP-FEAT-017)', () => {
+    it('renders "La historia de este objeto" and "Con historia" badges when story is present (AC-02, AC-03)', () => {
+      const itemWithStory = {
+        ...sampleItem,
+        story: 'Este objeto perteneció a mi familia durante décadas y tiene gran valor sentimental.',
+      };
+
+      render(<ProductDetailInteractive initialItem={itemWithStory} slug="bicicleta-sevilla" />);
+
+      // Distinct story heading and text (AC-02)
+      expect(screen.getByRole('heading', { level: 3, name: /La historia de este objeto/i })).toBeInTheDocument();
+      expect(screen.getByText('Este objeto perteneció a mi familia durante décadas y tiene gran valor sentimental.')).toBeInTheDocument();
+
+      // "Con historia" badges in chips and panel (AC-03)
+      const badges = screen.getAllByText('Con historia');
+      expect(badges.length).toBeGreaterThanOrEqual(1);
+    });
+
+    it('does NOT render story block or "Con historia" badge when story is absent (AC-03)', () => {
+      render(<ProductDetailInteractive initialItem={sampleItem} slug="bicicleta-sevilla" />);
+
+      expect(screen.queryByRole('heading', { level: 3, name: /La historia de este objeto/i })).not.toBeInTheDocument();
+      expect(screen.queryByText('Con historia')).not.toBeInTheDocument();
+    });
+
+    it('renders story content safely as plain text without HTML execution (AC-05, RNF-01)', () => {
+      const dangerousStory = '<script>window.__pwned=true</script><b>Texto en negrita</b>';
+      const itemWithHtml = {
+        ...sampleItem,
+        story: dangerousStory,
+      };
+
+      const { container } = render(<ProductDetailInteractive initialItem={itemWithHtml} slug="bicicleta-sevilla" />);
+
+      // It must be rendered as literal text content, not parsed HTML elements
+      expect(screen.getByText(dangerousStory)).toBeInTheDocument();
+      expect(container.querySelector('script')).toBeNull();
+      expect(container.querySelector('b')).toBeNull();
+    });
+
+    it('allows seller to remove story from the ad (RF-04)', async () => {
+      const { api } = require('@/lib/api');
+      (api as jest.Mock).mockResolvedValueOnce({ success: true });
+
+      const myItemWithStory = {
+        ...sampleItem,
+        mine: true,
+        story: 'Historia para retirar.',
+      };
+
+      render(<ProductDetailInteractive initialItem={myItemWithStory} slug="bicicleta-sevilla" />);
+
+      const removeBtn = screen.getByRole('button', { name: /Retirar historia/i });
+      expect(removeBtn).toBeInTheDocument();
+
+      fireEvent.click(removeBtn);
+
+      expect(api).toHaveBeenCalledWith('remove-story/' + myItemWithStory.id, {});
+    });
+  });
 });

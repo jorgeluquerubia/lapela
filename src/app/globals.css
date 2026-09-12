@@ -184,6 +184,18 @@ h1,h2{font-family:Georgia,'Times New Roman',serif;font-weight:700;letter-spacing
 .brand-spinner-lp{font-family:Georgia,serif;color:var(--green-dark);font-size:inherit;line-height:1;margin-top:3px}
 .brand-spinner-arrow{display:none}
 
+.story-badge{position:absolute;top:12px;right:12px;padding:4px 10px;border-radius:999px;background:#fffdf8e6;color:var(--copper);font-size:11px;font-weight:700;border:1px solid #e2d7c5;box-shadow:0 2px 5px rgba(32,53,44,.08);backdrop-filter:blur(4px);letter-spacing:.02em}
+.detail-panel-tags{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
+.story-badge-panel{background:var(--paper-deep);color:var(--copper);border-color:#d8cebc}
+.detail-chips span.story-chip{background:#fbf7ee;border-color:#dfd3bd;color:var(--copper);font-weight:600}
+.detail-story-box{margin:28px 0;padding:22px 24px;border-radius:14px;background:#fcf9f2;border:1px solid #e8decb;border-left:4px solid var(--copper)}
+.detail-story-box h3{font-family:Georgia,serif;font-size:19px;color:var(--green-dark);margin-bottom:12px;font-weight:700}
+.detail-story-box p{color:#3b4640;font-size:15px;line-height:1.65;margin:0}
+.story-actions{margin-top:14px}
+.story-field-group{margin-bottom:15px}
+.story-field-group textarea{margin-bottom:4px}
+.char-counter{font-size:12px;color:var(--muted)}
+
 @media(max-width:900px){.market-intro{padding:34px}.market-intro-coin{margin-right:0}.intro-note{display:none}}
 @media(max-width:650px){
   .page-shell{padding-top:22px}

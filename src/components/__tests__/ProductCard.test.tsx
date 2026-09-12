@@ -61,4 +61,22 @@ describe('ProductCard', () => {
     expect(screen.queryByRole('status', { name: /Cargando imagen de Producto de Prueba…/i })).not.toBeInTheDocument();
     expect(image).toHaveClass('product-image-loaded');
   });
+
+  it('displays "Con historia" badge when product has_story or story (AC-03)', () => {
+    const productWithStory: Product = {
+      ...mockProduct,
+      has_story: true,
+      story: 'Una historia fascinante de este objeto.',
+    };
+
+    render(<ProductCard product={productWithStory} />);
+    const badge = screen.getByText('Con historia');
+    expect(badge).toBeInTheDocument();
+    expect(badge).toHaveClass('story-badge');
+  });
+
+  it('does NOT display "Con historia" badge or empty gap when product has no story (AC-03)', () => {
+    render(<ProductCard product={mockProduct} />);
+    expect(screen.queryByText('Con historia')).not.toBeInTheDocument();
+  });
 });

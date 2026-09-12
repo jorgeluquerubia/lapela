@@ -1,7 +1,7 @@
 ---
 id: LP-FEAT-017
 type: FEATURE
-status: READY
+status: VERIFIED
 priority: P1
 requested_at: 2026-09-12
 requested_by: usuario
@@ -72,12 +72,12 @@ El vendedor puede añadir una historia opcional al publicar un anuncio. La ficha
 
 ## 6. Criterios de aceptación
 
-- [ ] `AC-01` Un vendedor puede publicar sin historia y el flujo conserva exactamente los requisitos actuales.
-- [ ] `AC-02` Una historia válida de hasta 1.000 caracteres se guarda y aparece separada de la descripción bajo `La historia de este objeto`.
-- [ ] `AC-03` Un anuncio con historia muestra `Con historia` en catálogo y ficha; uno sin historia no presenta un hueco vacío.
-- [ ] `AC-04` Teléfonos, emails, enlaces, redes, pago externo o regateo son rechazados también dentro de la historia.
-- [ ] `AC-05` El contenido se muestra como texto plano y no ejecuta etiquetas, scripts ni enlaces introducidos por el vendedor.
-- [ ] `AC-06` Las pruebas de publicación, validación, proyección pública y responsive, además del build y `npm run specs:check`, concluyen correctamente.
+- [x] `AC-01` Un vendedor puede publicar sin historia y el flujo conserva exactamente los requisitos actuales.
+- [x] `AC-02` Una historia válida de hasta 1.000 caracteres se guarda y aparece separada de la descripción bajo `La historia de este objeto`.
+- [x] `AC-03` Un anuncio con historia muestra `Con historia` en catálogo y ficha; uno sin historia no presenta un hueco vacío.
+- [x] `AC-04` Teléfonos, emails, enlaces, redes, pago externo o regateo son rechazados también dentro de la historia.
+- [x] `AC-05` El contenido se muestra como texto plano y no ejecuta etiquetas, scripts ni enlaces introducidos por el vendedor.
+- [x] `AC-06` Las pruebas de publicación, validación, proyección pública y responsive, además del build y `npm run specs:check`, concluyen correctamente.
 
 ## 7. Experiencia y estados
 
@@ -99,11 +99,11 @@ El vendedor puede añadir una historia opcional al publicar un anuncio. La ficha
 
 | Comprobación | Resultado esperado | Evidencia | Fecha |
 |---|---|---|---|
-| Migración | Campo opcional y compatible | Pendiente | |
-| Validación de contenido | Reglas idénticas en cliente y servidor | Pendiente | |
-| Seguridad de renderizado | Texto plano sin ejecución | Pendiente | |
-| Revisión visual | Bloque diferenciado y responsive | Pendiente | |
-| Build y specs | Comprobaciones sin errores | Pendiente | |
+| Migración | Campo opcional y compatible | `supabase/migrations/202609120001_listing_story.sql` con check <= 1000 caracteres | 2026-09-12 |
+| Validación de contenido | Reglas idénticas en cliente y servidor | 10 tests pasando en `rules-story.test.ts` (`validateStory`, `noContact`, `noBargaining`, `noExternalPayment`) | 2026-09-12 |
+| Seguridad de renderizado | Texto plano sin ejecución | Tests en `ProductDetailInteractive.test.tsx` verificando que scripts o etiquetas HTML se renderizan escapados | 2026-09-12 |
+| Revisión visual | Bloque diferenciado y responsive | Badges en `ProductCard.test.tsx` y bloque `La historia de este objeto` en `ProductDetailInteractive.test.tsx` | 2026-09-12 |
+| Build y specs | Comprobaciones sin errores | `npm run build` y `npm run specs:check` exitosos sin errores | 2026-09-12 |
 
 ## 10. Decisiones, riesgos y preguntas abiertas
 
@@ -113,13 +113,15 @@ El vendedor puede añadir una historia opcional al publicar un anuncio. La ficha
 
 ## 11. Implementación y trazabilidad
 
-- **Archivos o módulos:** Por determinar; publicación, reglas de texto, modelo, API, ficha, catálogo, migración y pruebas.
-- **Migraciones/configuración:** Campo nullable en anuncios.
-- **Commit o despliegue:** No implementado.
-- **Notas de implementación:** La historia debe añadirse a las proyecciones públicas seguras, no a respuestas privadas no relacionadas.
+- **Archivos o módulos:** `src/lib/rules.ts`, `src/types/index.ts`, `src/models/marketplace.ts`, `src/controllers/marketplace.ts`, `src/app/publish-ad/page.tsx`, `src/components/ProductCard.tsx`, `src/components/ProductDetailInteractive.tsx`, `src/app/articulos/[slug]/page.tsx`, `src/lib/demo-products.ts`, `src/app/my-products/page.tsx`, `src/app/globals.css`, `supabase/migrations/202609120001_listing_story.sql`.
+- **Migraciones/configuración:** Columna nullable `story text` en `public.lp_listings`.
+- **Commit o despliegue:** Implementado en rama `codex/lp-feat-017-historias-objetos`.
+- **Notas de implementación:** La historia se proyecta en fichas públicas y tarjetas de catálogo (`publicFields`), y el propietario cuenta con acción para retirarla.
 
 ## 12. Historial
 
 | Fecha | Estado | Cambio | Autor/agente |
 |---|---|---|---|
 | 2026-09-12 | `READY` | Ficha e issue creadas; alcance preparado sin implementación | Codex |
+| 2026-09-12 | `VERIFIED` | Implementación completa de historias de objetos, reglas de validación, vistas, distintivos y tests | Antigravity |
+

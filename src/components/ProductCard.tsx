@@ -25,6 +25,7 @@ export default function ProductCard({product:p}:{product:Product}){
         className={imageLoaded ? 'product-image-loaded' : 'product-image-unloaded'}
       />
       <span className={`sale-tag ${auction?'auction':''}`}>{auction?'↗ Subasta':'Precio cerrado'}</span>
+      {(p.has_story || Boolean(p.story)) && <span className="story-badge">Con historia</span>}
     </Link>
     <div className="product-info">
       <div className="price-row">
