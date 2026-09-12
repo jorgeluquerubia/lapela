@@ -6,6 +6,7 @@ import {money} from '@/lib/rules';
 import {pesetaEquivalence, PESETA_DISCLAIMER, trackPesetaHelp} from '@/lib/pesetas';
 import {useAuth} from '@/context/AuthContext';
 import ProductQA from './ProductQA';
+import SocialShareModal from './SocialShareModal';
 
 interface ProductDetailInteractiveProps {
   initialItem: any;
@@ -27,6 +28,7 @@ export default function ProductDetailInteractive({initialItem, slug, demo = fals
   const [notice, setNotice] = useState('');
   const [report, setReport] = useState(false);
   const [reason, setReason] = useState('');
+  const [shareOpen, setShareOpen] = useState(false);
 
   useEffect(() => {
     trackPesetaHelp('peseta_help_view', { source: 'product_detail', item_id: initialItem?.id });
@@ -349,6 +351,49 @@ export default function ProductDetailInteractive({initialItem, slug, demo = fals
               )
             )}
           </>
+        )}
+        {!demo && item.status === 'available' && (
+          <div className="mt-3">
+            <button
+              type="button"
+              className="button secondary w-full flex items-center justify-center gap-2"
+              onClick={() => setShareOpen(true)}
+              aria-haspopup="dialog"
+            >
+              <svg
+                width="17"
+                height="17"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <circle cx="18" cy="5" r="3" />
+                <circle cx="6" cy="12" r="3" />
+                <circle cx="18" cy="19" r="3" />
+                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+              </svg>
+              Compartir anuncio
+            </button>
+          </div>
+        )}
+        {!demo && item.status === 'available' && (
+          <SocialShareModal
+            isOpen={shareOpen}
+            onClose={() => setShareOpen(false)}
+            item={{
+              id: item.id,
+              title: item.title,
+              price_cents: item.price_cents,
+              mode: item.mode,
+              slug: item.slug || slug,
+              images: item.images,
+            }}
+          />
         )}
         <div className="purchase-promise">
           <strong>Un trato claro, de principio a fin.</strong>

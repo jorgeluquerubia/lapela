@@ -232,3 +232,156 @@ h1,h2{font-family:Georgia,'Times New Roman',serif;font-weight:700;letter-spacing
 .activity-price-box .peseta-approx{font-size:11px !important}
 .order-price-box .peseta-approx{font-size:13px !important;color:#455048 !important;font-weight:600 !important}
 
+/* LP-FEAT-020: Tarjetas sociales de anuncios y modal de compartir */
+.share-modal-overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(23,37,33,.72);
+  backdrop-filter:blur(5px);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:1000;
+  padding:16px;
+  overflow-y:auto;
+}
+.share-modal-dialog{
+  background:#fff;
+  border-radius:18px;
+  border:1px solid var(--line);
+  max-width:680px;
+  width:100%;
+  padding:24px;
+  box-shadow:0 24px 48px rgba(18,37,28,.22);
+  position:relative;
+  animation:shareModalFadeIn .2s ease-out;
+}
+@keyframes shareModalFadeIn{
+  from{opacity:0;transform:scale(.97)}
+  to{opacity:1;transform:scale(1)}
+}
+.share-modal-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:16px;
+  margin-bottom:18px;
+}
+.share-modal-heading{
+  font-size:22px;
+  font-weight:700;
+  color:var(--ink);
+  margin:0 0 4px;
+}
+.share-modal-subtitle{
+  font-size:13px;
+  color:var(--muted);
+  margin:0;
+}
+.share-modal-close-btn{
+  border:0;
+  background:#f4eee1;
+  border-radius:50%;
+  width:32px;
+  height:32px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:14px;
+  font-weight:700;
+  color:var(--ink);
+  cursor:pointer;
+  flex-shrink:0;
+  transition:background .15s;
+}
+.share-modal-close-btn:hover{
+  background:#e8dfcb;
+}
+.share-card-preview-container{
+  position:relative;
+  width:100%;
+  border-radius:12px;
+  overflow:hidden;
+  background:#fbf8f1;
+  border:1px solid #e2ded5;
+  aspect-ratio:1.905 / 1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  margin-bottom:18px;
+}
+.share-card-preview-img{
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  display:block;
+  border-radius:11px;
+}
+.share-card-skeleton{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#f4eee1;
+  color:var(--muted);
+  font-size:13px;
+  text-align:center;
+  padding:20px;
+}
+.share-feedback-notice{
+  padding:10px 14px;
+  background:#ebf5ef;
+  border:1px solid #9dc7af;
+  color:#0e4e36;
+  border-radius:8px;
+  font-size:13px;
+  font-weight:600;
+  margin-bottom:14px;
+  text-align:center;
+  animation:shareModalFadeIn .15s ease-out;
+}
+.share-actions-grid{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-bottom:16px;
+}
+.share-actions-grid .share-action-btn{
+  flex:1 1 160px;
+  min-height:44px;
+  padding:10px 16px;
+  font-size:14px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+}
+.share-modal-footer{
+  display:flex;
+  justify-content:flex-end;
+  border-top:1px solid var(--line);
+  padding-top:14px;
+}
+.share-modal-cancel-btn{
+  min-height:38px;
+  padding:8px 18px;
+  font-size:14px;
+}
+@media (max-width:650px){
+  .share-modal-dialog{
+    padding:18px 14px;
+    border-radius:14px;
+  }
+  .share-modal-heading{
+    font-size:19px;
+  }
+  .share-actions-grid{
+    flex-direction:column;
+  }
+  .share-actions-grid .share-action-btn{
+    width:100%;
+    min-height:46px;
+  }
+}
+

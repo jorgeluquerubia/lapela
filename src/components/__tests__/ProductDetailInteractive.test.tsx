@@ -131,4 +131,31 @@ describe('ProductDetailInteractive Confirmation and Purchase Policy (LP-FEAT-006
       expect(within(confirmGroup).getByText(/Equivalencia histórica · El pago se realiza en euros/i)).toBeInTheDocument();
     });
   });
+
+  describe('Social share action (LP-FEAT-020)', () => {
+    it('shows Compartir anuncio button on active available listings and opens share modal (AC-01)', () => {
+      render(<ProductDetailInteractive initialItem={sampleItem} slug="bicicleta-sevilla" />);
+
+      const shareBtn = screen.getByRole('button', { name: /compartir anuncio/i });
+      expect(shareBtn).toBeInTheDocument();
+
+      fireEvent.click(shareBtn);
+
+      const dialog = screen.getByRole('dialog');
+      expect(dialog).toBeInTheDocument();
+      expect(within(dialog).getByRole('heading', { name: /compartir anuncio/i })).toBeInTheDocument();
+    });
+
+    it('does not show Compartir button on demo listings or unavailable items (AC-06)', () => {
+      const { unmount } = render(
+        <ProductDetailInteractive initialItem={sampleItem} slug="bicicleta-sevilla" demo={true} />
+      );
+      expect(screen.queryByRole('button', { name: /compartir anuncio/i })).not.toBeInTheDocument();
+      unmount();
+
+      const soldItem = { ...sampleItem, status: 'sold' };
+      render(<ProductDetailInteractive initialItem={soldItem} slug="bicicleta-sevilla" />);
+      expect(screen.queryByRole('button', { name: /compartir anuncio/i })).not.toBeInTheDocument();
+    });
+  });
 });
