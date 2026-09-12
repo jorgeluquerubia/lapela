@@ -39,11 +39,18 @@ describe('ProductCard', () => {
     // Check for product price
     // Note: The component formats the price with a dot and a space.
     expect(screen.getByText(/99.99\s€/)).toBeInTheDocument();
+    expect(screen.getByText('≈ 16.637 ptas.')).toBeInTheDocument();
 
     // Check for product image
     const image = screen.getByAltText('Producto de Prueba');
     expect(image).toBeInTheDocument();
     expect(image).toHaveAttribute('src', 'https://example.com/image.jpg');
+  });
+
+  it('renders AC-01 peseta equivalence for 75.00 € product (≈ 12.479 ptas.)', () => {
+    const product75 = { ...mockProduct, price: 75 };
+    render(<ProductCard product={product75} />);
+    expect(screen.getByText('≈ 12.479 ptas.')).toBeInTheDocument();
   });
 
   it('shows BrandSpinner while image is loading and displays image on load', () => {
