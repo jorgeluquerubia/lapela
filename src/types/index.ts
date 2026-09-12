@@ -23,6 +23,13 @@ export interface Product {
   category?: string;
   auction_ends_at?: string; // ISO 8601 string
   slug?: string;
+  featuredEdition?: {
+    id: string;
+    slug: string;
+    title: string;
+    status?: string;
+    temporal_status?: 'upcoming' | 'active' | 'ended';
+  };
 }
 
 export interface Profile {
@@ -72,3 +79,28 @@ export interface Bid {
     username: string;
   };
 }
+
+export interface AuctionEdition {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  environment?: 'sandbox' | 'live';
+  starts_at: string;
+  reference_ends_at: string;
+  status: 'draft' | 'published' | 'cancelled';
+  temporal_status: 'upcoming' | 'active' | 'ended';
+  image_url?: string | null;
+  items_count?: number;
+  items?: Product[];
+}
+
+export interface AuctionEditionItem {
+  id: string;
+  edition_id: string;
+  listing_id: string;
+  sort_order: number;
+  created_at: string;
+  product?: Product;
+}
+
