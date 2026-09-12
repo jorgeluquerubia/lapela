@@ -70,6 +70,7 @@ Prioridades: `P0` bloquea una operación esencial o implica un riesgo grave; `P1
 | `LP-FEAT-012` | `FEATURE` | Escalado y centrado de imágenes en anuncios | `VERIFIED` | `P2` | 2026-09-11 | [Abrir ficha](specs/LP-FEAT-012-imagenes-centradas.md) |
 | `LP-FIX-005` | `FIX` | Lectura de notificaciones desde la campana | `VERIFIED` | `P1` | 2026-09-11 | [Abrir ficha](specs/LP-FIX-005-lectura-notificaciones-campana.md) |
 | `LP-FEAT-015` | `FEATURE` | Identidad visual inspirada en la peseta | `IMPLEMENTED` | `P2` | 2026-09-12 | [Abrir ficha](specs/LP-FEAT-015-identidad-visual-peseta.md) |
+| `LP-FEAT-016` | `FEATURE` | Precios en euros con equivalencia en pesetas | `READY` | `P1` | 2026-09-12 | [Abrir ficha](specs/LP-FEAT-016-precios-equivalencia-pesetas.md) |
 
 
 ## Flujo para una solicitud nueva
