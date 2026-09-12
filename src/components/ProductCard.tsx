@@ -5,6 +5,7 @@ import {useRouter} from 'next/navigation';
 import {useAuth} from '@/context/AuthContext';
 import {Product} from '@/types';
 import {productSlug} from '@/lib/slugs';
+import {pesetaEquivalence} from '@/lib/pesetas';
 import BrandSpinner from './BrandSpinner';
 
 export default function ProductCard({product:p}:{product:Product}){
@@ -84,7 +85,12 @@ export default function ProductCard({product:p}:{product:Product}){
     </div>
     <div className="product-info">
       <div className="price-row">
-        <strong>{new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR',maximumFractionDigits:2}).format(p.current_bid||p.price)}</strong>
+        <div className="price-stack">
+          <strong>{new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR',maximumFractionDigits:2}).format(p.current_bid||p.price)}</strong>
+          <span className="peseta-approx" title="Equivalencia histórica · El pago se realiza en euros">
+            {pesetaEquivalence(p.current_bid || p.price)}
+          </span>
+        </div>
         <span>{auction?`${p.bid_count||0} pujas`:'Sin regateos'}</span>
       </div>
       <Link href={href}><h3>{p.name}</h3></Link>

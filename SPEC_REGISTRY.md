@@ -65,12 +65,14 @@ Prioridades: `P0` bloquea una operación esencial o implica un riesgo grave; `P1
 | `LP-FEAT-010` | `FEATURE` | Notificaciones contextuales y cierre de subastas | `VERIFIED` | `P1` | 2026-09-10 | [Abrir ficha](specs/LP-FEAT-010-notificaciones-contextuales.md) |
 | `LP-FIX-003` | `FIX` | Entrega fiable de novedades en la campana | `VERIFIED` | `P1` | 2026-09-10 | [Abrir ficha](specs/LP-FIX-003-panel-notificaciones.md) |
 | `LP-FEAT-011` | `FEATURE` | Aviso de nuevas pujas al vendedor | `VERIFIED` | `P1` | 2026-09-10 | [Abrir ficha](specs/LP-FEAT-011-aviso-pujas-vendedor.md) |
-| `LP-FEAT-013` | `FEATURE` | Identidad pública, perfiles y valoraciones | `IMPLEMENTED` | `P1` | 2026-09-11 | [Abrir ficha](specs/LP-FEAT-013-public-profiles-reviews.md) |
+| `LP-FEAT-013` | `FEATURE` | Identidad pública, perfiles y valoraciones | `VERIFIED` | `P1` | 2026-09-11 | [Abrir ficha](specs/LP-FEAT-013-public-profiles-reviews.md) |
 | `LP-FIX-004` | `FIX` | Ruta correcta para la campana de notificaciones | `VERIFIED` | `P0` | 2026-09-11 | [Abrir ficha](specs/LP-FIX-004-ruta-campana-notificaciones.md) |
 | `LP-FEAT-012` | `FEATURE` | Escalado y centrado de imágenes en anuncios | `VERIFIED` | `P2` | 2026-09-11 | [Abrir ficha](specs/LP-FEAT-012-imagenes-centradas.md) |
 | `LP-FIX-005` | `FIX` | Lectura de notificaciones desde la campana | `VERIFIED` | `P1` | 2026-09-11 | [Abrir ficha](specs/LP-FIX-005-lectura-notificaciones-campana.md) |
 | `LP-FEAT-015` | `FEATURE` | Identidad visual inspirada en la peseta | `IMPLEMENTED` | `P2` | 2026-09-12 | [Abrir ficha](specs/LP-FEAT-015-identidad-visual-peseta.md) |
+| `LP-FEAT-016` | `FEATURE` | Precios en euros con equivalencia en pesetas | `VERIFIED` | `P1` | 2026-09-12 | [Abrir ficha](specs/LP-FEAT-016-precios-equivalencia-pesetas.md) |
 | `LP-FEAT-018` | `FEATURE` | Favoritos y alertas de artículos | `VERIFIED` | `P1` | 2026-09-12 | [Abrir ficha](specs/LP-FEAT-018-favoritos-alertas.md) |
+| `LP-FEAT-020` | `FEATURE` | Tarjetas sociales de anuncios | `VERIFIED` | `P2` | 2026-09-12 | [Abrir ficha](specs/LP-FEAT-020-tarjetas-sociales.md) |
 
 
 ## Flujo para una solicitud nueva

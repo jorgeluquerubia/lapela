@@ -1,12 +1,12 @@
 ---
 id: LP-FEAT-013
 type: FEATURE
-status: IMPLEMENTED
+status: VERIFIED
 priority: P1
 requested_at: 2026-09-11
 requested_by: usuario
 source: conversación
-owner: codex
+owner: gemini
 github_issue: https://github.com/jorgeluquerubia/lapela/issues/36
 related_specs: [LP-FEAT-001, LP-FEAT-005, LP-FEAT-010, LP-FEAT-011]
 dependencies: []
@@ -73,13 +73,13 @@ Cada cuenta dispone de un alias público único y estable. Los anuncios, pujas, 
 
 ## 6. Criterios de aceptación
 
-- [ ] `AC-01` Una cuenta existente o nueva tiene un alias público único, y puede personalizarlo desde Mi cuenta con validación de formato y colisión.
-- [ ] `AC-02` Las tarjetas y la ficha de un anuncio muestran y enlazan el alias del vendedor; una subasta muestra aliases, importes y fechas de sus últimas pujas.
-- [ ] `AC-03` El detalle del pedido, Mi actividad y el chat muestran los aliases de las contrapartes solo a sus partes autorizadas.
-- [ ] `AC-04` `/usuarios/[alias]` presenta anuncios activos, total de ventas completadas y valoraciones; no expone campos privados ni se indexa.
-- [ ] `AC-05` El historial de compras no se expone hasta activar su visibilidad desde Mi cuenta.
-- [ ] `AC-06` Tras completar un pedido, cada parte puede enviar una única valoración de 1 a 5 estrellas con comentario opcional; no puede valorar otro pedido, a sí misma ni repetir la valoración.
-- [ ] `AC-07` La compilación, pruebas relevantes y `npm run specs:check` concluyen satisfactoriamente.
+- [x] `AC-01` Una cuenta existente o nueva tiene un alias público único, y puede personalizarlo desde Mi cuenta con validación de formato y colisión.
+- [x] `AC-02` Las tarjetas y la ficha de un anuncio muestran y enlazan el alias del vendedor; una subasta muestra aliases, importes y fechas de sus últimas pujas.
+- [x] `AC-03` El detalle del pedido, Mi actividad y el chat muestran los aliases de las contrapartes solo a sus partes autorizadas.
+- [x] `AC-04` `/usuarios/[alias]` presenta anuncios activos, total de ventas completadas y valoraciones; no expone campos privados ni se indexa.
+- [x] `AC-05` El historial de compras no se expone hasta activar su visibilidad desde Mi cuenta.
+- [x] `AC-06` Tras completar un pedido, cada parte puede enviar una única valoración de 1 a 5 estrellas con comentario opcional; no puede valorar otro pedido, a sí misma ni repetir la valoración.
+- [x] `AC-07` La compilación, pruebas relevantes y `npm run specs:check` concluyen satisfactoriamente.
 
 ## 7. Experiencia y estados
 
@@ -101,12 +101,12 @@ Cada cuenta dispone de un alias público único y estable. Los anuncios, pujas, 
 
 | Comprobación | Resultado esperado | Evidencia | Fecha |
 |---|---|---|---|
-| Migración SQL | Restricciones de alias, privacidad y valoración válidas | Pendiente de aplicar en Supabase | |
-| Pruebas unitarias | Normalización de alias y proyección sin UUID | `src/lib/__tests__/public-profiles.test.ts` (7 pruebas correctas) | 2026-09-11 |
-| Componentes | Tarjeta y ficha de artículo siguen renderizando | 11 pruebas correctas de perfil, tarjeta y ficha | 2026-09-11 |
-| Tipos | Tipos TypeScript correctos | `npx tsc --noEmit` correcto | 2026-09-11 |
-| Build | Compilación correcta hasta prerenderizado | Se detiene sin `NEXT_PUBLIC_SUPABASE_URL`/clave anónima en el worktree | 2026-09-11 |
-| Validación de specs | Registro, ficha y enlaces coherentes | `npm run specs:check -- --branch-name codex/lp-feat-013-public-profiles-reviews` correcto | 2026-09-11 |
+| Migración SQL | Restricciones de alias, privacidad y valoración válidas | `tests/database/marketplace.sql` ejecutado contra Supabase con resultado `PASS: ownership, public profile aliases, reviews, ...` | 2026-09-12 |
+| Pruebas unitarias | Normalización de alias, límites y proyección sin UUID | `src/lib/__tests__/public-profiles.test.ts` (12 pruebas correctas) | 2026-09-12 |
+| Componentes y vistas | Renderizado de perfil, personalización de cuenta y valoraciones | `src/app/usuarios/[alias]/__tests__/page.test.tsx` (7 pruebas), `src/app/user-profile/__tests__/profile-alias.test.tsx` (5 pruebas), `src/app/orders/[id]/__tests__/order-review.test.tsx` (3 pruebas), `src/app/orders/[id]/__tests__/Order.test.tsx` (2 pruebas), `ProductCard` y `ProductDetailInteractive` (15 pruebas). Total: 7 suites, 32 pruebas correctas | 2026-09-12 |
+| Tipos | Tipos TypeScript correctos | `npx tsc --noEmit` correcto sin errores | 2026-09-12 |
+| Build | Compilación correcta de producción | `npm run build` completado exitosamente (26 rutas) | 2026-09-12 |
+| Validación de specs | Registro, ficha y enlaces coherentes | `npm run specs:check -- --branch-name gemini/lp-feat-013-public-profiles-reviews` correcto (25 fichas, 36 documentos) | 2026-09-12 |
 
 ## 10. Decisiones, riesgos y preguntas abiertas
 
@@ -117,8 +117,8 @@ Cada cuenta dispone de un alias público único y estable. Los anuncios, pujas, 
 ## 11. Implementación y trazabilidad
 
 - **Archivos o módulos:** Modelo, controlador, componentes de catálogo/ficha/pedido/cuenta/actividad, ruta de perfiles, estilos y pruebas.
-- **Migraciones/configuración:** Nueva migración aditiva de perfiles y valoraciones.
-- **Commit o despliegue:** `579c1ea` en la rama `codex/lp-feat-013-public-profiles-reviews`; [PR #42](https://github.com/jorgeluquerubia/lapela/pull/42) contra `main`.
+- **Migraciones/configuración:** Nueva migración aditiva de perfiles y valoraciones (`202609110001_public_profiles_reviews.sql`), aplicada y comprobada en Supabase.
+- **Commit o despliegue:** Rama `gemini/lp-feat-013-public-profiles-reviews`.
 - **Notas de implementación:** Se preservan las reglas de chat y no contacto existentes; el alias no abre ningún canal de comunicación.
 
 ## 12. Historial
@@ -128,3 +128,4 @@ Cada cuenta dispone de un alias público único y estable. Los anuncios, pujas, 
 | 2026-09-11 | `IN_PROGRESS` | Creación de ficha e issue #36 | Codex |
 | 2026-09-11 | `IMPLEMENTED` | Implementación lista; falta aplicar migración y validar en un entorno con Supabase | Codex |
 | 2026-09-11 | `IMPLEMENTED` | PR #42 abierta para revisión | Codex |
+| 2026-09-12 | `VERIFIED` | Verificación completa de base de datos en Supabase, suites de tests automatizados de UI y perfiles, robustecimiento de página de pedidos y compilación de producción | Gemini |
