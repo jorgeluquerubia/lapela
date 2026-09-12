@@ -200,6 +200,12 @@ h1,h2{font-family:Georgia,'Times New Roman',serif;font-weight:700;letter-spacing
   .product-image{border-radius:13px}
 }
 
+.favorite-button{position:absolute;top:10px;right:10px;z-index:3;width:34px;height:34px;border-radius:50%;background:#ffffffea;border:1px solid rgba(0,0,0,.08);display:flex;align-items:center;justify-content:center;color:#69716e;box-shadow:0 2px 6px rgba(0,0,0,.08);transition:transform .15s ease,background-color .15s ease,color .15s ease;padding:0}
+.favorite-button:hover{transform:scale(1.08);background:#fff;color:#dc2626}
+.favorite-button.active{color:#dc2626;background:#fff;border-color:#fca5a5}
+.favorite-action-btn.favorite-active{border-color:#fca5a5!important;color:#b91c1c!important;background:#fef2f2!important}
+.favorites-seller-badge{background:#f4f6f3;border:1px solid var(--line);border-radius:8px;padding:8px 12px}
+
 /* LP-FEAT-016: Precios en euros con equivalencia en pesetas */
 .price-stack{display:flex;flex-direction:column;align-items:flex-start;gap:2px}
 .peseta-approx{

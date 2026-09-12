@@ -10,6 +10,14 @@ jest.mock('next/image', () => {
   };
 });
 
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({ push: jest.fn() }),
+}));
+
+jest.mock('@/context/AuthContext', () => ({
+  useAuth: () => ({ user: null, loading: false }),
+}));
+
 const mockProduct: Product = {
   id: '1',
   name: 'Producto de Prueba',

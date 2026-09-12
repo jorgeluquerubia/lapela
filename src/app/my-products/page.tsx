@@ -1,6 +1,7 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { api } from '@/lib/api';
 import { money } from '@/lib/rules';
 import { pesetaEquivalence, PESETA_DISCLAIMER } from '@/lib/pesetas';
@@ -22,13 +23,21 @@ const labels: Record<string, string> = {
   disputed: 'En revisión',
 };
 
-export default function Activity() {
+function ActivityContent() {
   const { user, loading } = useAuth();
+  const searchParams = useSearchParams();
   const [data, setData] = useState<any>(null);
   const [tab, setTab] = useState('purchases');
   const [error, setError] = useState('');
   const [withdraw, setWithdraw] = useState('');
   const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    const t = searchParams?.get('tab');
+    if (t && ['purchases', 'sales', 'bids', 'favorites', 'listings', 'questions'].includes(t)) {
+      setTab(t);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     if (user) {
@@ -42,6 +51,24 @@ export default function Activity() {
       await api('withdraw/' + withdraw, {});
       setData(await api('activity'));
       setWithdraw('');
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function removeFavorite(listingId: string) {
+    setBusy(true);
+    try {
+      await api('favorite/' + listingId, { active: false });
+      setData((prev: any) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          favorites: (prev.favorites || []).filter((f: any) => f.id !== listingId)
+        };
+      });
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -79,6 +106,7 @@ export default function Activity() {
   const sellerQuestions = data?.sellerQuestions || [];
   const buyerQuestions = data?.buyerQuestions || [];
   const notifications: any[] = data?.notifications || [];
+  const favorites: any[] = data?.favorites || [];
 
   const purchasesUnreadCount = data?.orders
     ? data.orders
@@ -136,6 +164,7 @@ export default function Activity() {
           ['purchases', `Compras${purchasesUnreadCount > 0 ? ` (${purchasesUnreadCount})` : ''}`],
           ['sales', `Ventas${salesUnreadCount > 0 ? ` (${salesUnreadCount})` : ''}`],
           ['bids', `Mis pujas${bidsUnreadCount > 0 ? ` (${bidsUnreadCount})` : ''}`],
+          ['favorites', `Favoritos${favorites.length > 0 ? ` (${favorites.length})` : ''}`],
           ['listings', 'Mis anuncios'],
           ['questions', `Preguntas${pendingQuestionsCount > 0 ? ` (${pendingQuestionsCount})` : ''}`],
         ].map(([v, t]) => (
@@ -239,6 +268,87 @@ export default function Activity() {
             )}
           </section>
         </div>
+      ) : tab === 'favorites' ? (
+        !favorites.length ? (
+          <div className="empty-state">
+            <h2>No tienes artículos en favoritos</h2>
+            <p>Guarda los artículos que te interesen para seguirlos de cerca y recibir avisos cuando vayan a terminar.</p>
+            <Link href="/" className="button primary">
+              Explorar artículos
+            </Link>
+          </div>
+        ) : (
+          <div className="activity-list">
+            {favorites.map((fav: any) => {
+              const slug = fav.slug || productSlug(fav.id, fav.name || fav.title);
+              const title = fav.name || fav.title || 'Artículo';
+              const isAuction = fav.type === 'auction' || fav.mode === 'auction';
+              const isUnavailable = ['sold', 'withdrawn', 'expired'].includes(fav.status);
+              const isReserved = fav.status === 'reserved';
+              const timeRemaining = fav.ends_at ? Math.max(0, Math.ceil((Date.parse(fav.ends_at) - Date.now()) / 3600000)) : null;
+
+              return (
+                <article key={fav.id} className="activity-row">
+                  <img src={fav.image || fav.images?.[0] || 'https://example.invalid/placeholder.jpg'} alt={title} />
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className={`sale-tag static-tag text-xs ${isAuction ? 'auction' : ''}`}>
+                        {isAuction ? 'Subasta' : 'Precio cerrado'}
+                      </span>
+                      <span className="muted text-xs font-semibold">
+                        {labels[fav.status] || fav.status}
+                      </span>
+                    </div>
+                    <h3>
+                      <Link href={'/articulos/' + slug}>
+                        {title}
+                      </Link>
+                    </h3>
+                    <p className="muted">
+                      {fav.location || 'España'}{fav.seller ? ` · Vendido por @${fav.seller}` : ''}
+                    </p>
+                    {isAuction && fav.status === 'available' && fav.ends_at && (
+                      <p className="text-xs text-emerald-800 font-medium my-1">
+                        {timeRemaining !== null && timeRemaining > 0
+                          ? `Finaliza en aprox. ${timeRemaining} h (${new Date(fav.ends_at).toLocaleString('es-ES')})`
+                          : 'Subasta finalizada'}
+                      </p>
+                    )}
+                    {isUnavailable && (
+                      <p className="notice text-xs py-1 px-2 my-1">
+                        {fav.status === 'sold'
+                          ? 'Este artículo ya se ha vendido.'
+                          : fav.status === 'withdrawn'
+                          ? 'El vendedor ha retirado este anuncio.'
+                          : 'Esta subasta ha finalizado.'}
+                      </p>
+                    )}
+                    {isReserved && (
+                      <p className="notice text-xs py-1 px-2 my-1">
+                        Artículo reservado actualmente.
+                      </p>
+                    )}
+                  </div>
+                  <strong>{money(fav.price_cents || (fav.price ? Math.round(fav.price * 100) : 0))}</strong>
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <Link className="button text-xs py-2 px-3" href={'/articulos/' + slug}>
+                      Ver anuncio →
+                    </Link>
+                    <button
+                      type="button"
+                      className="button text-xs py-2 px-3"
+                      disabled={busy}
+                      onClick={() => removeFavorite(fav.id)}
+                      aria-label={`Quitar ${title} de favoritos`}
+                    >
+                      Quitar
+                    </button>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        )
       ) : !rows.length ? (
         <div className="empty-state">
           <h2>Todavía no hay actividad aquí</h2>
@@ -297,6 +407,14 @@ export default function Activity() {
                   <p className="muted">
                     {labels[r.status || l.status] || r.status} ·{' '}
                     {new Date(r.created_at).toLocaleDateString('es-ES')}
+                    {tab === 'listings' && (
+                      <span className="seller-favorites-count ml-2 inline-flex items-center gap-1 font-medium text-stone-700">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="#dc2626" stroke="#dc2626" strokeWidth="2" aria-hidden="true">
+                          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                        </svg>
+                        {r.favorites_count || 0} guardados
+                      </span>
+                    )}
                   </p>
                   {counterpart?.alias&&<Link className="profile-link" href={`/usuarios/${counterpart.alias}`}>{tab==='purchases'?'Vendido por':tab==='sales'?'Comprado por':'Subasta de'} @{counterpart.alias}</Link>}
                   {firstNote && (
@@ -351,3 +469,12 @@ export default function Activity() {
     </>
   );
 }
+
+export default function Activity() {
+  return (
+    <Suspense fallback={<p>Cargando…</p>}>
+      <ActivityContent />
+    </Suspense>
+  );
+}
+

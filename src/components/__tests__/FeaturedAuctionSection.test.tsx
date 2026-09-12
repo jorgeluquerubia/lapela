@@ -9,6 +9,14 @@ jest.mock('../BrandSpinner', () => {
   };
 });
 
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({ push: jest.fn() }),
+}));
+
+jest.mock('@/context/AuthContext', () => ({
+  useAuth: () => ({ user: null, loading: false }),
+}));
+
 const mockEdition: AuctionEdition = {
   id: 'ed-1',
   slug: 'subasta-pela-septiembre',
