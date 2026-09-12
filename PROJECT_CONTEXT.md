@@ -18,6 +18,7 @@ La propuesta combina la sencillez de uso de un marketplace móvil con dos mecani
 - **Datos:** los anuncios activos están separados por entorno `sandbox` o `live`; la beta consulta `sandbox`.
 - **Cobros reales:** código preparado para Stripe Connect, pero desactivado hasta configurar la cuenta, el webhook, las condiciones legales y la operación de soporte.
 - **Correo:** autenticación por email con confirmación y recuperación; el proyecto todavía usa el proveedor de correo de prueba de Supabase y necesita SMTP propio antes de una apertura pública.
+- **Identidad visual:** la interfaz usa la propuesta `LP-FEAT-015`, una reinterpretación contemporánea de la peseta con sello-moneda, tinta verde, papel marfil y cobre envejecido. La moneda operativa sigue siendo el euro.
 
 ## 3. Principios de producto
 

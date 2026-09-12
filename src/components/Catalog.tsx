@@ -77,9 +77,14 @@ export default function Catalog({initialCategory, initialMode}: CatalogProps = {
 
   return <>
     <section className="market-intro">
-      <div>
-        <h1>Segunda mano.<br/>Sin segundas negociaciones.</h1>
+      <div className="market-intro-copy">
+        <span className="intro-eyebrow">EL MERCADO DE LAS COSAS BUENAS</span>
+        <h1>Segunda mano.<br/><em>Sin segundas negociaciones.</em></h1>
         <p>Encuentra lo que buscas. Compra a precio cerrado o puja por ello.</p>
+      </div>
+      <div className="market-intro-coin" aria-hidden="true">
+        <div className="intro-coin-face"><span>1</span><strong>PESETA</strong><small>LA PELA</small></div>
+        <span className="intro-coin-caption">cosas con historia</span>
       </div>
       <div className="intro-note">
         <strong>Tu tiempo también vale.</strong>
