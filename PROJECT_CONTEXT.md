@@ -45,6 +45,7 @@ La propuesta combina la sencillez de uso de un marketplace móvil con dos mecani
 - Metadatos canónicos y sociales, Schema.org, `robots.txt` y sitemap dinámico para indexación.
 - Indicador no bloqueante con spinner de marca (moneda de La Pela girando en 3D) durante transiciones asíncronas de catálogo y carga diferida de imágenes en tarjetas.
 - Equivalencia histórica en pesetas: los importes comerciales en catálogo, ficha de artículo, subastas, Mi actividad y pedidos muestran junto al precio principal en euros su cálculo oficial irrevocable (1 EUR = 166,386 ESP), manteniendo el euro como la única moneda contractual, de cobro, filtro y datos estructurados.
+- Tarjetas sociales automáticas y modal de compartir: generación determinista de imagen en endpoint seguro (`/api/social-card/[slug]`), diálogo accesible con previsualización, compartir nativo mediante Web Share API con cancelación silenciosa, copia de enlace canónico y descarga de la imagen PNG con avisos en vivo. Metadatos Open Graph y Twitter Cards sincronizados.
 
 ### Cuenta y autenticación
 
