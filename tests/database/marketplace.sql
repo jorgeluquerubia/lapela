@@ -71,6 +71,7 @@ begin
   if (select count(*) from lp_notifications where order_id=ord3.id and type='reservation_expired')<>2 then raise exception 'FAIL expired reservation notifications';end if;
   blocked:=false;begin perform lp_set_favorite(item,seller);exception when others then blocked:=true;end;if not blocked then raise exception 'FAIL self favorite';end if;
   if not lp_set_favorite(item,buyer) then raise exception 'FAIL add favorite';end if;
+  if (select count(*) from lp_notifications where user_id=seller and listing_id=item and type='favorite_received')<>1 then raise exception 'FAIL seller favorite notification';end if;
   if not lp_set_favorite(item,buyer,true) then raise exception 'FAIL idempotent add favorite';end if;
   if not lp_set_favorite(item,outsider) then raise exception 'FAIL outsider favorite';end if;
   if (select count(*) from lp_favorites where listing_id=item)<>2 then raise exception 'FAIL aggregate favorites count';end if;
