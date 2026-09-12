@@ -4,6 +4,7 @@ import Link from 'next/link';
 import {useEffect,useState,useCallback} from 'react';
 import {api} from '@/lib/api';
 import {money} from '@/lib/rules';
+import {pesetaEquivalence, PESETA_DISCLAIMER} from '@/lib/pesetas';
 
 export default function Order(){
   const {id}=useParams<{id:string}>();
@@ -90,7 +91,15 @@ export default function Order(){
         <section className="order-summary">
           <img src={o.listing.images[0]} alt={o.listing.title}/>
           <h2>{o.listing.title}</h2>
-          <p className="detail-price">{money(o.amount_cents)}</p>
+          <div className="order-price-box mb-2">
+            <p className="detail-price m-0">{money(o.amount_cents)}</p>
+            <span className="peseta-approx block text-sm">
+              {pesetaEquivalence(o.amount_cents, true)}
+            </span>
+            <span className="peseta-help-tag mt-1 block" title={PESETA_DISCLAIMER}>
+              {PESETA_DISCLAIMER}
+            </span>
+          </div>
           <p>{o.listing.delivery==='pickup'?'Recogida en '+o.listing.location:'Envío incluido en el total'}</p>
           
           {o.status==='pending_payment'&&(
@@ -106,6 +115,12 @@ export default function Order(){
               {confirmPayment&&(
                 <div className="confirmation">
                   <strong>Confirmar pago simulado de {money(o.amount_cents)}</strong>
+                  <span className="peseta-approx block mt-1 text-xs">
+                    {pesetaEquivalence(o.amount_cents, true)}
+                  </span>
+                  <p className="text-xs text-stone-600 mt-1 mb-2 font-medium">
+                    {PESETA_DISCLAIMER}
+                  </p>
                   <p>No se realizará ningún cargo. Se registrará el pedido como pagado.</p>
                   <button className="button primary" disabled={busy} onClick={()=>action('simulate-payment')}>Confirmar simulación</button>
                   <button className="button" onClick={()=>setConfirmPayment(false)}>Volver</button>
@@ -121,7 +136,10 @@ export default function Order(){
               {!buyer&&confirmInPerson&&(
                 <div className="confirmation" style={{marginTop:'1rem'}}>
                   <strong>Confirmar cobro en persona</strong>
-                  <p>¿Confirmas que has cobrado los {money(o.amount_cents)} en mano? El pedido se dará por completado y el artículo quedará vendido.</p>
+                  <p>¿Confirmas que has cobrado los {money(o.amount_cents)} ({pesetaEquivalence(o.amount_cents, true)}) en mano? El pedido se dará por completado y el artículo quedará vendido.</p>
+                  <p className="text-xs text-stone-600 mb-2 font-medium">
+                    {PESETA_DISCLAIMER}
+                  </p>
                   <button className="button primary" disabled={busy} onClick={()=>action('pay-in-person')}>
                     Sí, marcar como cobrado y vendido
                   </button>
