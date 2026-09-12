@@ -71,4 +71,64 @@ describe('ProductDetailInteractive Confirmation and Purchase Policy (LP-FEAT-006
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Comprar ahora/i })).toBeInTheDocument();
   });
+
+  describe('Peseta equivalence and payment disclaimers (LP-FEAT-016)', () => {
+    it('renders AC-01 peseta equivalence for 75.00 € product (≈ 12.479 ptas.) in detail price', () => {
+      const item75 = { ...sampleItem, price_cents: 7500 };
+      render(<ProductDetailInteractive initialItem={item75} slug="bicicleta-sevilla" />);
+
+      // Main euro price and peseta equivalence
+      expect(screen.getByText('≈ 12.479 ptas.')).toBeInTheDocument();
+      expect(screen.getByText(/Equivalencia histórica · El pago se realiza en euros/i)).toBeInTheDocument();
+    });
+
+    it('shows peseta equivalence and payment reminder in buy confirmation dialog (AC-04)', () => {
+      render(<ProductDetailInteractive initialItem={sampleItem} slug="bicicleta-sevilla" />);
+
+      fireEvent.click(screen.getByRole('button', { name: /Comprar ahora/i }));
+
+      const dialog = screen.getByRole('dialog');
+      // 150.00 € + 10.00 € shipping = 160.00 € -> 160 * 166.386 = 26621.76 -> ≈ 26.622 ptas.
+      expect(within(dialog).getByText('≈ 26.622 ptas.')).toBeInTheDocument();
+      expect(within(dialog).getByText(/Equivalencia histórica · El pago se realiza en euros/i)).toBeInTheDocument();
+    });
+
+    it('recalculates peseta equivalence dynamically when bidding in auctions (AC-02 & AC-04)', () => {
+      const auctionItem = {
+        ...sampleItem,
+        mode: 'auction',
+        type: 'auction',
+        price_cents: 5000,
+        bid_count: 1,
+        bids: [
+          {
+            id: 'b1',
+            amount_cents: 5000,
+            created_at: new Date().toISOString(),
+            bidder: { alias: 'pujador1' },
+          },
+        ],
+      };
+
+      render(<ProductDetailInteractive initialItem={auctionItem} slug="bicicleta-sevilla" />);
+
+      // Bid history shows equivalence for 50.00 € (50 * 166.386 = 8319.3 -> 8.319 ptas.)
+      expect(screen.getAllByText('≈ 8.319 ptas.').length).toBeGreaterThanOrEqual(1);
+
+      // Change bid to 75 €
+      const bidInput = screen.getByLabelText(/Tu puja \(€\)/i);
+      fireEvent.change(bidInput, { target: { value: '75' } });
+
+      // Live equivalence in bid form updates without external request (AC-02)
+      expect(screen.getByText('≈ 12.479 ptas.')).toBeInTheDocument();
+
+      // Click Revisar puja
+      fireEvent.click(screen.getByRole('button', { name: /Revisar puja/i }));
+
+      // Confirmation displays equivalence and explicit disclaimer (AC-04)
+      const confirmGroup = screen.getByRole('group', { name: /Confirmar puja/i });
+      expect(within(confirmGroup).getByText('≈ 12.479 ptas.')).toBeInTheDocument();
+      expect(within(confirmGroup).getByText(/Equivalencia histórica · El pago se realiza en euros/i)).toBeInTheDocument();
+    });
+  });
 });

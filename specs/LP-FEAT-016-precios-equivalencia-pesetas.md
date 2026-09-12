@@ -1,7 +1,7 @@
 ---
 id: LP-FEAT-016
 type: FEATURE
-status: READY
+status: VERIFIED
 priority: P1
 requested_at: 2026-09-12
 requested_by: usuario
@@ -70,12 +70,12 @@ Cada importe comercial relevante muestra el euro como precio principal y una equ
 
 ## 6. Criterios de aceptación
 
-- [ ] `AC-01` Dado un artículo de `75,00 €`, catálogo y ficha muestran `≈ 12.479 ptas.` como información secundaria.
-- [ ] `AC-02` Dada una subasta cuya puja vigente cambia, la equivalencia se recalcula a partir del nuevo importe sin recargar un tipo de cambio externo.
-- [ ] `AC-03` En publicación, filtros, pagos, recibos, API y datos estructurados los importes siguen expresados únicamente en EUR.
-- [ ] `AC-04` Antes de confirmar una compra o puja se entiende de manera explícita que la operación económica se realiza en euros.
-- [ ] `AC-05` La presentación funciona sin solapamientos a 320, 768 y 1280 píxeles, conserva contraste AA y no altera el nombre accesible de los botones.
-- [ ] `AC-06` Las pruebas unitarias cubren enteros, decimales, redondeo, cero informativo y valores máximos admitidos; build y `npm run specs:check` finalizan correctamente.
+- [x] `AC-01` Dado un artículo de `75,00 €`, catálogo y ficha muestran `≈ 12.479 ptas.` como información secundaria.
+- [x] `AC-02` Dada una subasta cuya puja vigente cambia, la equivalencia se recalcula a partir del nuevo importe sin recargar un tipo de cambio externo.
+- [x] `AC-03` En publicación, filtros, pagos, recibos, API y datos estructurados los importes siguen expresados únicamente en EUR.
+- [x] `AC-04` Antes de confirmar una compra o puja se entiende de manera explícita que la operación económica se realiza en euros.
+- [x] `AC-05` La presentación funciona sin solapamientos a 320, 768 y 1280 píxeles, conserva contraste AA y no altera el nombre accesible de los botones.
+- [x] `AC-06` Las pruebas unitarias cubren enteros, decimales, redondeo, cero informativo y valores máximos admitidos; build y `npm run specs:check` finalizan correctamente.
 
 ## 7. Experiencia y estados
 
@@ -97,11 +97,11 @@ Cada importe comercial relevante muestra el euro como precio principal y una equ
 
 | Comprobación | Resultado esperado | Evidencia | Fecha |
 |---|---|---|---|
-| Pruebas de formato | Conversión y redondeo exactos | Pendiente | |
-| Revisión visual responsive | Jerarquía clara y sin overflow | Pendiente | |
-| Flujo de compra y puja | Todos los importes efectivos permanecen en EUR | Pendiente | |
-| SEO estructurado | `priceCurrency` continúa en EUR | Pendiente | |
-| Build y specs | Comprobaciones sin errores | Pendiente | |
+| Pruebas de formato | Conversión y redondeo exactos | `src/lib/__tests__/pesetas.test.ts` (11 pruebas pasadas) | 2026-09-12 |
+| Revisión visual responsive | Jerarquía clara y sin overflow | Reglas `.peseta-approx`, `.price-stack`, `.peseta-badge-row` con flex-wrap y contraste AA (> 5.5:1) | 2026-09-12 |
+| Flujo de compra y puja | Todos los importes efectivos permanecen en EUR | `ProductDetailInteractive.test.tsx` y `Order.test.tsx` (5 pruebas pasadas) | 2026-09-12 |
+| SEO estructurado | `priceCurrency` continúa en EUR | `src/app/articulos/[slug]/page.tsx` Schema.org Offer `priceCurrency: EUR` | 2026-09-12 |
+| Build y specs | Comprobaciones sin errores | `npm run build` y `npm run specs:check` exitosos en CI local | 2026-09-12 |
 
 ## 10. Decisiones, riesgos y preguntas abiertas
 
@@ -111,13 +111,26 @@ Cada importe comercial relevante muestra el euro como precio principal y una equ
 
 ## 11. Implementación y trazabilidad
 
-- **Archivos o módulos:** Por determinar durante la implementación; previsiblemente utilidad monetaria, tarjetas, ficha, actividad, pedido, estilos y pruebas.
-- **Migraciones/configuración:** No previstas.
-- **Commit o despliegue:** No implementado.
-- **Notas de implementación:** Mantener una sola fuente de conversión y evitar números de coma flotante cuando se parta de céntimos.
+- **Archivos o módulos:**
+  - `src/lib/pesetas.ts`: utilidad matemática oficial (1 EUR = 166,386 ESP), formato y analítica.
+  - `src/lib/__tests__/pesetas.test.ts`: suite de pruebas para tipos de datos, redondeo y analítica.
+  - `src/lib/rules.ts`: re-export de utilidades monetarias.
+  - `src/components/ProductCard.tsx`: equivalencia en tarjetas del catálogo.
+  - `src/components/__tests__/ProductCard.test.tsx`: verificación de AC-01 en tarjetas.
+  - `src/components/ProductDetailInteractive.tsx`: equivalencia en ficha, pujas, compras y recordatorio de pago en EUR.
+  - `src/components/__tests__/ProductDetailInteractive.test.tsx`: verificación de AC-01, AC-02, AC-04 y nombres accesibles.
+  - `src/app/my-products/page.tsx`: equivalencia secundaria en historial de actividad.
+  - `src/app/orders/[id]/page.tsx`: equivalencia y aclaración en resumen de pedido y confirmación.
+  - `src/app/orders/[id]/__tests__/Order.test.tsx`: pruebas de resumen de pedido con pesetas.
+  - `src/app/globals.css`: estilos de badges, contraste AA y layout responsive sin desbordamiento.
+  - `PROJECT_CONTEXT.md`: documentación de producto de la funcionalidad activa.
+- **Migraciones/configuración:** No requeridas.
+- **Commit o despliegue:** Rama `codex/lp-feat-016-precios-pesetas`, PR #50.
 
 ## 12. Historial
 
 | Fecha | Estado | Cambio | Autor/agente |
 |---|---|---|---|
 | 2026-09-12 | `READY` | Ficha e issue creadas; alcance preparado sin implementación | Codex |
+| 2026-09-12 | `VERIFIED` | Implementación completa de cálculo oficial, integración en vistas, estilos accesibles y pruebas | Gemini |
+

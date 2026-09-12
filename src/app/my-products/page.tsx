@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { api } from '@/lib/api';
 import { money } from '@/lib/rules';
+import { pesetaEquivalence, PESETA_DISCLAIMER } from '@/lib/pesetas';
 import { useAuth } from '@/context/AuthContext';
 import { productSlug } from '@/lib/slugs';
 
@@ -308,7 +309,12 @@ export default function Activity() {
                     </div>
                   )}
                 </div>
-                <strong>{money(r.amount_cents || r.price_cents)}</strong>
+                <div className="activity-price-box text-right">
+                  <strong>{money(r.amount_cents || r.price_cents)}</strong>
+                  <span className="peseta-approx block text-xs" title={PESETA_DISCLAIMER}>
+                    {pesetaEquivalence(r.amount_cents || r.price_cents, true)}
+                  </span>
+                </div>
                 {tab === 'listings' ? (
                   r.status === 'available' && !r.bid_count ? (
                     <button className="button" onClick={() => setWithdraw(r.id)}>

@@ -199,3 +199,36 @@ h1,h2{font-family:Georgia,'Times New Roman',serif;font-weight:700;letter-spacing
   .mobile-filters{background:#fffdf8}
   .product-image{border-radius:13px}
 }
+
+/* LP-FEAT-016: Precios en euros con equivalencia en pesetas */
+.price-stack{display:flex;flex-direction:column;align-items:flex-start;gap:2px}
+.peseta-approx{
+  font-family:Arial,Helvetica,sans-serif !important;
+  font-size:11px !important;
+  font-weight:500 !important;
+  color:#525c55 !important;
+  letter-spacing:0.02em;
+  line-height:1.25;
+}
+.detail-price-box{margin-bottom:12px}
+.detail-price-box .detail-price{margin-bottom:4px}
+.peseta-badge-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:2px}
+.peseta-badge-row .peseta-approx{font-size:13px !important;color:#455048 !important;font-weight:600 !important}
+.peseta-help-tag{
+  background:#edf3ec;
+  border:1px solid #c9d8c6;
+  color:#274938;
+  font-size:11px;
+  font-weight:600;
+  padding:3px 8px;
+  border-radius:999px;
+  display:inline-flex;
+  align-items:center;
+  text-decoration:none;
+  cursor:pointer;
+  transition:background 0.15s ease,border-color 0.15s ease;
+}
+.peseta-help-tag:hover{background:#e1ede0;border-color:#b5c9b1}
+.activity-price-box .peseta-approx{font-size:11px !important}
+.order-price-box .peseta-approx{font-size:13px !important;color:#455048 !important;font-weight:600 !important}
+
