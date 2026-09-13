@@ -23,10 +23,11 @@ export async function runMaintenance(): Promise<MaintenanceMetrics> {
   const expired=await result(db.from('lp_orders').select('id,stripe_session_id').eq('status','pending_payment').lt('expires_at',new Date().toISOString()).limit(20));
   for(const o of (expired||[])){
     if(o.stripe_session_id){
-      if(!process.env.STRIPE_SECRET_KEY)continue;
-      const session=await stripe().checkout.sessions.retrieve(o.stripe_session_id).catch(()=>null);
-      if(session&&session.status==='complete')continue;
-      if(session&&session.status==='open'){try{await stripe().checkout.sessions.expire(session.id)}catch{continue}}
+      if(!process.env.STRIPE_SECRET_KEY)throw Error('Stripe no está configurado para verificar pedidos expirados.');
+      const session=await stripe().checkout.sessions.retrieve(o.stripe_session_id);
+      if(session.status==='complete')continue;
+      if(session.status==='open')await stripe().checkout.sessions.expire(session.id);
+      else if(session.status!=='expired')throw Error('Stripe devolvió un estado de sesión no verificable.');
     }
     await rpc('lp_release',{p_order:o.id});
     expiredOrders++;
