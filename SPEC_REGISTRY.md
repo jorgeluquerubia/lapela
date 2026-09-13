@@ -76,6 +76,7 @@ Prioridades: `P0` bloquea una operación esencial o implica un riesgo grave; `P1
 | `LP-FEAT-019` | `FEATURE` | Subastas destacadas y coordinadas | `VERIFIED` | `P2` | 2026-09-12 | [Abrir ficha](specs/LP-FEAT-019-subastas-destacadas.md) |
 | `LP-FEAT-020` | `FEATURE` | Tarjetas sociales de anuncios | `VERIFIED` | `P2` | 2026-09-12 | [Abrir ficha](specs/LP-FEAT-020-tarjetas-sociales.md) |
 | `LP-FIX-006` | `FIX` | Notificación de favoritos al vendedor y ocultación en anuncios propios | `VERIFIED` | `P2` | 2026-09-12 | [Abrir ficha](specs/LP-FIX-006-favoritos-vendedor.md) |
+| `LP-FIX-007` | `FIX` | Permitir endpoint de tarjetas sociales en middleware | `VERIFIED` | `P1` | 2026-09-13 | [Abrir ficha](specs/LP-FIX-007-middleware-tarjetas-sociales.md) |
 
 
 ## Flujo para una solicitud nueva
