@@ -80,6 +80,7 @@ Prioridades: `P0` bloquea una operación esencial o implica un riesgo grave; `P1
 | `LP-FIX-007` | `FIX` | Permitir endpoint de tarjetas sociales en middleware | `VERIFIED` | `P1` | 2026-09-13 | [Abrir ficha](specs/LP-FIX-007-middleware-tarjetas-sociales.md) |
 | `LP-OPS-001` | `OPS` | Programador periódico de mantenimiento y alertas de favoritos | `VERIFIED` | `P2` | 2026-09-13 | [Abrir ficha](specs/LP-OPS-001-programador-mantenimiento-alertas.md) |
 
+<!-- LP-FEAT-019 actualizado el 2026-09-13 tras subsanación de observaciones de QA -->
 
 ## Flujo para una solicitud nueva
 

@@ -3,7 +3,7 @@ import {useEffect, useState} from 'react';
 import Link from 'next/link';
 import type {AuctionEdition} from '@/types';
 import ProductCard from './ProductCard';
-import {formatCountdown} from '@/lib/featured-auctions';
+import {formatCountdown, getEditionTemporalStatus, type TemporalStatus} from '@/lib/featured-auctions';
 
 interface FeaturedAuctionSectionProps {
   edition?: AuctionEdition | null;
@@ -37,18 +37,33 @@ export default function FeaturedAuctionSection({edition: initialEdition}: Featur
     };
   }, [initialEdition]);
 
-  // Actualización periódica del reloj para cuenta atrás textual sin animaciones forzadas
+  // Actualización periódica reactiva del reloj (cada segundo) para evitar estados congelados
   useEffect(() => {
-    const timer = setInterval(() => setNow(new Date()), 30000);
+    const timer = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
+
+  // Recalcular estado temporal dinámicamente a partir del reloj local y fechas de la edición
+  const currentTemporalStatus: TemporalStatus = edition
+    ? getEditionTemporalStatus(edition.starts_at, edition.reference_ends_at, now)
+    : 'active';
+
+  // Si cambia el estado temporal en caliente y es la carga remota, refrescar datos
+  useEffect(() => {
+    if (initialEdition === undefined && edition && edition.temporal_status !== currentTemporalStatus) {
+      fetch('/api/market/featured-edition')
+        .then((r) => (r.ok ? r.json() : null))
+        .then((data) => setEdition(data || null))
+        .catch(() => {});
+    }
+  }, [currentTemporalStatus, edition, initialEdition]);
 
   if (!edition || !edition.items || edition.items.length === 0) {
     return null;
   }
 
-  const isUpcoming = edition.temporal_status === 'upcoming';
-  const isEnded = edition.temporal_status === 'ended';
+  const isUpcoming = currentTemporalStatus === 'upcoming';
+  const isEnded = currentTemporalStatus === 'ended';
   const targetDate = isUpcoming ? edition.starts_at : edition.reference_ends_at;
   const countdownText = formatCountdown(targetDate, now);
 

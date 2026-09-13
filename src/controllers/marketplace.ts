@@ -35,8 +35,8 @@ export async function catalog(request:Request){const p=new URL(request.url).sear
 export async function handle(request:Request,path:string[]){try{
  const db=admin();const [action,id]=path;const targetId=extractIdFromSlug(id||'');const user=await currentUser();
  if(request.method==='GET'){
-  if(action==='featured-edition'){const edition=await getCurrentFeaturedEdition(db,environment());return ok(edition)}
-  if(action==='auction-edition'&&id){const edition=await getAuctionEditionBySlug(id,db,environment());return edition?ok(edition):ok({error:'Edición no encontrada'},404)}
+  if(action==='featured-edition'){await maintain();const edition=await getCurrentFeaturedEdition(db,environment());return ok(edition)}
+  if(action==='auction-edition'&&id){await maintain();const isOp=user?await isOperatorUser(user,db):false;const edition=await getAuctionEditionBySlug(id,db,environment(),isOp);return edition?ok(edition):ok({error:'Edición no encontrada'},404)}
   if(action==='profile'&&id&&id!=='me'){const profile=await getPublicProfile(id);return profile?ok(profile):ok({error:'Perfil no encontrado'},404)}
   if(action==='questions'&&targetId&&uuid(targetId)){const p=new URL(request.url).searchParams;const page=Math.max(1,Math.min(1000,Number.parseInt(p.get('page')||'1')||1));const {data,error,count}=await db.from('lp_questions').select('id,listing_id,buyer_id,question,answer,created_at,answered_at',{count:'exact'}).eq('listing_id',targetId).order('created_at',{ascending:false}).range((page-1)*10,page*10-1);if(error)throw error;const profiles=await profilesById(db,(data||[]).map((q:any)=>q.buyer_id));const questions=(data||[]).map(({buyer_id,...q}:any)=>({...q,buyer:profiles.get(buyer_id)}));const pending=user?await db.from('lp_questions').select('id',{head:true,count:'exact'}).eq('listing_id',targetId).is('answer',null):{count:0};return ok({questions,totalCount:count||0,page,pageSize:10,totalPages:Math.max(1,Math.ceil((count||0)/10)),pendingCount:pending.count||0})}
   if(action==='listing'&&targetId&&uuid(targetId)){await maintain();const l=await result(db.from('lp_listings').select('*').eq('id',targetId).maybeSingle());if(!l||l.environment!==environment())return ok({error:'Artículo no encontrado'},404);const mine=l.seller_id===user?.id;const [profiles,bids]=await Promise.all([profilesById(db,[l.seller_id]),db.from('lp_bids').select('id,bidder_id,amount_cents,created_at').eq('listing_id',targetId).order('created_at',{ascending:false}).limit(50)]);if(bids.error)throw bids.error;const bidProfiles=await profilesById(db,(bids.data||[]).map((b:any)=>b.bidder_id));const {seller_id,highest_bidder,...safe}=l;let pendingQuestions=0;if(mine){const pq=await db.from('lp_questions').select('id',{head:true,count:'exact'}).eq('listing_id',targetId).is('answer',null);pendingQuestions=pq.count||0}let isFavorite=false;let favoritesCount=0;if(user){const fav=await db.from('lp_favorites').select('listing_id').eq('listing_id',targetId).eq('user_id',user.id).maybeSingle();isFavorite=!fav.error&&!!fav.data}if(mine){const fc=await db.from('lp_favorites').select('user_id',{head:true,count:'exact'}).eq('listing_id',targetId);favoritesCount=fc.count||0}if(user){await rpc('lp_mark_listing_notifications_read',{p_listing:targetId,p_actor:user.id}).catch(()=>{})}return ok({...safe,seller:profiles.get(seller_id),bids:(bids.data||[]).map(({bidder_id,...b}:any)=>({...b,bidder:bidProfiles.get(bidder_id)})),slug:productSlug(l.id,l.title),mine,isHighestBidder:!!user&&highest_bidder===user.id,isFavorite,favoritesCount,paymentsReady:simulated()||!!process.env.STRIPE_SECRET_KEY,simulated:simulated(),pendingQuestionsCount:pendingQuestions})}
@@ -64,7 +64,8 @@ export async function handle(request:Request,path:string[]){try{
       if(!Number.isFinite(starts.getTime())||!Number.isFinite(ends.getTime())||ends.getTime()<=starts.getTime()){
         throw Error('Las fechas de inicio y cierre de referencia no son válidas.');
       }
-      const status=['draft','published','cancelled'].includes(body.status)?body.status:'draft';
+      let status=['draft','published','cancelled'].includes(body.status)?body.status:'draft';
+      if(status==='published')throw Error('Una edición sin artículos no se puede publicar. Créala en borrador y añade artículos primero.');
       const imageUrl=body.image_url?String(body.image_url):null;
       const edition=await result(db.from('lp_auction_editions').insert({title,slug,description,environment:environment(),starts_at:starts.toISOString(),reference_ends_at:ends.toISOString(),status,image_url:imageUrl,created_by:user.id}).select('*').single());
       return ok(edition,201);
@@ -92,6 +93,10 @@ export async function handle(request:Request,path:string[]){try{
     if(subAction==='status'){
       const status=body.status;
       if(!['draft','published','cancelled'].includes(status))throw Error('Estado de edición no válido.');
+      if(status==='published'){
+        const {count,error:cntErr}=await db.from('lp_auction_edition_items').select('id',{head:true,count:'exact'}).eq('edition_id',id);
+        if(cntErr||!count||count<1)throw Error('Una edición sin artículos no se puede publicar.');
+      }
       const updated=await result(db.from('lp_auction_editions').update({status,updated_at:new Date().toISOString()}).eq('id',id).select('*').single());
       return ok(updated);
     }

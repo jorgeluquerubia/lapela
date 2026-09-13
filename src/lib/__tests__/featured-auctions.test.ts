@@ -3,6 +3,7 @@ import {
   formatCountdown,
   validateAuctionEligibility,
   isOperatorUser,
+  getItemAuctionOutcome,
 } from '../featured-auctions';
 
 describe('LP-FEAT-019: Subastas destacadas y coordinadas', () => {
@@ -50,10 +51,90 @@ describe('LP-FEAT-019: Subastas destacadas y coordinadas', () => {
       expect(formatCountdown(target, now)).toBe('3 horas y 45 min');
     });
 
+    it('formatea minutos y segundos cuando queda menos de una hora', () => {
+      const now = new Date('2026-09-10T10:00:00.000Z');
+      const target = new Date('2026-09-10T10:12:35.000Z');
+      expect(formatCountdown(target, now)).toBe('12 min y 35 s');
+    });
+
+    it('formatea solo segundos cuando queda menos de un minuto', () => {
+      const now = new Date('2026-09-10T10:00:00.000Z');
+      const target = new Date('2026-09-10T10:00:42.000Z');
+      expect(formatCountdown(target, now)).toBe('42 s');
+    });
+
     it('muestra "Finalizada" si el tiempo ha expirado', () => {
       const now = new Date('2026-09-10T10:00:00.000Z');
       const target = new Date('2026-09-10T09:59:00.000Z');
       expect(formatCountdown(target, now)).toBe('Finalizada');
+    });
+  });
+
+  describe('Clasificación precisa de resultados (AC-05, RN-03)', () => {
+    const now = new Date('2026-09-20T20:00:00.000Z');
+
+    it('reconoce anuncios con estado "reserved" como adjudicados al mejor postor', () => {
+      const listing = {
+        status: 'reserved',
+        ends_at: '2026-09-20T19:59:00.000Z',
+        bid_count: 8,
+      };
+      const outcome = getItemAuctionOutcome(listing, now);
+      expect(outcome.status).toBe('awarded');
+      expect(outcome.label).toBe('Adjudicado');
+      expect(outcome.detail).toBe('Adjudicado al mejor postor');
+      expect(outcome.isEnded).toBe(true);
+    });
+
+    it('reconoce anuncios con estado "sold" como vendidos y confirmados', () => {
+      const listing = {
+        status: 'sold',
+        ends_at: '2026-09-20T19:00:00.000Z',
+        bid_count: 3,
+      };
+      const outcome = getItemAuctionOutcome(listing, now);
+      expect(outcome.status).toBe('awarded');
+      expect(outcome.label).toBe('Adjudicado');
+      expect(outcome.detail).toBe('Vendido y confirmado');
+      expect(outcome.isEnded).toBe(true);
+    });
+
+    it('mantiene como activo un artículo con prórroga anti-sniping superando la edición', () => {
+      const listing = {
+        status: 'available',
+        ends_at: '2026-09-20T20:03:00.000Z', // 3 minutos después del cierre de la edición
+        bid_count: 5,
+      };
+      const outcome = getItemAuctionOutcome(listing, now);
+      expect(outcome.status).toBe('active');
+      expect(outcome.label).toBe('En curso');
+      expect(outcome.detail).toBe('En prórroga anti-sniping');
+      expect(outcome.isEnded).toBe(false);
+    });
+
+    it('marca como "Sin venta" subastas expiradas o concluidas con 0 pujas', () => {
+      const listing = {
+        status: 'expired',
+        ends_at: '2026-09-20T19:59:00.000Z',
+        bid_count: 0,
+      };
+      const outcome = getItemAuctionOutcome(listing, now);
+      expect(outcome.status).toBe('unsold');
+      expect(outcome.label).toBe('Sin venta');
+      expect(outcome.detail).toBe('Sin pujas suficientes');
+      expect(outcome.isEnded).toBe(true);
+    });
+
+    it('marca como "Retirado" anuncios con estado withdrawn', () => {
+      const listing = {
+        status: 'withdrawn',
+        ends_at: '2026-09-20T20:00:00.000Z',
+        bid_count: 0,
+      };
+      const outcome = getItemAuctionOutcome(listing, now);
+      expect(outcome.status).toBe('withdrawn');
+      expect(outcome.label).toBe('Retirado');
+      expect(outcome.isEnded).toBe(true);
     });
   });
 

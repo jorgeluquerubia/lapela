@@ -300,12 +300,14 @@ h1,h2{font-family:Georgia,'Times New Roman',serif;font-weight:700;letter-spacing
 .result-tag{position:absolute;left:10px;bottom:10px;font-size:11px;font-weight:700;padding:4px 8px;border-radius:6px}
 .result-tag.sold{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0}
 .result-tag.unsold{background:#f3f4f6;color:#4b5563;border:1px solid #e5e7eb}
+.result-tag.active{background:#fef3c7;color:#92400e;border:1px solid #fde68a}
 .result-info{padding:16px;display:flex;flex-direction:column;flex:1;gap:6px}
 .result-info h3{font-size:15px;margin:0;line-height:1.4}
 .result-price-row{display:flex;align-items:baseline;gap:8px}
 .result-price-row strong{font-size:20px;color:var(--ink)}
 .result-details{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-top:4px}
 .result-outcome{font-weight:600;color:var(--green-dark)}
+.result-outcome.active-extension{color:#b45309;font-weight:700}
 
 @media(max-width:1000px){
   .featured-products-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
