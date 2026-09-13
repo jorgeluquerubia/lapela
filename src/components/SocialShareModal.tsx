@@ -22,7 +22,20 @@ export default function SocialShareModal({isOpen, onClose, item}: SocialShareMod
   const [downloading, setDownloading] = useState(false);
   const [downloadNotice, setDownloadNotice] = useState('');
   const [imgLoaded, setImgLoaded] = useState(false);
+  const [imgError, setImgError] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
+
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const triggerRef = useRef<HTMLElement | null>(null);
+
+  // Reset state when listing or isOpen changes
+  useEffect(() => {
+    setImgLoaded(false);
+    setImgError(false);
+    setCopied(false);
+    setDownloadNotice('');
+    setRetryCount(0);
+  }, [item.id, item.slug, isOpen]);
 
   useEffect(() => {
     if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
@@ -30,8 +43,18 @@ export default function SocialShareModal({isOpen, onClose, item}: SocialShareMod
     }
   }, []);
 
+  const handleClose = () => {
+    triggerRef.current?.focus();
+    onClose();
+  };
+
   useEffect(() => {
     if (!isOpen) return;
+
+    // Capture the trigger button that opened the modal
+    if (typeof document !== 'undefined' && document.activeElement instanceof HTMLElement) {
+      triggerRef.current = document.activeElement;
+    }
 
     // Focus close button on open
     const timer = setTimeout(() => {
@@ -41,7 +64,7 @@ export default function SocialShareModal({isOpen, onClose, item}: SocialShareMod
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         e.stopPropagation();
-        onClose();
+        handleClose();
       }
     };
 
@@ -53,12 +76,16 @@ export default function SocialShareModal({isOpen, onClose, item}: SocialShareMod
       clearTimeout(timer);
       window.removeEventListener('keydown', onKeyDown);
       document.body.style.overflow = originalOverflow;
+      triggerRef.current?.focus();
     };
-  }, [isOpen, onClose]);
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
-  const cardImageUrl = `/api/social-card/${item.slug}`;
+  const cardImageUrl =
+    retryCount > 0
+      ? `/api/social-card/${item.slug}?retry=${retryCount}`
+      : `/api/social-card/${item.slug}`;
   const getShareUrl = () => {
     if (typeof window !== 'undefined') {
       return `${window.location.origin}/articulos/${item.slug}`;
@@ -134,7 +161,7 @@ export default function SocialShareModal({isOpen, onClose, item}: SocialShareMod
   return (
     <div
       className="share-modal-overlay"
-      onClick={onClose}
+      onClick={handleClose}
       role="presentation"
     >
       <div
@@ -157,7 +184,7 @@ export default function SocialShareModal({isOpen, onClose, item}: SocialShareMod
             ref={closeButtonRef}
             type="button"
             className="share-modal-close-btn"
-            onClick={onClose}
+            onClick={handleClose}
             aria-label="Cerrar modal de compartir"
           >
             ✕
@@ -166,16 +193,44 @@ export default function SocialShareModal({isOpen, onClose, item}: SocialShareMod
 
         {/* Card visual preview */}
         <div className="share-card-preview-container">
-          {!imgLoaded && (
-            <div className="share-card-skeleton" aria-hidden="true">
-              <span>Cargando vista previa de la tarjeta…</span>
+          {imgError ? (
+            <div className="share-card-error" role="alert">
+              <p className="share-card-error-text">
+                No se ha podido cargar la vista previa de la tarjeta.
+              </p>
+              <button
+                type="button"
+                className="button secondary share-card-retry-btn"
+                onClick={() => {
+                  setImgError(false);
+                  setImgLoaded(false);
+                  setRetryCount((prev) => prev + 1);
+                }}
+              >
+                Reintentar
+              </button>
             </div>
+          ) : (
+            !imgLoaded && (
+              <div className="share-card-skeleton" aria-hidden="true">
+                <span>Cargando vista previa de la tarjeta…</span>
+              </div>
+            )
           )}
           <img
+            key={`${item.slug}-${retryCount}`}
             src={cardImageUrl}
             alt={`Tarjeta para compartir de ${item.title}`}
             className={`share-card-preview-img ${imgLoaded ? 'loaded' : 'loading'}`}
-            onLoad={() => setImgLoaded(true)}
+            style={{ display: imgError ? 'none' : undefined }}
+            onLoad={() => {
+              setImgLoaded(true);
+              setImgError(false);
+            }}
+            onError={() => {
+              setImgLoaded(false);
+              setImgError(true);
+            }}
           />
         </div>
 
@@ -277,7 +332,7 @@ export default function SocialShareModal({isOpen, onClose, item}: SocialShareMod
           <button
             type="button"
             className="button share-modal-cancel-btn"
-            onClick={onClose}
+            onClick={handleClose}
           >
             Cerrar
           </button>
