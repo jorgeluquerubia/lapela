@@ -1,5 +1,6 @@
 'use client';
 import Link from 'next/link';
+import {useRouter} from 'next/navigation';
 import {useAuth} from '@/context/AuthContext';
 import {useEffect, useState} from 'react';
 import {productSlug} from '@/lib/slugs';
@@ -10,6 +11,7 @@ function notificationArticleHref(notification:any){return '/articulos/'+productS
 
 export default function Header(){
   const {user}=useAuth();
+  const router=useRouter();
   const [unreadCount,setUnreadCount]=useState(0);
   const [notifications,setNotifications]=useState<any[]>([]);
   const [open,setOpen]=useState(false);
@@ -31,6 +33,19 @@ export default function Header(){
     return()=>window.removeEventListener('keydown',onKeyDown);
   },[]);
 
+  const openNotification=async(event:React.MouseEvent<HTMLAnchorElement>,notification:any,href:string)=>{
+    event.preventDefault();
+    setOpen(false);
+    try{
+      const response=await fetch('/api/market/mark-notification-read/'+notification.id,{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+      if(response.ok){
+        setNotifications(current=>current.filter(item=>item.id!==notification.id));
+        setUnreadCount(current=>Math.max(0,current-1));
+      }
+    }catch{}
+    router.push(href);
+  };
+
   return <header className="site-header">
     <div className="header-inner">
       <Brand/>
@@ -43,11 +58,11 @@ export default function Header(){
           </button>
           {open&&<section id="notification-panel" className="notification-panel" aria-label="Novedades">
             <div className="notification-panel-heading"><strong>Novedades</strong><Link href="/my-products" onClick={()=>setOpen(false)}>Ver actividad</Link></div>
-            {!notifications.length?<p className="notification-empty">No tienes novedades pendientes.</p>:<ul>{notifications.map(notification=><li key={notification.id}>
-              <Link href={notificationArticleHref(notification)} onClick={()=>setOpen(false)} className="notification-article-link"><strong>{notification.title}</strong><span>{notification.listing?.title||'Ver artículo'}</span></Link>
+            {!notifications.length?<p className="notification-empty">No tienes novedades pendientes.</p>:<ul>{notifications.map(notification=>{const articleHref=notificationArticleHref(notification);const orderHref='/orders/'+notification.order_id;return <li key={notification.id}>
+              <Link href={articleHref} onClick={event=>openNotification(event,notification,articleHref)} className="notification-article-link"><strong>{notification.title}</strong><span>{notification.listing?.title||'Ver artículo'}</span></Link>
               {notification.body&&<p>{notification.body}</p>}
-              <div className="notification-actions"><Link href={notificationArticleHref(notification)} onClick={()=>setOpen(false)}>Ver artículo</Link>{notification.order_id&&<Link href={'/orders/'+notification.order_id} onClick={()=>setOpen(false)}>{notification.type==='new_message'?'Abrir chat':'Ver pedido'}</Link>}</div>
-            </li>)}</ul>}
+              <div className="notification-actions"><Link href={articleHref} onClick={event=>openNotification(event,notification,articleHref)}>Ver artículo</Link>{notification.order_id&&<Link href={orderHref} onClick={event=>openNotification(event,notification,orderHref)}>{notification.type==='new_message'?'Abrir chat':'Ver pedido'}</Link>}</div>
+            </li>})}</ul>}
           </section>}
         </div>}
         <Link href="/my-products" className="account-link">{user?'Mi actividad':'Mis compras'}</Link>

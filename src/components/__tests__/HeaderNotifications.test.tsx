@@ -4,12 +4,14 @@ import {useAuth} from '@/context/AuthContext';
 
 jest.mock('@/context/AuthContext',()=>({useAuth:jest.fn()}));
 jest.mock('next/link',()=>({__esModule:true,default:({children,href,onClick,className}:any)=><a href={href} onClick={onClick} className={className}>{children}</a>}));
-jest.mock('next/navigation',()=>({useRouter:()=>({push:jest.fn()})}));
+const push=jest.fn();
+jest.mock('next/navigation',()=>({useRouter:()=>({push})}));
 
 describe('Header notifications',()=>{
   beforeEach(()=>{
+    push.mockReset();
     (useAuth as jest.Mock).mockReturnValue({user:{id:'user-1'},loading:false});
-    global.fetch=jest.fn().mockResolvedValue({json:()=>Promise.resolve({
+    global.fetch=jest.fn().mockResolvedValue({ok:true,json:()=>Promise.resolve({
       unreadCount:2,
       notifications:[{
         id:'note-1',listing_id:'123e4567-e89b-12d3-a456-426614174000',order_id:'order-1',type:'new_message',title:'Nuevo mensaje',body:'¿Sigue disponible?',listing:{title:'Cámara de prueba'}
@@ -30,7 +32,7 @@ describe('Header notifications',()=>{
   });
 
   it('keeps the unread notification visible when article metadata is unavailable',async()=>{
-    global.fetch=jest.fn().mockResolvedValue({json:()=>Promise.resolve({
+    global.fetch=jest.fn().mockResolvedValue({ok:true,json:()=>Promise.resolve({
       unreadCount:1,
       notifications:[{id:'note-without-listing',listing_id:'123e4567-e89b-12d3-a456-426614174000',type:'new_message',title:'Nuevo mensaje'}]
     })});
@@ -38,5 +40,16 @@ describe('Header notifications',()=>{
     fireEvent.click(await screen.findByRole('button',{name:'1 novedades sin leer'}));
     expect(await screen.findByText('Nuevo mensaje')).toBeInTheDocument();
     expect(screen.getAllByRole('link',{name:'Ver artículo'})[0]).toHaveAttribute('href','/articulos/articulo-123e4567-e89b-12d3-a456-426614174000');
+  });
+
+  it('marks only the opened notification as read, updates the badge and then opens its chat',async()=>{
+    render(<Header/>);
+    fireEvent.click(await screen.findByRole('button',{name:'2 novedades sin leer'}));
+    fireEvent.click(await screen.findByRole('link',{name:'Abrir chat'}));
+    await waitFor(()=>expect(global.fetch).toHaveBeenCalledWith('/api/market/mark-notification-read/note-1',{
+      method:'POST',headers:{'Content-Type':'application/json'},body:'{}'
+    }));
+    await waitFor(()=>expect(screen.getByRole('button',{name:'1 novedades sin leer'})).toBeInTheDocument());
+    expect(push).toHaveBeenCalledWith('/orders/order-1');
   });
 });

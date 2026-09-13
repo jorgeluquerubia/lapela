@@ -18,6 +18,7 @@ La propuesta combina la sencillez de uso de un marketplace móvil con dos mecani
 - **Datos:** los anuncios activos están separados por entorno `sandbox` o `live`; la beta consulta `sandbox`.
 - **Cobros reales:** código preparado para Stripe Connect, pero desactivado hasta configurar la cuenta, el webhook, las condiciones legales y la operación de soporte.
 - **Correo:** autenticación por email con confirmación y recuperación; el proyecto todavía usa el proveedor de correo de prueba de Supabase y necesita SMTP propio antes de una apertura pública.
+- **Identidad visual:** la interfaz usa la propuesta `LP-FEAT-015`, una reinterpretación contemporánea de la peseta con sello-moneda, tinta verde, papel marfil y cobre envejecido. La moneda operativa sigue siendo el euro.
 
 ## 3. Principios de producto
 
@@ -40,9 +41,15 @@ La propuesta combina la sencillez de uso de un marketplace móvil con dos mecani
 - Orden por fecha, precio y próxima finalización de subasta.
 - Catálogo de ejemplo como alternativa cuando no hay conexión o resultados.
 - Ficha de artículo con fotografías, estado, ubicación, entrega, precio y reglas de compra.
+- Bloque semántico 'La historia de este objeto' en la ficha de producto y distintivo 'Con historia' tanto en catálogo como en ficha.
 - Rutas semánticas para categorías (`/categoria/:slug`), subastas (`/subastas`) y artículos (`/articulos/:slug-con-id`).
 - Metadatos canónicos y sociales, Schema.org, `robots.txt` y sitemap dinámico para indexación.
 - Indicador no bloqueante con spinner de marca (moneda de La Pela girando en 3D) durante transiciones asíncronas de catálogo y carga diferida de imágenes en tarjetas.
+- Guardado y retirada de favoritos desde tarjetas de catálogo y ficha de producto, con vista privada en `Mi actividad` y ruta `/favoritos`.
+- Contador agregado de favoritos en anuncios para el vendedor, sin revelar identidades ni aliases de seguidores, con ocultación del botón de favoritos en anuncios propios y artículos demo.
+- Alertas internas en la campana de novedades sobre cierre de subastas favoritas en su última hora, finalización, indisponibilidad y aviso al vendedor cuando un artículo es guardado en favoritos.
+- Equivalencia histórica en pesetas: los importes comerciales en catálogo, ficha de artículo, subastas, Mi actividad y pedidos muestran junto al precio principal en euros su cálculo oficial irrevocable (1 EUR = 166,386 ESP), manteniendo el euro como la única moneda contractual, de cobro, filtro y datos estructurados.
+- Tarjetas sociales automáticas y modal de compartir: generación determinista de imagen en endpoint seguro (`/api/social-card/[slug]`), diálogo accesible con previsualización, compartir nativo mediante Web Share API con cancelación silenciosa, copia de enlace canónico y descarga de la imagen PNG con avisos en vivo. Metadatos Open Graph y Twitter Cards sincronizados.
 
 ### Cuenta y autenticación
 
@@ -51,15 +58,18 @@ La propuesta combina la sencillez de uso de un marketplace móvil con dos mecani
 - Reenvío de confirmación para cuentas pendientes.
 - Detección y explicación de un registro repetido de una cuenta existente.
 - Recuperación de contraseña desde el acceso y pantalla para guardar la nueva contraseña.
+- Alias público único personalizable desde `Mi cuenta`, con perfil público no indexable y compras ocultas por defecto.
 
 ### Publicación y venta
 
 - Publicación de un artículo como precio cerrado o subasta.
 - Entre una y seis imágenes JPG, PNG o WebP, de hasta 5 MB por archivo.
+- Las imágenes nuevas se normalizan al subirlas, conservando proporción y centrado dentro de un formato 4:3 para su presentación en los anuncios.
 - Categoría, estado, ubicación, descripción, modalidad de entrega y gastos de envío.
+- Campo opcional 'Historia de este objeto' (hasta 1.000 caracteres) separado de la descripción objetiva, con preguntas guía y contador, que puede retirarse sin eliminar el anuncio.
 - Precio entre 1 € y 10.000 €; compra inmediata opcional en subastas por encima de la salida.
 - Subastas entre una hora y treinta días.
-- Bloqueo de teléfonos, emails, enlaces y referencias a redes o mensajería dentro del anuncio.
+- Bloqueo de teléfonos, emails, enlaces, pagos externos y fórmulas de regateo dentro del anuncio y de su historia.
 - Límite de veinte publicaciones por hora y usuario.
 - Retirada de un anuncio disponible si todavía no tiene pujas.
 
@@ -86,6 +96,7 @@ La propuesta combina la sencillez de uso de un marketplace móvil con dos mecani
 - Cierre idempotente: sin pujas, el anuncio expira y avisa al vendedor; con pujas, crea un pedido y avisa al ganador y al vendedor.
 - El ganador dispone de 24 horas para pagar.
 - Compra inmediata opcional durante una subasta.
+- Subastas destacadas y coordinadas ("La Subasta de la Pela"): selección editorial con ventana coordinada, cuenta atrás informativa, distintivos en tarjetas y fichas, preservando el cierre real y anti-sniping de cada anuncio, y página de resultados dedicada tras su conclusión (`/subastas/ediciones/[slug]`).
 
 ### Conversación y confianza
 
@@ -93,6 +104,8 @@ La propuesta combina la sencillez de uso de un marketplace móvil con dos mecani
 - Límite de veinte mensajes por minuto y usuario.
 - Preguntas y respuestas públicas en la ficha de producto con paginación de 10 elementos, banner normativo con viñetas claras, validación reforzada contra propuestas económicas, ofertas numéricas o trueques, bloqueo de datos de contacto y notificaciones de preguntas pendientes para el vendedor.
 - Seguimiento de compras, ventas, pujas y anuncios en `Mi actividad`, con badges persistentes y una campana de novedades contextuales.
+- Identidad contextual mediante alias en anuncios, pujas, pedidos, chat y actividad privada; el comprador nunca se publica en el anuncio vendido.
+- Valoraciones mutuas de una a cinco estrellas, con comentario opcional, únicamente tras completar un pedido.
 - Denuncia de anuncios para revisión.
 
 ## 5. Funcionalidades no activas o pendientes
@@ -101,7 +114,6 @@ La propuesta combina la sencillez de uso de un marketplace móvil con dos mecani
 - SMTP de producción y garantías de entrega de correo.
 - Seguro de compra o depósito en garantía.
 - Regateo, contraofertas o chat libre entre usuarios.
-- Reputación, valoraciones y perfiles públicos completos.
 - Panel operativo de moderación, disputas y reembolsos.
 - Condiciones del servicio, privacidad y proceso de soporte definitivos.
 - Entorno de staging separado y observabilidad centralizada.
@@ -201,6 +213,8 @@ Las claves secretas no deben usar el prefijo `NEXT_PUBLIC_`, aparecer en specs, 
 - `lp_bids`: historial de pujas.
 - `lp_orders`: comprador, vendedor, importe, pago, dirección, seguimiento y estado.
 - `lp_messages`: conversación ligada al pedido.
+- `lp_profiles`: alias público, preferencia de visibilidad de compras y fechas de perfil.
+- `lp_reviews`: valoraciones entre las partes de un pedido completado.
 - `lp_questions`: preguntas y respuestas públicas del producto y estado de notificación.
 - `lp_notifications`: registro y persistencia de lectura de novedades por usuario y artículo/pedido (ventas, chat, pujas recibidas y superadas, cierre de subasta, pagos, expiraciones y cambios de estado).
 - `lp_accounts`: cuenta Stripe Connect del vendedor.
@@ -222,6 +236,8 @@ Las claves secretas no deben usar el prefijo `NEXT_PUBLIC_`, aparecer en specs, 
 - `lp_mark_listing_notifications_read`: marca como leídas las notificaciones de un artículo para un usuario al acceder al anuncio.
 - `lp_ask_question`: valida y registra una pregunta pública impidiendo la auto-pregunta del vendedor.
 - `lp_answer_question`: autoriza únicamente al vendedor para publicar la respuesta oficial.
+- `lp_ensure_profile` y `lp_update_profile`: crean el alias temporal seguro y personalizan una sola vez el perfil público.
+- `lp_create_review`: autoriza una valoración única y mutua solo cuando el pedido está completado.
 
 Las tablas `lp_*` tienen RLS activado, pero `anon` y `authenticated` no tienen acceso directo. Las operaciones pasan por el backend con `service_role`, que valida al usuario mediante Supabase Auth. El middleware devuelve HTTP 410 para mutaciones legacy. `next.config.mjs` añade cabeceras de seguridad contra sniffing, framing y permisos de cámara, micrófono y geolocalización.
 
@@ -234,12 +250,17 @@ El bucket `product-images` es público porque contiene fotografías de anuncios.
 | `GET /api/products` | Público | Catálogo filtrado del entorno activo y ordenado por relevancia cuando recibe una búsqueda |
 | `GET /api/search/suggestions` | Público | Sugerencias ligeras de consulta, categoría y artículo mientras se escribe |
 | `GET /api/market/listing/:id` | Público | Detalle seguro del anuncio |
+| `GET /api/market/profile/:alias` | Público | Perfil, anuncios, ventas y valoraciones públicas; no incluye compras salvo consentimiento |
+| `GET /api/market/profile/me` | Autenticado | Perfil propio para personalización |
 | `GET /api/market/questions/:id` | Público | Preguntas y respuestas paginadas (10 por página) |
 | `GET /api/market/activity` | Autenticado | Compras, ventas, pujas, anuncios, preguntas y notificaciones no leídas |
 | `GET /api/market/notifications` | Autenticado | Contador y lista de notificaciones no leídas con contexto de artículo y pedido para la campana de cabecera |
+| `POST /api/market/mark-notification-read/:id` | Destinatario autenticado | Marcar una novedad concreta como leída |
 | `GET /api/market/order/:id` | Partes del pedido | Pedido, mensajes y datos autorizados (marca notificaciones de la orden como leídas) |
 | `POST /api/market/upload` | Autenticado | Subir una fotografía validada |
 | `POST /api/market/publish` | Autenticado | Crear un anuncio |
+| `POST /api/market/profile` | Autenticado | Personalizar el alias y la visibilidad de compras |
+| `POST /api/market/review/:orderId` | Parte del pedido completado | Crear una valoración única para la contraparte |
 | `POST /api/market/bid/:id` | Autenticado | Registrar una puja |
 | `POST /api/market/mark-listing-read/:id` | Autenticado | Marcar notificaciones de un anuncio como leídas |
 | `POST /api/market/question/:id` | Comprador potencial | Formular pregunta pública sin regateos ni datos privados |
@@ -254,13 +275,19 @@ El bucket `product-images` es público porque contiene fotografías de anuncios.
 | `POST /api/market/report/:id` | Autenticado | Denunciar un anuncio |
 | `POST /api/market/onboard` | Vendedor, modo real | Iniciar onboarding de Stripe Connect |
 | `POST /api/stripe/webhook` | Stripe firmado | Confirmar pagos reales de forma idempotente |
+| `GET/POST /api/cron/maintain` | Vercel Cron / Bearer `CRON_SECRET` | Ciclo programado de mantenimiento: cierre de subastas, alertas de favoritos y liberación de pedidos caducados |
 
 
 Las rutas antiguas bajo `/api/bids`, `/api/messages`, `/api/orders`, `/api/questions`, mutaciones de `/api/products` y equivalentes se conservan para referencia o compatibilidad controlada, pero las mutaciones responden HTTP 410. Su código archivado está en `archive/legacy-api`.
 
 ## 12. Operación automática
 
-El mantenimiento actual es oportunista: al consultar catálogo o detalle, el backend intenta cerrar subastas vencidas y liberar reservas caducadas. No existe todavía un cron de producción documentado que garantice el cierre en un instante exacto sin tráfico.
+El mantenimiento periódico se ejecuta de forma autónoma e independiente del tráfico mediante un programador periódico (Vercel Cron) configurado en `vercel.json` invocando el endpoint seguro `/api/cron/maintain` autenticado con la cabecera `Authorization: Bearer <CRON_SECRET>` (`LP-OPS-001`). Como mecanismo de contingencia y resiliencia (*fallback*), el backend conserva además la ejecución oportunista al consultar catálogo o detalle.
+
+En cada ciclo de mantenimiento se realizan las siguientes tareas:
+- Cierre transaccional de subastas vencidas (`lp_close_auctions`).
+- Procesamiento y envío de alertas a usuarios que siguen subastas o artículos en favoritos (`lp_process_favorite_alerts`).
+- Liberación de reservas de pedidos expiradas (`lp_release`) y cancelación de sesiones Stripe pendientes si aplica.
 
 Para una reserva con sesión Stripe real, el backend comprueba el estado de Checkout antes de liberarla. En sandbox no existe esa dependencia.
 

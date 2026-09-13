@@ -7,8 +7,7 @@ import BrandSpinner from './BrandSpinner';
 export interface QuestionItem {
   id: string;
   listing_id: string;
-  buyer_id: string;
-  seller_id: string;
+  buyer?: {alias:string};
   question: string;
   answer: string | null;
   created_at: string;
@@ -225,7 +224,7 @@ export default function ProductQA({ listingId, isSeller, user, demo = false }: P
                 <p>{q.question}</p>
                 <div className="qa-meta">
                   <span>
-                    Preguntado el{' '}
+                    {q.buyer?.alias&&<>Por <Link className="profile-link" href={`/usuarios/${q.buyer.alias}`}>@{q.buyer.alias}</Link> · </>}Preguntado el{' '}
                     {new Date(q.created_at).toLocaleDateString('es-ES', {
                       day: 'numeric',
                       month: 'short',

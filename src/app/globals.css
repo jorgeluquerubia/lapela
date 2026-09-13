@@ -8,6 +8,15 @@
 .auth-actions{display:flex;flex-direction:column;align-items:center;gap:8px;margin:16px 0 8px}.auth-actions .button{width:100%}.auth-actions .text-link{margin-top:0}
 .forgot-link{align-self:flex-end;margin-top:-5px}
 
+/* LP-FEAT-012: keep listing photos complete and centered in every ad surface. */
+.product-image img,.detail-photo img,.photo-thumbs img,.activity-row img,.order-summary>img{object-fit:contain;object-position:center;background:var(--surface)}
+.product-image img{padding:12px}
+.product-card:hover .product-image img{transform:none}
+.detail-photo img{padding:18px}
+.photo-thumbs img{padding:5px}
+.activity-row img{padding:6px}
+.order-summary>img{padding:10px}
+
 .qa-section{margin-top:40px;border-top:1px solid var(--line);padding-top:30px}
 .qa-rule-banner{background:#f4f7f4;border:1px solid #d2ded5;border-left:4px solid var(--green);border-radius:12px;padding:16px 20px;font-size:14px;margin-bottom:24px;color:var(--ink)}
 .qa-rule-banner strong{display:block;color:var(--green-dark);margin-bottom:8px;font-size:15px;font-weight:700}
@@ -73,3 +82,394 @@
 .global-search-wrap{position:relative;flex:1;min-width:0}.global-search-wrap .global-search{width:100%}.search-suggestions{position:absolute;z-index:30;top:calc(100% + 7px);left:0;right:0;border:1px solid var(--line);background:#fff;border-radius:12px;box-shadow:0 16px 36px #1725211f;overflow:hidden;padding:6px}.search-suggestions button{display:flex;width:100%;justify-content:space-between;gap:12px;align-items:center;border:0;border-radius:8px;background:transparent;padding:10px 11px;text-align:left}.search-suggestions button:hover,.search-suggestions button.active{background:#edf4ed}.search-suggestions strong,.search-suggestions small{display:block}.search-suggestions small{color:var(--muted);font-size:12px;margin-top:2px}.search-suggestions em{font-size:11px;font-style:normal;color:var(--green);white-space:nowrap}.search-all-results{border-top:1px solid var(--line)!important;border-radius:0!important;color:var(--green);font-weight:700;margin-top:4px}
 .tag-picker{margin:0 0 18px;border:0;padding:0}.tag-picker legend{font-size:14px;font-weight:600;padding:0}.tag-picker legend span,.tag-picker p{font-size:13px;font-weight:400;color:var(--muted)}.tag-picker p{margin:5px 0 9px}.tag-picker>div{display:flex;flex-wrap:wrap;gap:8px}.tag-picker label{display:block!important;cursor:pointer}.tag-picker input{position:absolute;opacity:0}.tag-picker span{display:block;border:1px solid var(--line);border-radius:999px;padding:6px 10px;background:#fff;font-size:13px;font-weight:500}.tag-picker label.selected span{border-color:var(--green);background:#edf4ed;color:var(--green);font-weight:700}
 @media(max-width:650px){.global-search-wrap{order:3;flex-basis:100%}.global-search-wrap .global-search{order:initial;flex-basis:auto}}
+.profile-link{color:var(--green);font-weight:700;text-decoration:underline;text-underline-offset:2px}.product-seller{display:inline-block;margin-top:9px;font-size:12px}.detail-seller{display:inline-block;margin:2px 0 15px}.bid-history{margin-top:24px;border-top:1px solid var(--line);padding-top:22px}.bid-history h2{font-size:20px}.bid-row{display:grid;grid-template-columns:1fr auto;gap:4px 14px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);font-size:14px}.bid-row small{grid-column:1/-1;color:var(--muted)}.public-profile{max-width:1080px;margin:20px auto}.profile-heading{display:flex;justify-content:space-between;align-items:end;gap:20px;margin-bottom:24px}.profile-heading h1{margin-bottom:6px}.profile-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:35px}.profile-stats>div{padding:20px;border:1px solid var(--line);border-radius:13px;background:var(--surface)}.profile-stats strong{display:block;font-size:28px;letter-spacing:-1px}.profile-stats span{font-size:13px;color:var(--muted)}.profile-section{margin:35px 0}.review-list{display:grid;gap:12px}.review-card{border:1px solid var(--line);border-radius:12px;padding:15px;background:white}.review-card>div{display:flex;justify-content:space-between;gap:12px;align-items:center}.review-card p{margin:10px 0 0}.review-card small{color:var(--muted);font-size:12px}.review-stars{color:#b58a00;letter-spacing:1px;white-space:nowrap}.order-counterparts{display:flex;gap:16px;flex-wrap:wrap;margin:-10px 0 22px;font-size:14px}.order-reviews{border-top:1px solid var(--line);margin-top:25px;padding-top:22px}.order-reviews .field-input{margin-bottom:12px}
+@media(max-width:650px){.profile-heading{align-items:start;flex-direction:column}.profile-stats{grid-template-columns:1fr}.bid-row{grid-template-columns:1fr auto}.order-counterparts{flex-direction:column;gap:5px}}
+
+/* LP-FEAT-015: La Pela, una peseta reinterpretada en clave editorial. */
+:root{
+  --ink:#20352c;
+  --muted:#6d766e;
+  --green:#145c45;
+  --green-dark:#0d3e30;
+  --green-soft:#dce8d8;
+  --lime:#e7eea5;
+  --paper:#f8f4ea;
+  --paper-deep:#eee6d5;
+  --surface:#f1ede3;
+  --copper:#a96038;
+  --copper-soft:#e7c3a9;
+  --gold:#d4a855;
+  --line:#ded6c7;
+  --radius:18px;
+}
+
+body{background:var(--paper);color:var(--ink);font-family:Arial,Helvetica,sans-serif;background-image:radial-gradient(circle at 12% 4%,rgba(212,168,85,.08),transparent 26rem),radial-gradient(circle at 92% 48%,rgba(20,92,69,.045),transparent 30rem)}
+h1,h2{font-family:Georgia,'Times New Roman',serif;font-weight:700;letter-spacing:-.045em}
+.site-header{border-bottom:1px solid var(--line);background:rgba(248,244,234,.94);backdrop-filter:blur(10px)}
+.header-inner{padding-top:20px;padding-bottom:18px}
+.brand{gap:11px;font-family:Arial,Helvetica,sans-serif;font-size:29px;letter-spacing:-1.7px;color:var(--green-dark)}
+.brand-mark{width:43px;height:43px;border:0;border-radius:50%;padding:0;background:var(--copper);box-shadow:inset 0 0 0 2px rgba(255,247,224,.64),3px 4px 0 rgba(13,62,48,.14);overflow:visible}
+.brand-mark svg{width:100%;height:100%;overflow:visible}
+.brand-coin-shadow{fill:#754026;opacity:.34;transform:translateY(2px)}
+.brand-coin-face{fill:var(--copper);stroke:#fff1d4;stroke-width:1.2}
+.brand-coin-ring{fill:none;stroke:#f3d9ad;stroke-width:1;opacity:.85}
+.brand-coin-spark{fill:none;stroke:#f3d9ad;stroke-width:1.25;stroke-linecap:round;opacity:.9}
+.brand-mark text{fill:#fff1d4;font-family:Georgia,serif;font-weight:700;font-size:17px;letter-spacing:-1px}
+.brand-mark .brand-coin-value{font-size:5px;letter-spacing:.8px;font-family:Arial,sans-serif}
+.brand-wordmark{display:inline-block}
+.brand-dot{color:var(--copper)}
+.global-search{background:#fffdf8;border-color:var(--line);border-radius:999px;box-shadow:0 2px 0 rgba(32,53,44,.025)}
+.global-search:focus-within{border-color:var(--copper);box-shadow:0 0 0 3px rgba(169,96,56,.12)}
+.header-actions{color:#405348}
+.header-actions .account-link:hover{color:var(--copper)}
+.button{border-color:var(--line);border-radius:999px;background:#fffdf8;box-shadow:0 2px 0 rgba(32,53,44,.04);transition:transform .18s ease,box-shadow .18s ease,background .18s ease}
+.button:hover{transform:translateY(-1px);box-shadow:0 5px 14px rgba(32,53,44,.1)}
+.button.primary{background:var(--green);border-color:var(--green);box-shadow:0 3px 0 var(--green-dark);color:#fffdf8}
+.button.primary:hover{background:var(--green-dark);box-shadow:0 4px 0 #082a20}
+.category-nav{color:#53645a;padding-bottom:15px}
+.category-nav a:hover,.category-nav>a:first-child{color:var(--copper)}
+.nav-about{color:var(--green)}
+.nav-separator{background:var(--line)}
+.page-shell{padding-top:38px}
+.site-footer{border-top-color:var(--line);padding-top:38px;background:transparent}
+.site-footer>div:last-child a:hover{color:var(--copper)}
+.site-footer p{color:var(--muted)}
+.market-intro{position:relative;isolation:isolate;overflow:hidden;min-height:265px;margin-bottom:42px;padding:39px 44px;background:var(--green-dark);border:1px solid #0a3528;border-radius:24px;box-shadow:0 15px 35px rgba(13,62,48,.14);background-image:radial-gradient(circle at 73% 50%,rgba(212,168,85,.2),transparent 12rem),linear-gradient(135deg,#0d3e30 0%,#145c45 62%,#236b4e 100%)}
+.market-intro::before{content:"";position:absolute;inset:0;z-index:-1;opacity:.12;pointer-events:none;background-image:radial-gradient(#fff 0.7px,transparent .7px);background-size:7px 7px;mix-blend-mode:soft-light}
+.market-intro::after{content:"";position:absolute;z-index:-1;width:290px;height:290px;right:19%;top:-115px;border:1px solid rgba(241,216,173,.25);border-radius:50%;box-shadow:0 0 0 10px rgba(241,216,173,.06),0 0 0 20px rgba(241,216,173,.035)}
+.market-intro-copy{position:relative;z-index:1}
+.intro-eyebrow{display:block;margin-bottom:16px;color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.16em}
+.market-intro h1{max-width:650px;margin:0 0 15px;font-size:clamp(2rem,4vw,3.4rem);line-height:1.05;letter-spacing:-.055em}
+.market-intro h1 em{color:#f4d89d;font-style:normal}
+.market-intro p{font-size:16px;color:#dae7d9}
+.market-intro-coin{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:8px;margin:0 2vw 0 auto;transform:rotate(7deg)}
+.intro-coin-face{display:flex;flex-direction:column;align-items:center;justify-content:center;width:155px;height:155px;border-radius:50%;color:#7d482a;background:radial-gradient(circle at 35% 28%,#f0d19a,#c68a51 70%,#96512f);border:4px solid #f2d7a7;box-shadow:inset 0 0 0 5px rgba(112,58,30,.18),8px 12px 0 rgba(4,35,25,.22);font-family:Georgia,serif}
+.intro-coin-face span{font-size:35px;line-height:.9;font-weight:700}
+.intro-coin-face strong{margin-top:7px;font-family:Arial,sans-serif;font-size:12px;letter-spacing:.15em}
+.intro-coin-face small{margin-top:7px;padding-top:5px;border-top:1px solid rgba(125,72,42,.45);font-family:Arial,sans-serif;font-size:9px;letter-spacing:.18em}
+.intro-coin-caption{color:#f0d8a4;font-family:Georgia,serif;font-size:13px;font-style:italic}
+.intro-note{border-left-color:rgba(241,216,173,.36);color:#d5e3d9}
+.intro-note strong{color:var(--lime)}
+.catalog-head{margin-bottom:26px}
+.catalog-head h2{font-size:1.8rem}
+.muted{color:var(--muted)}
+.mode-tabs{border:1px solid var(--line);background:var(--paper-deep);border-radius:999px}
+.mode-tabs button{border-radius:999px}
+.mode-tabs button.active{background:#fffdf8;color:var(--green-dark);box-shadow:0 2px 5px rgba(32,53,44,.1)}
+.filter-panel{border-right-color:var(--line)}
+.filter-panel h3{font-family:Georgia,serif;font-size:15px;color:var(--green-dark)}
+.category-button{border:1px solid transparent;border-radius:999px;color:#6c776e}
+.category-button:hover{background:#f0e9da;color:var(--copper)}
+.category-button.active{background:var(--green-soft);color:var(--green-dark);border-color:#c2d4bd}
+.filter-prices input,.filter-panel select,.filter-panel input.location{background:#fffdf8;border-color:var(--line);border-radius:9px}
+.filter-note{background:var(--paper-deep);border:1px solid #e3d9c6;border-radius:15px}
+.filter-note strong{font-family:Georgia,serif;color:var(--green-dark)}
+.filter-note a,.underline{color:var(--copper);text-underline-offset:3px}
+.catalog-toolbar select{background:transparent}
+.product-card{position:relative}
+.product-image{border-radius:16px;background:#eae3d4;border:1px solid #e1d8c6;box-shadow:0 3px 0 rgba(32,53,44,.05)}
+.product-card:hover .product-image{border-color:#c68a65;box-shadow:0 7px 18px rgba(32,53,44,.11)}
+.product-image img{padding:16px}
+.sale-tag{border:1px solid rgba(32,53,44,.08);border-radius:999px;background:#fffdf8;color:var(--green-dark);box-shadow:0 2px 5px rgba(32,53,44,.08)}
+.sale-tag.auction{background:var(--lime);color:var(--green-dark);border-color:#d1db83}
+.product-info{padding-top:15px}
+.price-row strong{font-family:Georgia,serif;color:var(--green-dark)}
+.price-row span{color:var(--copper);font-weight:700}
+.product-info h3{color:#30463a}
+.product-info h3:hover{color:var(--copper)}
+.product-meta{color:#788176}
+.empty-state{background:rgba(255,253,248,.48);border-color:#d2c7b3}
+.empty-state h3{font-family:Georgia,serif;color:var(--green-dark)}
+.notice{background:#f1edce;border-color:#ded59b;color:#59622c;border-radius:12px}
+.error-message{border-color:#e5c4b7;background:#fff3ed}
+.sandbox-banner{background:#ece8c9;color:#5b6330;border-bottom-color:#dbd19b}
+.brand-spinner-coin{background:#fff5df;border-color:var(--copper);color:var(--copper);box-shadow:0 2px 6px rgba(169,96,56,.15)}
+.brand-spinner-coin::before{content:"";position:absolute;inset:3px;border:1px solid var(--copper-soft);border-radius:50%}
+.brand-spinner-value{position:absolute;top:2px;font-family:Arial,sans-serif;font-size:5px;letter-spacing:.3px;line-height:1}
+.brand-spinner-lp{font-family:Georgia,serif;color:var(--green-dark);font-size:inherit;line-height:1;margin-top:3px}
+.brand-spinner-arrow{display:none}
+
+.story-badge{position:absolute;top:12px;right:12px;padding:4px 10px;border-radius:999px;background:#fffdf8e6;color:var(--copper);font-size:11px;font-weight:700;border:1px solid #e2d7c5;box-shadow:0 2px 5px rgba(32,53,44,.08);backdrop-filter:blur(4px);letter-spacing:.02em}
+.detail-panel-tags{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
+.story-badge-panel{background:var(--paper-deep);color:var(--copper);border-color:#d8cebc}
+.detail-chips span.story-chip{background:#fbf7ee;border-color:#dfd3bd;color:var(--copper);font-weight:600}
+.detail-story-box{margin:28px 0;padding:22px 24px;border-radius:14px;background:#fcf9f2;border:1px solid #e8decb;border-left:4px solid var(--copper)}
+.detail-story-box h3{font-family:Georgia,serif;font-size:19px;color:var(--green-dark);margin-bottom:12px;font-weight:700}
+.detail-story-box p{color:#3b4640;font-size:15px;line-height:1.65;margin:0}
+.story-actions{margin-top:14px}
+.story-field-group{margin-bottom:15px}
+.story-field-group textarea{margin-bottom:4px}
+.char-counter{font-size:12px;color:var(--muted)}
+
+@media(max-width:900px){.market-intro{padding:34px}.market-intro-coin{margin-right:0}.intro-note{display:none}}
+@media(max-width:650px){
+  .page-shell{padding-top:22px}
+  .header-inner{padding-top:16px;padding-bottom:16px}
+  .brand{font-size:26px}
+  .brand-mark{width:39px;height:39px}
+  .market-intro{min-height:0;padding:27px 24px 25px;border-radius:19px;margin-bottom:30px}
+  .market-intro h1{font-size:clamp(2rem,10vw,2.65rem)}
+  .market-intro-coin{position:absolute;right:-25px;top:73px;opacity:.27;transform:rotate(7deg) scale(.86)}
+  .market-intro-coin .intro-coin-caption{display:none}
+  .market-intro::after{right:-90px;top:-60px}
+  .catalog-head h2{font-size:1.6rem}
+  .mobile-filters{background:#fffdf8}
+  .product-image{border-radius:13px}
+}
+
+.favorite-button{position:absolute;top:10px;right:10px;z-index:3;width:34px;height:34px;border-radius:50%;background:#ffffffea;border:1px solid rgba(0,0,0,.08);display:flex;align-items:center;justify-content:center;color:#69716e;box-shadow:0 2px 6px rgba(0,0,0,.08);transition:transform .15s ease,background-color .15s ease,color .15s ease;padding:0}
+.favorite-button:hover{transform:scale(1.08);background:#fff;color:#dc2626}
+.favorite-button.active{color:#dc2626;background:#fff;border-color:#fca5a5}
+.favorite-action-btn.favorite-active{border-color:#fca5a5!important;color:#b91c1c!important;background:#fef2f2!important}
+.favorites-seller-badge{background:#f4f6f3;border:1px solid var(--line);border-radius:8px;padding:8px 12px}
+
+/* LP-FEAT-016: Precios en euros con equivalencia en pesetas */
+.price-stack{display:flex;flex-direction:column;align-items:flex-start;gap:2px}
+.peseta-approx{
+  font-family:Arial,Helvetica,sans-serif !important;
+  font-size:11px !important;
+  font-weight:500 !important;
+  color:#525c55 !important;
+  letter-spacing:0.02em;
+  line-height:1.25;
+}
+.detail-price-box{margin-bottom:12px}
+.detail-price-box .detail-price{margin-bottom:4px}
+.peseta-badge-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:2px}
+.peseta-badge-row .peseta-approx{font-size:13px !important;color:#455048 !important;font-weight:600 !important}
+.peseta-help-tag{
+  background:#edf3ec;
+  border:1px solid #c9d8c6;
+  color:#274938;
+  font-size:11px;
+  font-weight:600;
+  padding:3px 8px;
+  border-radius:999px;
+  display:inline-flex;
+  align-items:center;
+  text-decoration:none;
+  cursor:pointer;
+  transition:background 0.15s ease,border-color 0.15s ease;
+}
+.peseta-help-tag:hover{background:#e1ede0;border-color:#b5c9b1}
+.activity-price-box .peseta-approx{font-size:11px !important}
+.order-price-box .peseta-approx{font-size:13px !important;color:#455048 !important;font-weight:600 !important}
+
+/* LP-FEAT-019: Subastas destacadas y coordinadas */
+.featured-edition-block{margin-bottom:35px;border-radius:18px;border:1px solid var(--line);background:var(--paper);padding:26px 30px;box-shadow:0 2px 8px rgba(0,0,0,.03)}
+.featured-edition-hero{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;margin-bottom:24px;flex-wrap:wrap}
+.featured-edition-header{flex:1;min-width:280px}
+.featured-edition-header h2{font-size:1.8rem;margin:6px 0 8px;color:var(--green-dark)}
+.featured-edition-badges{display:flex;gap:10px;align-items:center;margin-bottom:8px}
+.featured-pill-brand{background:var(--green-dark);color:var(--lime);font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;letter-spacing:.05em;text-transform:uppercase}
+.featured-pill-status{font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px}
+.featured-pill-status.active{background:#dcf575;color:#0c4933}
+.featured-pill-status.upcoming{background:#e0e7ff;color:#3730a3}
+.featured-pill-status.ended{background:#f3f4f6;color:#4b5563}
+.featured-edition-desc{color:var(--muted);font-size:15px;margin:0;max-width:620px;line-height:1.45}
+.featured-edition-meta{display:flex;flex-direction:column;align-items:flex-end;gap:12px;text-align:right}
+.featured-countdown{background:white;border:1px solid var(--line);padding:12px 18px;border-radius:12px;display:flex;flex-direction:column;align-items:flex-end;gap:2px;min-width:230px}
+.countdown-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:700}
+.countdown-value{font-size:18px;color:var(--green-dark);font-weight:800}
+.countdown-absolute{font-size:11px;color:var(--muted);margin-top:2px}
+.featured-view-all{white-space:nowrap}
+.featured-products-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px}
+.featured-tag{position:absolute;right:10px;bottom:10px;background:var(--green-dark);color:var(--lime);font-size:10px;font-weight:700;padding:4px 8px;border-radius:6px;z-index:2;box-shadow:0 2px 4px rgba(0,0,0,.15)}
+.featured-detail-chip{display:inline-flex;align-items:center;gap:6px;background:var(--green-dark);color:var(--lime);padding:6px 14px;border-radius:20px;font-size:12px;font-weight:700;text-decoration:none;margin-bottom:12px;transition:opacity .15s ease}
+.featured-detail-chip:hover{opacity:.9}
+
+/* Edition Page */
+.edition-page-layout{max-width:1200px;margin:0 auto}
+.edition-hero{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:32px;margin-bottom:35px}
+.edition-hero-badges{display:flex;gap:10px;align-items:center;margin-bottom:12px}
+.edition-hero h1{font-size:clamp(2rem,3.5vw,2.8rem);color:var(--green-dark);margin:0 0 10px}
+.edition-desc{font-size:16px;color:var(--ink);max-width:700px;line-height:1.5;margin-bottom:24px}
+.edition-meta-banner{display:flex;justify-content:space-between;align-items:center;gap:24px;background:white;border:1px solid var(--line);border-radius:14px;padding:20px 24px;flex-wrap:wrap}
+.edition-dates{display:flex;gap:28px;flex-wrap:wrap}
+.edition-dates>div{display:flex;flex-direction:column;gap:3px}
+.edition-countdown-box{display:flex;flex-direction:column;align-items:flex-end;gap:3px;text-align:right}
+.meta-label{font-size:12px;color:var(--muted);text-transform:uppercase;font-weight:600;letter-spacing:.04em}
+.countdown-display{font-size:20px;color:var(--green-dark);font-weight:800}
+.edition-results-section{margin-top:30px}
+.results-header{margin-bottom:24px}
+.results-header h2{font-size:1.6rem;color:var(--green-dark);margin-bottom:4px}
+.results-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}
+.result-card{background:white;border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
+.result-image{position:relative;aspect-ratio:1.15;background:var(--surface);overflow:hidden}
+.result-image img{width:100%;height:100%;object-fit:contain;padding:12px}
+.result-tag{position:absolute;left:10px;bottom:10px;font-size:11px;font-weight:700;padding:4px 8px;border-radius:6px}
+.result-tag.sold{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0}
+.result-tag.unsold{background:#f3f4f6;color:#4b5563;border:1px solid #e5e7eb}
+.result-info{padding:16px;display:flex;flex-direction:column;flex:1;gap:6px}
+.result-info h3{font-size:15px;margin:0;line-height:1.4}
+.result-price-row{display:flex;align-items:baseline;gap:8px}
+.result-price-row strong{font-size:20px;color:var(--ink)}
+.result-details{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-top:4px}
+.result-outcome{font-weight:600;color:var(--green-dark)}
+
+@media(max-width:1000px){
+  .featured-products-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .results-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:650px){
+  .featured-edition-block{padding:20px}
+  .featured-edition-meta{align-items:stretch;width:100%;text-align:left}
+  .featured-countdown{align-items:flex-start}
+  .featured-products-grid{grid-template-columns:1fr}
+  .results-grid{grid-template-columns:1fr}
+  .edition-meta-banner{flex-direction:column;align-items:flex-start}
+  .edition-countdown-box{align-items:flex-start;text-align:left}
+}
+
+/* LP-FEAT-020: Tarjetas sociales de anuncios y modal de compartir */
+.share-modal-overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(23,37,33,.72);
+  backdrop-filter:blur(5px);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:1000;
+  padding:16px;
+  overflow-y:auto;
+}
+.share-modal-dialog{
+  background:#fff;
+  border-radius:18px;
+  border:1px solid var(--line);
+  max-width:680px;
+  width:100%;
+  padding:24px;
+  box-shadow:0 24px 48px rgba(18,37,28,.22);
+  position:relative;
+  animation:shareModalFadeIn .2s ease-out;
+}
+@keyframes shareModalFadeIn{
+  from{opacity:0;transform:scale(.97)}
+  to{opacity:1;transform:scale(1)}
+}
+.share-modal-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:16px;
+  margin-bottom:18px;
+}
+.share-modal-heading{
+  font-size:22px;
+  font-weight:700;
+  color:var(--ink);
+  margin:0 0 4px;
+}
+.share-modal-subtitle{
+  font-size:13px;
+  color:var(--muted);
+  margin:0;
+}
+.share-modal-close-btn{
+  border:0;
+  background:#f4eee1;
+  border-radius:50%;
+  width:32px;
+  height:32px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:14px;
+  font-weight:700;
+  color:var(--ink);
+  cursor:pointer;
+  flex-shrink:0;
+  transition:background .15s;
+}
+.share-modal-close-btn:hover{
+  background:#e8dfcb;
+}
+.share-card-preview-container{
+  position:relative;
+  width:100%;
+  border-radius:12px;
+  overflow:hidden;
+  background:#fbf8f1;
+  border:1px solid #e2ded5;
+  aspect-ratio:1.905 / 1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  margin-bottom:18px;
+}
+.share-card-preview-img{
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  display:block;
+  border-radius:11px;
+}
+.share-card-skeleton{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#f4eee1;
+  color:var(--muted);
+  font-size:13px;
+  text-align:center;
+  padding:20px;
+}
+.share-feedback-notice{
+  padding:10px 14px;
+  background:#ebf5ef;
+  border:1px solid #9dc7af;
+  color:#0e4e36;
+  border-radius:8px;
+  font-size:13px;
+  font-weight:600;
+  margin-bottom:14px;
+  text-align:center;
+  animation:shareModalFadeIn .15s ease-out;
+}
+.share-actions-grid{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-bottom:16px;
+}
+.share-actions-grid .share-action-btn{
+  flex:1 1 160px;
+  min-height:44px;
+  padding:10px 16px;
+  font-size:14px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+}
+.share-modal-footer{
+  display:flex;
+  justify-content:flex-end;
+  border-top:1px solid var(--line);
+  padding-top:14px;
+}
+.share-modal-cancel-btn{
+  min-height:38px;
+  padding:8px 18px;
+  font-size:14px;
+}
+@media (max-width:650px){
+  .share-modal-dialog{
+    padding:18px 14px;
+    border-radius:14px;
+  }
+  .share-modal-heading{
+    font-size:19px;
+  }
+  .share-actions-grid{
+    flex-direction:column;
+  }
+  .share-actions-grid .share-action-btn{
+    width:100%;
+    min-height:46px;
+  }
+}

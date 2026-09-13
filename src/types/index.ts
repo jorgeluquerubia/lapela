@@ -4,6 +4,7 @@ export interface Product {
   price: number;
   type: string;
   seller: string;
+  sellerProfile?: { alias: string };
   location: string;
   time: string;
   image: string;
@@ -16,12 +17,21 @@ export interface Product {
     username: string;
   } | null;
   updated_at: string;
-  user_id: string; // Added for ownership checks
+  user_id?: string; // Private legacy field; never returned by the public catalogue.
   current_bid?: number;
   bid_count?: number;
   category?: string;
   auction_ends_at?: string; // ISO 8601 string
   slug?: string;
+  story?: string | null;
+  has_story?: boolean;
+  featuredEdition?: {
+    id: string;
+    slug: string;
+    title: string;
+    status?: string;
+    temporal_status?: 'upcoming' | 'active' | 'ended';
+  };
 }
 
 export interface Profile {
@@ -71,3 +81,28 @@ export interface Bid {
     username: string;
   };
 }
+
+export interface AuctionEdition {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  environment?: 'sandbox' | 'live';
+  starts_at: string;
+  reference_ends_at: string;
+  status: 'draft' | 'published' | 'cancelled';
+  temporal_status: 'upcoming' | 'active' | 'ended';
+  image_url?: string | null;
+  items_count?: number;
+  items?: Product[];
+}
+
+export interface AuctionEditionItem {
+  id: string;
+  edition_id: string;
+  listing_id: string;
+  sort_order: number;
+  created_at: string;
+  product?: Product;
+}
+

@@ -10,6 +10,14 @@ jest.mock('next/image', () => {
   };
 });
 
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({ push: jest.fn() }),
+}));
+
+jest.mock('@/context/AuthContext', () => ({
+  useAuth: () => ({ user: null, loading: false }),
+}));
+
 const mockProduct: Product = {
   id: '1',
   name: 'Producto de Prueba',
@@ -39,11 +47,18 @@ describe('ProductCard', () => {
     // Check for product price
     // Note: The component formats the price with a dot and a space.
     expect(screen.getByText(/99.99\s€/)).toBeInTheDocument();
+    expect(screen.getByText('≈ 16.637 ptas.')).toBeInTheDocument();
 
     // Check for product image
     const image = screen.getByAltText('Producto de Prueba');
     expect(image).toBeInTheDocument();
     expect(image).toHaveAttribute('src', 'https://example.com/image.jpg');
+  });
+
+  it('renders AC-01 peseta equivalence for 75.00 € product (≈ 12.479 ptas.)', () => {
+    const product75 = { ...mockProduct, price: 75 };
+    render(<ProductCard product={product75} />);
+    expect(screen.getByText('≈ 12.479 ptas.')).toBeInTheDocument();
   });
 
   it('shows BrandSpinner while image is loading and displays image on load', () => {
@@ -58,7 +73,39 @@ describe('ProductCard', () => {
     fireEvent.load(image);
 
     // Spinner is removed and image receives loaded class
-    expect(screen.queryByRole('status', { name: /Cargando imagen de Producto de Prueba…/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
     expect(image).toHaveClass('product-image-loaded');
+  });
+
+  it('displays "Con historia" badge when product has_story or story (AC-03)', () => {
+    const productWithStory: Product = {
+      ...mockProduct,
+      has_story: true,
+      story: 'Una historia fascinante de este objeto.',
+    };
+
+    render(<ProductCard product={productWithStory} />);
+    const badge = screen.getByText('Con historia');
+    expect(badge).toBeInTheDocument();
+    expect(badge).toHaveClass('story-badge');
+  });
+
+  it('does NOT display "Con historia" badge or empty gap when product has no story (AC-03)', () => {
+    render(<ProductCard product={mockProduct} />);
+    expect(screen.queryByText('Con historia')).not.toBeInTheDocument();
+  });
+
+  it('muestra el distintivo de La Subasta de la Pela si el artículo está destacado (RF-03)', () => {
+    const featuredProduct: Product = {
+      ...mockProduct,
+      type: 'auction',
+      featuredEdition: {
+        id: 'ed-1',
+        slug: 'edicion-1',
+        title: 'Primera Edición',
+      },
+    };
+    render(<ProductCard product={featuredProduct} />);
+    expect(screen.getByText('★ Subasta de la Pela')).toBeInTheDocument();
   });
 });
