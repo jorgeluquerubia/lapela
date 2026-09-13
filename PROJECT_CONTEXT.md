@@ -36,7 +36,7 @@ La propuesta combina la sencillez de uso de un marketplace móvil con dos mecani
 - Rutas semánticas para categorías (`/categoria/[slug]`), subastas (`/subastas`) y fichas de producto con slug descriptivo (`/articulos/[slug]`).
 - Redirección 301 de compatibilidad desde rutas históricas `/ad-detail/[slug]`.
 - Optimización SEO integral: SSR con `generateMetadata`, Open Graph, Twitter Cards, Schema.org JSON-LD (`Product`, `BreadcrumbList`, `WebSite`), `sitemap.xml` dinámico y `robots.txt`.
-- Búsqueda por título y descripción.
+- Búsqueda relevante por título, etiquetas controladas, categoría y descripción, con alias frecuentes, tolerancia conservadora a erratas y sugerencias mientras se escribe.
 - Filtros por categoría, modalidad, rango de precio y ubicación.
 - Orden por fecha, precio y próxima finalización de subasta.
 - Catálogo de ejemplo como alternativa cuando no hay conexión o resultados.
@@ -208,7 +208,8 @@ Las claves secretas no deben usar el prefijo `NEXT_PUBLIC_`, aparecer en specs, 
 
 ### Tablas activas
 
-- `lp_listings`: anuncios, modalidad, precio, entrega, entorno y estado.
+- `lp_listings`: anuncios, modalidad, precio, entrega, entorno, estado y etiquetas de búsqueda normalizadas.
+- `lp_search_aliases`: equivalencias controladas de términos de búsqueda frecuentes.
 - `lp_bids`: historial de pujas.
 - `lp_orders`: comprador, vendedor, importe, pago, dirección, seguimiento y estado.
 - `lp_messages`: conversación ligada al pedido.
@@ -246,7 +247,8 @@ El bucket `product-images` es público porque contiene fotografías de anuncios.
 
 | Método y ruta | Acceso | Función |
 |---|---|---|
-| `GET /api/products` | Público | Catálogo filtrado del entorno activo |
+| `GET /api/products` | Público | Catálogo filtrado del entorno activo y ordenado por relevancia cuando recibe una búsqueda |
+| `GET /api/search/suggestions` | Público | Sugerencias ligeras de consulta, categoría y artículo mientras se escribe |
 | `GET /api/market/listing/:id` | Público | Detalle seguro del anuncio |
 | `GET /api/market/profile/:alias` | Público | Perfil, anuncios, ventas y valoraciones públicas; no incluye compras salvo consentimiento |
 | `GET /api/market/profile/me` | Autenticado | Perfil propio para personalización |
@@ -273,13 +275,19 @@ El bucket `product-images` es público porque contiene fotografías de anuncios.
 | `POST /api/market/report/:id` | Autenticado | Denunciar un anuncio |
 | `POST /api/market/onboard` | Vendedor, modo real | Iniciar onboarding de Stripe Connect |
 | `POST /api/stripe/webhook` | Stripe firmado | Confirmar pagos reales de forma idempotente |
+| `GET/POST /api/cron/maintain` | Vercel Cron / Bearer `CRON_SECRET` | Ciclo programado de mantenimiento: cierre de subastas, alertas de favoritos y liberación de pedidos caducados |
 
 
 Las rutas antiguas bajo `/api/bids`, `/api/messages`, `/api/orders`, `/api/questions`, mutaciones de `/api/products` y equivalentes se conservan para referencia o compatibilidad controlada, pero las mutaciones responden HTTP 410. Su código archivado está en `archive/legacy-api`.
 
 ## 12. Operación automática
 
-El mantenimiento actual es oportunista: al consultar catálogo o detalle, el backend intenta cerrar subastas vencidas y liberar reservas caducadas. No existe todavía un cron de producción documentado que garantice el cierre en un instante exacto sin tráfico.
+El mantenimiento periódico se ejecuta de forma autónoma e independiente del tráfico mediante un programador periódico (Vercel Cron) configurado en `vercel.json` invocando el endpoint seguro `/api/cron/maintain` autenticado con la cabecera `Authorization: Bearer <CRON_SECRET>` (`LP-OPS-001`). Como mecanismo de contingencia y resiliencia (*fallback*), el backend conserva además la ejecución oportunista al consultar catálogo o detalle.
+
+En cada ciclo de mantenimiento se realizan las siguientes tareas:
+- Cierre transaccional de subastas vencidas (`lp_close_auctions`).
+- Procesamiento y envío de alertas a usuarios que siguen subastas o artículos en favoritos (`lp_process_favorite_alerts`).
+- Liberación de reservas de pedidos expiradas (`lp_release`) y cancelación de sesiones Stripe pendientes si aplica.
 
 Para una reserva con sesión Stripe real, el backend comprueba el estado de Checkout antes de liberarla. En sandbox no existe esa dependencia.
 

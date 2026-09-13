@@ -10,7 +10,7 @@ export interface Product {
   image: string;
   detailImage?: string; // Optional as it's not used everywhere
   description?: string; // Optional as it's not used everywhere
-  status: 'available' | 'sold' | 'paid' | 'pending_payment';
+  status: 'available' | 'reserved' | 'sold' | 'paid' | 'pending_payment' | 'expired' | 'withdrawn' | string;
   buyer_id?: string | null;
   buyer: {
     id: string;
@@ -25,6 +25,12 @@ export interface Product {
   slug?: string;
   story?: string | null;
   has_story?: boolean;
+  auctionOutcome?: {
+    status: 'active' | 'awarded' | 'unsold' | 'withdrawn';
+    label: string;
+    detail: string;
+    isEnded: boolean;
+  };
   featuredEdition?: {
     id: string;
     slug: string;
