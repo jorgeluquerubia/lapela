@@ -126,4 +126,4 @@ El vendedor puede añadir una historia opcional al publicar un anuncio. La ficha
 |---|---|---|---|
 | 2026-09-12 | `READY` | Ficha e issue creadas; alcance preparado sin implementación | Codex |
 | 2026-09-12 | `IMPLEMENTED` | Implementación completa de historias de objetos, reglas de validación, vistas, distintivos y tests; migración 202609120003 y rebase con main | Antigravity |
-| 2026-09-13 | `VERIFIED` | Migración aplicada; catálogo HTTP 200 y ficha con historia comprobados en producción; estado sincronizado con issue #46 | Codex |
+| 2026-09-13 | `VERIFIED` | Migración aplicada; catálogo HTTP 200 y ficha con historia comprobados en producción; estado sincronizado con issue #46 mediante PR [#75](https://github.com/jorgeluquerubia/lapela/pull/75) | Codex |
