@@ -1,7 +1,7 @@
 ---
 id: LP-FIX-008
 type: FIX
-status: IMPLEMENTED
+status: VERIFIED
 priority: P1
 requested_at: 2026-09-13
 requested_by: usuario
@@ -116,3 +116,4 @@ Los fallos internos producen un HTTP 500 genérico sin detalles en la respuesta 
 |---|---|---|---|
 | 2026-09-13 | `IN_PROGRESS` | Creación de ficha e inicio de corrección | Codex |
 | 2026-09-13 | `IMPLEMENTED` | Corrección y validación local completadas; pendiente de integración | Codex |
+| 2026-09-13 | `VERIFIED` | PR #76 preparada para integrar con specs, Playwright y Vercel correctos | Codex |
