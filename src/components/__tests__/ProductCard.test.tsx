@@ -108,5 +108,4 @@ describe('ProductCard', () => {
     render(<ProductCard product={featuredProduct} />);
     expect(screen.getByText('★ Subasta de la Pela')).toBeInTheDocument();
   });
-  });
 });
