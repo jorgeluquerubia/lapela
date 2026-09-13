@@ -84,6 +84,7 @@ Prioridades: `P0` bloquea una operación esencial o implica un riesgo grave; `P1
 | `LP-FIX-010` | `FIX` | Renderizar equivalencia completa en tarjetas sociales | `VERIFIED` | `P2` | 2026-09-13 | [Abrir ficha](specs/LP-FIX-010-simbolo-pesetas-tarjeta-social.md) |
 | `LP-FIX-009` | `FIX` | Bloquear pujas durante cierre pendiente | `VERIFIED` | `P1` | 2026-09-13 | [Abrir ficha](specs/LP-FIX-009-subasta-cierre-pendiente.md) |
 | `LP-FIX-011` | `FIX` | Corrección de solapamiento del panel de notificaciones y carga robusta de imágenes | `VERIFIED` | `P1` | 2026-09-13 | [Abrir ficha](specs/LP-FIX-011-panel-notificaciones-imagenes.md) |
+| `LP-FEAT-021` | `FEATURE` | Marcar todas las notificaciones como vistas desde el panel | `VERIFIED` | `P2` | 2026-09-13 | [Abrir ficha](specs/LP-FEAT-021-marcar-todas-notificaciones-vistas.md) |
 
 <!-- LP-FEAT-019 en IMPLEMENTED el 2026-09-13: subsanadas observaciones de QA, verificación final en edición cerrada pendiente de QA real en entorno desplegado -->
 
