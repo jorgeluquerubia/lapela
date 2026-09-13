@@ -11,6 +11,10 @@ jest.mock('@/lib/api', () => ({
   api: jest.fn().mockReturnValue(new Promise(() => {})),
 }));
 
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({ push: jest.fn() }),
+}));
+
 jest.mock('next/link', () => {
   return ({ children, href }: { children: React.ReactNode; href: string }) => {
     return <a href={href}>{children}</a>;
@@ -129,6 +133,50 @@ describe('ProductDetailInteractive Confirmation and Purchase Policy (LP-FEAT-006
       const confirmGroup = screen.getByRole('group', { name: /Confirmar puja/i });
       expect(within(confirmGroup).getByText('≈ 12.479 ptas.')).toBeInTheDocument();
       expect(within(confirmGroup).getByText(/Equivalencia histórica · El pago se realiza en euros/i)).toBeInTheDocument();
+    });
+
+    it('muestra el distintivo y enlace a la edición destacada (RF-03)', () => {
+      const featuredAuction = {
+        ...sampleItem,
+        mode: 'auction',
+        featuredEdition: {
+          id: 'ed-1',
+          slug: 'edicion-1',
+          title: 'Selección Septiembre',
+        },
+      };
+
+      render(<ProductDetailInteractive initialItem={featuredAuction} slug="bicicleta-sevilla" />);
+      const link = screen.getByRole('link', { name: /La Subasta de la Pela · Selección Septiembre/i });
+      expect(link).toBeInTheDocument();
+      expect(link).toHaveAttribute('href', '/subastas/ediciones/edicion-1');
+    });
+  });
+
+  describe('Social share action (LP-FEAT-020)', () => {
+    it('shows Compartir anuncio button on active available listings and opens share modal (AC-01)', () => {
+      render(<ProductDetailInteractive initialItem={sampleItem} slug="bicicleta-sevilla" />);
+
+      const shareBtn = screen.getByRole('button', { name: /compartir anuncio/i });
+      expect(shareBtn).toBeInTheDocument();
+
+      fireEvent.click(shareBtn);
+
+      const dialog = screen.getByRole('dialog');
+      expect(dialog).toBeInTheDocument();
+      expect(within(dialog).getByRole('heading', { name: /compartir anuncio/i })).toBeInTheDocument();
+    });
+
+    it('does not show Compartir button on demo listings or unavailable items (AC-06)', () => {
+      const { unmount } = render(
+        <ProductDetailInteractive initialItem={sampleItem} slug="bicicleta-sevilla" demo={true} />
+      );
+      expect(screen.queryByRole('button', { name: /compartir anuncio/i })).not.toBeInTheDocument();
+      unmount();
+
+      const soldItem = { ...sampleItem, status: 'sold' };
+      render(<ProductDetailInteractive initialItem={soldItem} slug="bicicleta-sevilla" />);
+      expect(screen.queryByRole('button', { name: /compartir anuncio/i })).not.toBeInTheDocument();
     });
   });
 });
