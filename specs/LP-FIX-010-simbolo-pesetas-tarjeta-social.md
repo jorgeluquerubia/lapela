@@ -99,7 +99,7 @@ La equivalencia secundaria se muestra completa y legible con una expresión comp
 
 - **Archivos o módulos:** Endpoint y pruebas de tarjeta social.
 - **Migraciones/configuración:** Ninguna.
-- **Commit o despliegue:** Rama `codex/lp-fix-010-simbolo-pesetas-tarjeta-social`.
+- **Commit o despliegue:** Commit `4f75ffa`; PR [#77](https://github.com/jorgeluquerubia/lapela/pull/77).
 - **Notas de implementación:** Un formateador exclusivo de la tarjeta sustituye el prefijo `≈` por `aprox.`; la interfaz web continúa usando el formato original.
 
 ## 12. Historial
