@@ -1,7 +1,7 @@
 ---
 id: LP-FIX-007
 type: FIX
-status: IMPLEMENTED
+status: VERIFIED
 priority: P1
 requested_at: 2026-09-13
 requested_by: usuario
@@ -80,8 +80,8 @@ El middleware debe permitir que las peticiones destinadas a `/api/social-card/*`
 |---|---|---|---|
 | Bypass de middleware | `/api/social-card/*` no responde 410 | `src/__tests__/middleware.test.ts` valida que las peticiones a tarjetas sociales no retornan 410 | 2026-09-13 |
 | Protección legacy | Otras rutas `/api/*` no permitidas responden 410 | `src/__tests__/middleware.test.ts` valida bloqueo 410 en rutas legacy | 2026-09-13 |
-| Specs y build | Verificación limpia | `npm run specs:check` (32 fichas válidas) y suite de pruebas pasando | 2026-09-13 |
-| Verificación en producción | Despliegue en Vercel responde 200 con PNG | Pendiente de despliegue a producción en Vercel (mantiene estado `IMPLEMENTED`) | 2026-09-13 |
+| Specs y build | Verificación limpia | `npm run specs:check` (34 fichas válidas) y suite de pruebas pasando | 2026-09-13 |
+| Verificación en producción | Despliegue en Vercel responde 200 con PNG | Comprobado en producción: HTTP 200, Content-Type `image/png`, no interceptado por middleware (PNG válido de 47.6 KB) | 2026-09-13 |
 
 ## 10. Decisiones, riesgos y preguntas abiertas
 
@@ -94,7 +94,7 @@ El middleware debe permitir que las peticiones destinadas a `/api/social-card/*`
   - `src/__tests__/middleware.test.ts`: suite de 4 pruebas automatizadas para el middleware.
 - **Rama:** `gemini/lp-fix-007-middleware-tarjetas-sociales`.
 - **Issue:** `#60`.
-- **Notas de implementación:** El estado permanece en `IMPLEMENTED` hasta comprobar una URL real en producción tras el despliegue.
+- **Notas de implementación:** Verificado satisfactoriamente en el despliegue de producción `https://lapela-nine.vercel.app`.
 
 ## 12. Historial
 
@@ -102,3 +102,4 @@ El middleware debe permitir que las peticiones destinadas a `/api/social-card/*`
 |---|---|---|---|
 | 2026-09-13 | `IN_PROGRESS` | Creación de spec para corregir bloqueo de tarjetas sociales en middleware | Gemini |
 | 2026-09-13 | `IMPLEMENTED` | Excepción añadida en middleware, pruebas unitarias automatizadas y preparación para verificación en producción | Gemini |
+| 2026-09-13 | `VERIFIED` | Despliegue en producción comprobado con respuesta HTTP 200 y PNG válido | Gemini |
