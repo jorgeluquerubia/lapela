@@ -107,7 +107,7 @@ Los fallos internos producen un HTTP 500 genérico sin detalles en la respuesta 
 
 - **Archivos o módulos:** `src/controllers/marketplace.ts`, `src/app/api/cron/maintain/route.ts`, pruebas y workflow.
 - **Migraciones/configuración:** Ninguna.
-- **Commit o despliegue:** Rama `codex/lp-fix-008-mantenimiento-seguro-stripe`.
+- **Commit o despliegue:** Commit `6e584a5`; PR [#76](https://github.com/jorgeluquerubia/lapela/pull/76).
 - **Notas de implementación:** Los errores se registran en observabilidad del servidor y el cliente recibe un mensaje estable. Toda incertidumbre de Stripe interrumpe el ciclo antes de liberar.
 
 ## 12. Historial
