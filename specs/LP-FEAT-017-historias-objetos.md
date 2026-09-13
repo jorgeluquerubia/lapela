@@ -1,7 +1,7 @@
 ---
 id: LP-FEAT-017
 type: FEATURE
-status: IMPLEMENTED
+status: VERIFIED
 priority: P1
 requested_at: 2026-09-12
 requested_by: usuario
@@ -99,11 +99,13 @@ El vendedor puede añadir una historia opcional al publicar un anuncio. La ficha
 
 | Comprobación | Resultado esperado | Evidencia | Fecha |
 |---|---|---|---|
-| Migración | Campo opcional y compatible | `supabase/migrations/202609120003_listing_story.sql` con check <= 1000 caracteres | 2026-09-12 |
+| Migración remota | Campo opcional y compatible | `202609120003_listing_story.sql` aplicada; `/api/products` productivo responde HTTP 200 y proyecta `story` nullable | 2026-09-13 |
 | Validación de contenido | Reglas idénticas en cliente y servidor | 10 tests pasando en `rules-story.test.ts` (`validateStory`, `noContact`, `noBargaining`, `noExternalPayment`) | 2026-09-12 |
 | Seguridad de renderizado | Texto plano sin ejecución | Tests en `ProductDetailInteractive.test.tsx` verificando que scripts o etiquetas HTML se renderizan escapados | 2026-09-12 |
 | Revisión visual | Bloque diferenciado y responsive | Badges en `ProductCard.test.tsx` y bloque `La historia de este objeto` en `ProductDetailInteractive.test.tsx` | 2026-09-12 |
 | Build y specs | Comprobaciones sin errores | `npm run build` y `npm run specs:check` exitosos sin errores | 2026-09-12 |
+| Catálogo productivo | Historias presentes sin bloquear anuncios sin relato | QA en `https://lapela-nine.vercel.app/api/products`: anuncios con `story` y `has_story=true`, anuncios sin historia con `story=null` | 2026-09-13 |
+| Ficha productiva | Bloque y distintivo visibles | QA visual en `/articulos/reloj-antiguo-coleccion-cobre-de-bolsillo-00cf6fb5-849c-4ac8-9ef9-72d0c77fe26f` | 2026-09-13 |
 
 ## 10. Decisiones, riesgos y preguntas abiertas
 
@@ -115,7 +117,7 @@ El vendedor puede añadir una historia opcional al publicar un anuncio. La ficha
 
 - **Archivos o módulos:** `src/lib/rules.ts`, `src/types/index.ts`, `src/models/marketplace.ts`, `src/controllers/marketplace.ts`, `src/app/publish-ad/page.tsx`, `src/components/ProductCard.tsx`, `src/components/ProductDetailInteractive.tsx`, `src/app/articulos/[slug]/page.tsx`, `src/lib/demo-products.ts`, `src/app/my-products/page.tsx`, `src/app/globals.css`, `supabase/migrations/202609120003_listing_story.sql`.
 - **Migraciones/configuración:** Columna nullable `story text` en `public.lp_listings`.
-- **Commit o despliegue:** Implementado en rama `codex/lp-feat-017-historias-objetos`.
+- **Commit o despliegue:** Implementado en rama `codex/lp-feat-017-historias-objetos`, integrado en PR #51 y verificado en producción.
 - **Notas de implementación:** La historia se proyecta en fichas públicas y tarjetas de catálogo (`publicFields`), y el propietario cuenta con acción para retirarla.
 
 ## 12. Historial
@@ -124,4 +126,4 @@ El vendedor puede añadir una historia opcional al publicar un anuncio. La ficha
 |---|---|---|---|
 | 2026-09-12 | `READY` | Ficha e issue creadas; alcance preparado sin implementación | Codex |
 | 2026-09-12 | `IMPLEMENTED` | Implementación completa de historias de objetos, reglas de validación, vistas, distintivos y tests; migración 202609120003 y rebase con main | Antigravity |
-
+| 2026-09-13 | `VERIFIED` | Migración aplicada; catálogo HTTP 200 y ficha con historia comprobados en producción; estado sincronizado con issue #46 mediante PR [#75](https://github.com/jorgeluquerubia/lapela/pull/75) | Codex |
