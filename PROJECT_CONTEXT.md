@@ -41,6 +41,7 @@ La propuesta combina la sencillez de uso de un marketplace móvil con dos mecani
 - Orden por fecha, precio y próxima finalización de subasta.
 - Catálogo de ejemplo como alternativa cuando no hay conexión o resultados.
 - Ficha de artículo con fotografías, estado, ubicación, entrega, precio y reglas de compra.
+- Bloque semántico 'La historia de este objeto' en la ficha de producto y distintivo 'Con historia' tanto en catálogo como en ficha.
 - Rutas semánticas para categorías (`/categoria/:slug`), subastas (`/subastas`) y artículos (`/articulos/:slug-con-id`).
 - Metadatos canónicos y sociales, Schema.org, `robots.txt` y sitemap dinámico para indexación.
 - Indicador no bloqueante con spinner de marca (moneda de La Pela girando en 3D) durante transiciones asíncronas de catálogo y carga diferida de imágenes en tarjetas.
@@ -65,9 +66,10 @@ La propuesta combina la sencillez de uso de un marketplace móvil con dos mecani
 - Entre una y seis imágenes JPG, PNG o WebP, de hasta 5 MB por archivo.
 - Las imágenes nuevas se normalizan al subirlas, conservando proporción y centrado dentro de un formato 4:3 para su presentación en los anuncios.
 - Categoría, estado, ubicación, descripción, modalidad de entrega y gastos de envío.
+- Campo opcional 'Historia de este objeto' (hasta 1.000 caracteres) separado de la descripción objetiva, con preguntas guía y contador, que puede retirarse sin eliminar el anuncio.
 - Precio entre 1 € y 10.000 €; compra inmediata opcional en subastas por encima de la salida.
 - Subastas entre una hora y treinta días.
-- Bloqueo de teléfonos, emails, enlaces y referencias a redes o mensajería dentro del anuncio.
+- Bloqueo de teléfonos, emails, enlaces, pagos externos y fórmulas de regateo dentro del anuncio y de su historia.
 - Límite de veinte publicaciones por hora y usuario.
 - Retirada de un anuncio disponible si todavía no tiene pujas.
 
