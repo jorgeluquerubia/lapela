@@ -1,7 +1,7 @@
 ---
 id: LP-FIX-011
 type: FIX
-status: IN_PROGRESS
+status: VERIFIED
 priority: P1
 requested_at: 2026-09-13
 requested_by: usuario
@@ -113,16 +113,20 @@ cross_cutting_concerns: [ui, css, accesibilidad]
 
 ## 11. Implementación y trazabilidad
 
+- **Pull Request:** [PR #82](https://github.com/jorgeluquerubia/lapela/pull/82)
 - **Archivos o módulos:**
   - `src/app/globals.css`
   - `src/components/ProductCard.tsx`
   - `src/components/ProductDetailInteractive.tsx`
   - `src/components/__tests__/ProductCard.test.tsx`
+  - `src/lib/image-processing.ts`
+  - `tests/ui-regressions.spec.ts`
   - `SPEC_REGISTRY.md`
-- **Notas de implementación:** Corrección de stacking context y robustez en ciclo de vida de imágenes.
+- **Notas de implementación:** Corrección de stacking context en `.site-header` (`z-index: 40`), panel de notificaciones (`z-index: 50`) y robustez en ciclo de vida y fallback de imágenes.
 
 ## 12. Historial
 
 | Fecha | Estado | Cambio | Autor/agente |
 |---|---|---|---|
 | 2026-09-13 | `IN_PROGRESS` | Creación de especificación y arranque de implementación | Gemini |
+| 2026-09-13 | `VERIFIED` | Validación completa de todos los AC y PR #82 preparada | Gemini |
