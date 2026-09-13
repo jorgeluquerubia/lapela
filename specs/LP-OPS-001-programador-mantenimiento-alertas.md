@@ -1,7 +1,7 @@
 ---
 id: LP-OPS-001
 type: OPS
-status: IN_PROGRESS
+status: VERIFIED
 priority: P2
 requested_at: 2026-09-13
 requested_by: usuario
