@@ -1,7 +1,7 @@
 ---
 id: LP-FEAT-019
 type: FEATURE
-status: VERIFIED
+status: IMPLEMENTED
 priority: P2
 requested_at: 2026-09-12
 requested_by: usuario
@@ -104,24 +104,24 @@ Operación puede agrupar un número limitado de subastas elegibles en una edici�
 
 | Comprobación | Resultado esperado | Evidencia | Fecha |
 |---|---|---|---|
-| Elegibilidad y autorización | Solo operación y subastas válidas | `src/lib/__tests__/featured-auctions.test.ts` valida rechazo de compra directa, estado no disponible, entorno dispar, subastas pasadas y comprobación de rol de operador (`AC-01`, `AC-06`) | 2026-09-12 |
+| Elegibilidad y autorización | Solo operación y subastas válidas | `src/lib/__tests__/featured-auctions.test.ts` valida rechazo de compra directa, estado no disponible, entorno dispar, subastas pasadas, subastas que terminan antes de abrir la edición, subastas que superan el cierre editorial de referencia al asociarse y comprobación de rol de operador (`AC-01`, `AC-06`) | 2026-09-13 |
 | Reglas transaccionales | Sin cambios en puja o cierre | Comprobado que el motor `lp_bid` y anti-sniping opera sobre `listing.ends_at` sin alterar `reference_ends_at` de la edición (`AC-03`) | 2026-09-12 |
 | Estados temporales y reactividad | Próxima, activa y finalizada correctas sin congelación | `getEditionTemporalStatus` probado con reloj reactivo. `FeaturedAuctionSection.test.tsx` y `EditionDetailInteractive.test.tsx` validan transiciones en vivo segundo a segundo (`AC-04`, `RNF-03`) | 2026-09-13 |
-| Clasificación de resultados | Adjudicado ('reserved' y 'sold'), prórroga y sin venta exactos | `getItemAuctionOutcome` y `EditionDetailInteractive.test.tsx` validan clasificación unívoca sin etiquetar subastas ganadas como sin venta (`AC-05`) | 2026-09-13 |
+| Clasificación de resultados | Adjudicado ('reserved' y 'sold'), prórroga y sin venta exactos | `getItemAuctionOutcome` y `EditionDetailInteractive.test.tsx` validan clasificación unívoca: 'sold' (Vendido), 'reserved' (Adjudicado), 'expired' (No adjudicado incluso con pujas en caso de impago por lp_release) y detalle neutral 'En curso' salvo evidencia de prórroga activa (`AC-05`) | 2026-09-13 |
 | Rendimiento y responsive | Selección usable sin N+1 | Consultas en `getCurrentFeaturedEdition` resueltas mediante join sobre `lp_auction_edition_items` y carga por lote con `profilesById` (`RNF-02`) | 2026-09-12 |
-| Build y specs | Comprobaciones sin errores | `npm run specs:check` (28 fichas y 39 docs) y `npm run build` completados con código 0 | 2026-09-13 |
+| Build y specs | Comprobaciones sin errores | `npm run specs:check` y `npm run build` completados con código 0 | 2026-09-13 |
 
 ## 10. Decisiones, riesgos y preguntas abiertas
 
 - **Decisiones:** Piloto gratuito y curado; edición editorial separada de los cierres reales; sin construir un panel administrativo general.
-- **Riesgos y límites:** Una selección sin demanda puede hacer visible la baja liquidez. La operación deberá limitar artículos y acompañar cada edición con captación.
+- **Riesgos y límites:** Una selección sin demanda puede hacer visible la baja liquidez. La operación deberá limitar artículos y acompañar cada edición con captación. La verificación definitiva en producción requiere comprobación con subastas reales finalizadas en entorno desplegado.
 - **Preguntas abiertas:** Ninguna bloqueante para el piloto.
 
 ## 11. Implementación y trazabilidad
 
 - **Archivos o módulos:**
-  - Migración: `supabase/migrations/202609120001_featured_auctions.sql`.
-  - Dominio: `src/lib/featured-auctions.ts` (elegibilidad, estados temporales, formato de cuenta atrás accesible, clasificación de resultados `getItemAuctionOutcome`, autorización de operador).
+  - Migración: `supabase/migrations/202609120004_featured_auctions.sql`.
+  - Dominio: `src/lib/featured-auctions.ts` (elegibilidad con ventana editorial, estados temporales, formato de cuenta atrás accesible, clasificación de resultados `getItemAuctionOutcome`, autorización de operador).
   - Tipos: `src/types/index.ts` (`AuctionEdition`, `AuctionEditionItem`, `Product.featuredEdition`, `Product.auctionOutcome`).
   - Modelos: `src/models/marketplace.ts` (`getCurrentFeaturedEdition`, `getAuctionEditionBySlug` con exclusión de borradores por defecto, `card`, `getListingByIdOrSlug`).
   - Controlador: `src/controllers/marketplace.ts` (`GET featured-edition`, `GET/POST auction-edition`, control de acceso a borradores según operador y prohibición de publicar ediciones vacías).
@@ -139,4 +139,5 @@ Operación puede agrupar un número limitado de subastas elegibles en una edici�
 | 2026-09-12 | `IN_PROGRESS` | Sincronización con main y comienzo de implementación | Gemini |
 | 2026-09-12 | `VERIFIED` | Implementación completa de base de datos, API, vistas, reglas y pruebas validadas | Gemini |
 | 2026-09-13 | `VERIFIED` | Subsanación de observaciones de QA: restricción de borradores, resultados adjudicados y temporizador reactivo | Gemini |
+| 2026-09-13 | `IMPLEMENTED` | Subsanación de observaciones de QA (prevalencia de estado persistido sobre temporal, corrección de impago con pujas a No adjudicado, validación de ventana de fechas en elegibilidad, detalle neutral En curso sin evidencia de prórroga) y renombramiento de migración a 202609120004 por colisión. Estado devuelto a IMPLEMENTED a la espera de QA real en entorno integrado | Gemini |
 

@@ -74,13 +74,13 @@ Prioridades: `P0` bloquea una operación esencial o implica un riesgo grave; `P1
 | `LP-FEAT-016` | `FEATURE` | Precios en euros con equivalencia en pesetas | `VERIFIED` | `P1` | 2026-09-12 | [Abrir ficha](specs/LP-FEAT-016-precios-equivalencia-pesetas.md) |
 | `LP-FEAT-017` | `FEATURE` | Historias de los objetos | `IMPLEMENTED` | `P1` | 2026-09-12 | [Abrir ficha](specs/LP-FEAT-017-historias-objetos.md) |
 | `LP-FEAT-018` | `FEATURE` | Favoritos y alertas de artículos | `VERIFIED` | `P1` | 2026-09-12 | [Abrir ficha](specs/LP-FEAT-018-favoritos-alertas.md) |
-| `LP-FEAT-019` | `FEATURE` | Subastas destacadas y coordinadas | `VERIFIED` | `P2` | 2026-09-12 | [Abrir ficha](specs/LP-FEAT-019-subastas-destacadas.md) |
+| `LP-FEAT-019` | `FEATURE` | Subastas destacadas y coordinadas | `IMPLEMENTED` | `P2` | 2026-09-12 | [Abrir ficha](specs/LP-FEAT-019-subastas-destacadas.md) |
 | `LP-FEAT-020` | `FEATURE` | Tarjetas sociales de anuncios | `VERIFIED` | `P2` | 2026-09-12 | [Abrir ficha](specs/LP-FEAT-020-tarjetas-sociales.md) |
 | `LP-FIX-006` | `FIX` | Notificación de favoritos al vendedor y ocultación en anuncios propios | `VERIFIED` | `P2` | 2026-09-12 | [Abrir ficha](specs/LP-FIX-006-favoritos-vendedor.md) |
 | `LP-FIX-007` | `FIX` | Permitir endpoint de tarjetas sociales en middleware | `VERIFIED` | `P1` | 2026-09-13 | [Abrir ficha](specs/LP-FIX-007-middleware-tarjetas-sociales.md) |
 | `LP-OPS-001` | `OPS` | Programador periódico de mantenimiento y alertas de favoritos | `VERIFIED` | `P2` | 2026-09-13 | [Abrir ficha](specs/LP-OPS-001-programador-mantenimiento-alertas.md) |
 
-<!-- LP-FEAT-019 actualizado el 2026-09-13 tras subsanación de observaciones de QA -->
+<!-- LP-FEAT-019 en IMPLEMENTED el 2026-09-13: subsanadas observaciones de QA, verificación final en edición cerrada pendiente de QA real en entorno desplegado -->
 
 ## Flujo para una solicitud nueva
 

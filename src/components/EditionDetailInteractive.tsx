@@ -147,7 +147,11 @@ export default function EditionDetailInteractive({
                   ends_at: item.auction_ends_at,
                   bid_count: item.bid_count,
                 },
-                now
+                now,
+                {
+                  reference_ends_at: edition.reference_ends_at,
+                  starts_at: edition.starts_at,
+                }
               );
 
               const isItemActive = outcome.status === 'active';
@@ -184,7 +188,7 @@ export default function EditionDetailInteractive({
                       <span>{item.bid_count || 0} pujas registradas</span>
                       <span
                         className={`result-outcome ${
-                          isItemActive ? 'active-extension' : ''
+                          outcome.isExtended ? 'active-extension' : ''
                         }`}
                       >
                         {outcome.detail}
@@ -197,7 +201,11 @@ export default function EditionDetailInteractive({
                         isItemActive ? 'primary' : 'secondary'
                       } text-xs w-full mt-2`}
                     >
-                      {isItemActive ? 'Pujar ahora (prórroga activa)' : 'Ver ficha del artículo'}
+                      {isItemActive
+                        ? outcome.isExtended
+                          ? 'Pujar ahora (prórroga activa)'
+                          : 'Pujar ahora'
+                        : 'Ver ficha del artículo'}
                     </Link>
                   </div>
                 </article>

@@ -30,6 +30,7 @@ export interface Product {
     label: string;
     detail: string;
     isEnded: boolean;
+    isExtended?: boolean;
   };
   featuredEdition?: {
     id: string;

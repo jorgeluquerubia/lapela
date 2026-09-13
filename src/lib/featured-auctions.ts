@@ -53,12 +53,19 @@ export type AuctionItemOutcome = {
   label: string;
   detail: string;
   isEnded: boolean;
+  isExtended?: boolean;
 };
 
 /**
  * Determina de forma unívoca el resultado o estado de un artículo asociado a una edición.
- * AC-03, AC-04, AC-05: Reconoce 'reserved' y 'sold' como adjudicados, artículos en prórroga
- * anti-sniping como activos, y 'expired' o sin pujas como sin venta.
+ * - 'sold': vendido y confirmado.
+ * - 'reserved': adjudicado, pendiente del flujo correspondiente (pago/entrega).
+ * - 'expired': no adjudicado / venta no completada (aunque conserve pujas previas, ej: impago).
+ * - 'withdrawn': retirado.
+ * - 'available': en curso (o en prórroga anti-sniping si hay evidencia objetiva de ampliación respecto al cierre de la edición).
+ *
+ * El estado persistido en base de datos prevalece siempre sobre la inferencia temporal.
+ * Una subasta terminada no se considera adjudicada únicamente por bid_count.
  */
 export function getItemAuctionOutcome(
   listing: {
@@ -67,7 +74,11 @@ export function getItemAuctionOutcome(
     bid_count?: number;
     highest_bidder?: string | null;
   } | null | undefined,
-  now: Date = new Date()
+  now: Date = new Date(),
+  edition?: {
+    reference_ends_at?: string | null;
+    starts_at?: string | null;
+  } | null
 ): AuctionItemOutcome {
   if (!listing) {
     return {
@@ -78,34 +89,78 @@ export function getItemAuctionOutcome(
     };
   }
 
+  // 1. Estado persistido: withdrawn
   if (listing.status === 'withdrawn') {
     return {
       status: 'withdrawn',
       label: 'Retirado',
-      detail: 'Retirado de la subasta',
+      detail: 'Retirado',
       isEnded: true,
     };
   }
 
-  const endsAtTime = listing.ends_at ? new Date(listing.ends_at).getTime() : 0;
-  const isTimeRemaining = endsAtTime > now.getTime();
-
-  if (listing.status === 'available' && isTimeRemaining) {
+  // 2. Estado persistido: sold
+  if (listing.status === 'sold') {
     return {
-      status: 'active',
-      label: 'En curso',
-      detail: 'En prórroga anti-sniping',
-      isEnded: false,
+      status: 'awarded',
+      label: 'Vendido',
+      detail: 'Vendido y confirmado',
+      isEnded: true,
     };
   }
 
-  const hasBids = (listing.bid_count || 0) > 0 || !!listing.highest_bidder;
-  if (['reserved', 'sold'].includes(listing.status || '') || (!isTimeRemaining && hasBids)) {
+  // 3. Estado persistido: reserved (adjudicado, pendiente de pago / flujo correspondiente)
+  if (listing.status === 'reserved') {
     return {
       status: 'awarded',
       label: 'Adjudicado',
-      detail: listing.status === 'sold' ? 'Vendido y confirmado' : 'Adjudicado al mejor postor',
+      detail: 'Adjudicado, pendiente del flujo correspondiente',
       isEnded: true,
+    };
+  }
+
+  // 4. Estado persistido: expired (no adjudicado o venta no completada, ej. ganador no paga)
+  if (listing.status === 'expired') {
+    const hasBids = (listing.bid_count || 0) > 0 || !!listing.highest_bidder;
+    return {
+      status: 'unsold',
+      label: hasBids ? 'No adjudicado' : 'Sin venta',
+      detail: hasBids ? 'No adjudicado / venta no completada' : 'Sin pujas suficientes',
+      isEnded: true,
+    };
+  }
+
+  // 5. Estado persistido: available
+  const endsAtTime = listing.ends_at ? new Date(listing.ends_at).getTime() : 0;
+  const isTimeRemaining = endsAtTime > now.getTime();
+
+  if (listing.status === 'available') {
+    if (isTimeRemaining) {
+      // Evidencia real de prórroga anti-sniping:
+      // Si la edición cuenta con reference_ends_at y el ends_at del artículo lo supera habiendo recibido pujas
+      const isExtended = Boolean(
+        edition?.reference_ends_at &&
+        endsAtTime > new Date(edition.reference_ends_at).getTime() &&
+        (listing.bid_count || 0) > 0
+      );
+
+      return {
+        status: 'active',
+        label: 'En curso',
+        detail: isExtended ? 'En prórroga anti-sniping' : 'En curso',
+        isEnded: false,
+        isExtended,
+      };
+    }
+
+    // Si ends_at ya venció pero aún no se ha ejecutado el proceso de cierre (lp_close_auctions),
+    // el estado persistido manda: sigue en curso / pendiente de cierre, no adjudicado automáticamente.
+    return {
+      status: 'active',
+      label: 'En curso',
+      detail: 'Pendiente de cierre',
+      isEnded: false,
+      isExtended: false,
     };
   }
 
@@ -122,7 +177,10 @@ export function getItemAuctionOutcome(
  * - Modalidad subasta
  * - Disponible
  * - Mismo entorno (sandbox/live)
- * - Subasta activa (ends_at en el futuro)
+ * - Subasta activa (ends_at en el futuro respecto a now)
+ * - ends_at debe ser posterior a starts_at de la edición (se rechaza si termina antes o al inicio de la edición)
+ * - En el momento de la asociación, ends_at no puede superar el reference_ends_at de la edición.
+ *   (Nota: La ampliación posterior por anti-sniping durante las pujas sí puede superar el cierre editorial).
  */
 export function validateAuctionEligibility(
   listing: {
@@ -152,6 +210,13 @@ export function validateAuctionEligibility(
   }
   if (!listing.ends_at || new Date(listing.ends_at).getTime() <= now.getTime()) {
     return { eligible: false, reason: 'No se pueden asociar subastas ya finalizadas.' };
+  }
+  const endsAtTime = new Date(listing.ends_at).getTime();
+  if (edition.starts_at && endsAtTime <= new Date(edition.starts_at).getTime()) {
+    return { eligible: false, reason: 'La subasta debe finalizar después de la apertura de la edición.' };
+  }
+  if (edition.reference_ends_at && endsAtTime > new Date(edition.reference_ends_at).getTime()) {
+    return { eligible: false, reason: 'El cierre previsto de la subasta no puede superar el cierre de referencia de la edición.' };
   }
 
   return { eligible: true };
