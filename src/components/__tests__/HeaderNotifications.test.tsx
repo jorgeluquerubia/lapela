@@ -52,4 +52,32 @@ describe('Header notifications',()=>{
     await waitFor(()=>expect(screen.getByRole('button',{name:'1 novedades sin leer'})).toBeInTheDocument());
     expect(push).toHaveBeenCalledWith('/orders/order-1');
   });
+
+  it('shows option to mark all as read and clears notifications when clicked',async()=>{
+    render(<Header/>);
+    fireEvent.click(await screen.findByRole('button',{name:'2 novedades sin leer'}));
+    const markAllBtn=await screen.findByRole('button',{name:'Marcar todas como vistas'});
+    expect(markAllBtn).toBeInTheDocument();
+
+    fireEvent.click(markAllBtn);
+
+    await waitFor(()=>expect(global.fetch).toHaveBeenCalledWith('/api/market/mark-all-notifications-read',{
+      method:'POST',headers:{'Content-Type':'application/json'},body:'{}'
+    }));
+    await waitFor(()=>expect(screen.getByText('No tienes novedades pendientes.')).toBeInTheDocument());
+    expect(screen.queryByRole('button',{name:'Marcar todas como vistas'})).not.toBeInTheDocument();
+    expect(screen.getByRole('button',{name:'No tienes novedades sin leer'})).toBeInTheDocument();
+  });
+
+  it('does not show mark all option when there are no unread notifications',async()=>{
+    global.fetch=jest.fn().mockResolvedValue({ok:true,json:()=>Promise.resolve({
+      unreadCount:0,
+      notifications:[]
+    })});
+    render(<Header/>);
+    fireEvent.click(await screen.findByRole('button',{name:'No tienes novedades sin leer'}));
+    expect(await screen.findByText('No tienes novedades pendientes.')).toBeInTheDocument();
+    expect(screen.queryByRole('button',{name:'Marcar todas como vistas'})).not.toBeInTheDocument();
+  });
 });
+

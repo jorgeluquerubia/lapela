@@ -15,6 +15,7 @@ export default function Header(){
   const [unreadCount,setUnreadCount]=useState(0);
   const [notifications,setNotifications]=useState<any[]>([]);
   const [open,setOpen]=useState(false);
+  const [markingAll,setMarkingAll]=useState(false);
 
   useEffect(()=>{
     if(!user){setUnreadCount(0);setNotifications([]);setOpen(false);return}
@@ -46,6 +47,20 @@ export default function Header(){
     router.push(href);
   };
 
+  const markAllAsRead=async()=>{
+    if(markingAll||!notifications.length)return;
+    setMarkingAll(true);
+    try{
+      const response=await fetch('/api/market/mark-all-notifications-read',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+      if(response.ok){
+        setNotifications([]);
+        setUnreadCount(0);
+      }
+    }catch{}finally{
+      setMarkingAll(false);
+    }
+  };
+
   return <header className="site-header">
     <div className="header-inner">
       <Brand/>
@@ -57,7 +72,13 @@ export default function Header(){
             {unreadCount>0&&<span className="activity-dot">{unreadCount>9?'9+':unreadCount}</span>}
           </button>
           {open&&<section id="notification-panel" className="notification-panel" aria-label="Novedades">
-            <div className="notification-panel-heading"><strong>Novedades</strong><Link href="/my-products" onClick={()=>setOpen(false)}>Ver actividad</Link></div>
+            <div className="notification-panel-heading">
+              <strong>Novedades</strong>
+              <div className="notification-panel-actions">
+                {notifications.length>0&&<button type="button" className="notification-mark-all" onClick={markAllAsRead} disabled={markingAll}>{markingAll?'Marcando...':'Marcar todas como vistas'}</button>}
+                <Link href="/my-products" onClick={()=>setOpen(false)}>Ver actividad</Link>
+              </div>
+            </div>
             {!notifications.length?<p className="notification-empty">No tienes novedades pendientes.</p>:<ul>{notifications.map(notification=>{const articleHref=notificationArticleHref(notification);const orderHref='/orders/'+notification.order_id;return <li key={notification.id}>
               <Link href={articleHref} onClick={event=>openNotification(event,notification,articleHref)} className="notification-article-link"><strong>{notification.title}</strong><span>{notification.listing?.title||'Ver artículo'}</span></Link>
               {notification.body&&<p>{notification.body}</p>}
