@@ -12,11 +12,13 @@ const ok=(data:unknown,status=200)=>NextResponse.json(data,{status,headers:{'Cac
 async function result(query:any){const {data,error}=await query;if(error)throw Error('No se ha podido completar la operación. Inténtalo de nuevo.');return data}
 export interface MaintenanceMetrics { closedAuctions: number; processedAlerts: number; expiredOrders: number; }
 export async function runMaintenance(): Promise<MaintenanceMetrics> {
-  const closedAuctions = await rpc('lp_close_auctions').then((n:any)=>typeof n==='number'?n:0).catch(()=>0);
-  const processedAlerts = await rpc('lp_process_favorite_alerts').then((n:any)=>typeof n==='number'?n:0).catch(()=>0);
+  const closedAuctionsRaw = await rpc('lp_close_auctions');
+  const closedAuctions = typeof closedAuctionsRaw === 'number' ? closedAuctionsRaw : 0;
+  const processedAlertsRaw = await rpc('lp_process_favorite_alerts');
+  const processedAlerts = typeof processedAlertsRaw === 'number' ? processedAlertsRaw : 0;
   const db=admin();
   let expiredOrders=0;
-  const expired=await result(db.from('lp_orders').select('id,stripe_session_id').eq('status','pending_payment').lt('expires_at',new Date().toISOString()).limit(20)).catch(()=>[]);
+  const expired=await result(db.from('lp_orders').select('id,stripe_session_id').eq('status','pending_payment').lt('expires_at',new Date().toISOString()).limit(20));
   for(const o of (expired||[])){
     if(o.stripe_session_id){
       if(!process.env.STRIPE_SECRET_KEY)continue;
@@ -24,7 +26,8 @@ export async function runMaintenance(): Promise<MaintenanceMetrics> {
       if(session&&session.status==='complete')continue;
       if(session&&session.status==='open'){try{await stripe().checkout.sessions.expire(session.id)}catch{continue}}
     }
-    try{await rpc('lp_release',{p_order:o.id});expiredOrders++;}catch{}
+    await rpc('lp_release',{p_order:o.id});
+    expiredOrders++;
   }
   return {closedAuctions,processedAlerts,expiredOrders};
 }
