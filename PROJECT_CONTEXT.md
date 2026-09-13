@@ -273,13 +273,19 @@ El bucket `product-images` es público porque contiene fotografías de anuncios.
 | `POST /api/market/report/:id` | Autenticado | Denunciar un anuncio |
 | `POST /api/market/onboard` | Vendedor, modo real | Iniciar onboarding de Stripe Connect |
 | `POST /api/stripe/webhook` | Stripe firmado | Confirmar pagos reales de forma idempotente |
+| `GET/POST /api/cron/maintain` | Vercel Cron / Bearer `CRON_SECRET` | Ciclo programado de mantenimiento: cierre de subastas, alertas de favoritos y liberación de pedidos caducados |
 
 
 Las rutas antiguas bajo `/api/bids`, `/api/messages`, `/api/orders`, `/api/questions`, mutaciones de `/api/products` y equivalentes se conservan para referencia o compatibilidad controlada, pero las mutaciones responden HTTP 410. Su código archivado está en `archive/legacy-api`.
 
 ## 12. Operación automática
 
-El mantenimiento actual es oportunista: al consultar catálogo o detalle, el backend intenta cerrar subastas vencidas y liberar reservas caducadas. No existe todavía un cron de producción documentado que garantice el cierre en un instante exacto sin tráfico.
+El mantenimiento periódico se ejecuta de forma autónoma e independiente del tráfico mediante un programador periódico (Vercel Cron) configurado en `vercel.json` invocando el endpoint seguro `/api/cron/maintain` autenticado con la cabecera `Authorization: Bearer <CRON_SECRET>` (`LP-OPS-001`). Como mecanismo de contingencia y resiliencia (*fallback*), el backend conserva además la ejecución oportunista al consultar catálogo o detalle.
+
+En cada ciclo de mantenimiento se realizan las siguientes tareas:
+- Cierre transaccional de subastas vencidas (`lp_close_auctions`).
+- Procesamiento y envío de alertas a usuarios que siguen subastas o artículos en favoritos (`lp_process_favorite_alerts`).
+- Liberación de reservas de pedidos expiradas (`lp_release`) y cancelación de sesiones Stripe pendientes si aplica.
 
 Para una reserva con sesión Stripe real, el backend comprueba el estado de Checkout antes de liberarla. En sandbox no existe esa dependencia.
 
