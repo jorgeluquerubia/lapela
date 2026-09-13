@@ -107,10 +107,11 @@ Cada cuenta dispone de un alias público único y estable. Los anuncios, pujas, 
 | Tipos | Tipos TypeScript correctos | `npx tsc --noEmit` correcto sin errores | 2026-09-12 |
 | Build | Compilación correcta de producción | `npm run build` completado exitosamente (26 rutas) | 2026-09-12 |
 | Validación de specs | Registro, ficha y enlaces coherentes | `npm run specs:check -- --branch-name gemini/lp-feat-013-public-profiles-reviews` correcto (25 fichas, 36 documentos) | 2026-09-12 |
+| Aislamiento sandbox/live | Ventas, reseñas y compras en perfil público aisladas por environment | `src/lib/__tests__/profile-environment-isolation.test.ts` (3 pruebas correctas) y validación de entorno en valoraciones y pedidos | 2026-09-13 |
 
 ## 10. Decisiones, riesgos y preguntas abiertas
 
-- **Decisiones:** Los perfiles son públicos pero no indexables; las compras son privadas por defecto; el comprador no se publica en los anuncios; el alias queda fijado tras personalizarse.
+- **Decisiones:** Los perfiles son públicos pero no indexables; las compras son privadas por defecto; el comprador no se publica en los anuncios; el alias queda fijado tras personalizarse; el perfil público solo computa ventas, compras y valoraciones correspondientes al entorno activo (`sandbox` o `live`).
 - **Riesgos y límites:** Un alias puede ser reconocible fuera de la plataforma; se limita mediante un formato sin contacto y no se habilita mensajería pública. La moderación de comentarios requerirá una ficha posterior.
 - **Preguntas abiertas:** La futura política de cambio de alias y moderación/ocultación de valoraciones necesita definición operativa.
 
@@ -119,7 +120,7 @@ Cada cuenta dispone de un alias público único y estable. Los anuncios, pujas, 
 - **Archivos o módulos:** Modelo, controlador, componentes de catálogo/ficha/pedido/cuenta/actividad, ruta de perfiles, estilos y pruebas.
 - **Migraciones/configuración:** Nueva migración aditiva de perfiles y valoraciones (`202609110001_public_profiles_reviews.sql`), aplicada y comprobada en Supabase.
 - **Commit o despliegue:** Rama `gemini/lp-feat-013-public-profiles-reviews`.
-- **Notas de implementación:** Se preservan las reglas de chat y no contacto existentes; el alias no abre ningún canal de comunicación.
+- **Notas de implementación:** Se preservan las reglas de chat y no contacto existentes; el alias no abre ningún canal de comunicación. Se asegura aislamiento estricto entre sandbox y producción mediante joins a `lp_listings.environment`.
 
 ## 12. Historial
 
@@ -129,3 +130,5 @@ Cada cuenta dispone de un alias público único y estable. Los anuncios, pujas, 
 | 2026-09-11 | `IMPLEMENTED` | Implementación lista; falta aplicar migración y validar en un entorno con Supabase | Codex |
 | 2026-09-11 | `IMPLEMENTED` | PR #42 abierta para revisión | Codex |
 | 2026-09-12 | `VERIFIED` | Verificación completa de base de datos en Supabase, suites de tests automatizados de UI y perfiles, robustecimiento de página de pedidos y compilación de producción | Gemini |
+| 2026-09-13 | `VERIFIED` | Corrección de aislamiento sandbox vs producción tras QA: ventas, reseñas y compras filtradas por listing.environment en getPublicProfile y validación en valoraciones | Gemini |
+
