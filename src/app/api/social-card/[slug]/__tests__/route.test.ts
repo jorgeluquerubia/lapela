@@ -1,7 +1,8 @@
 /**
  * @jest-environment node
  */
-import { GET } from '../route';
+import {GET} from '../route';
+import {socialPesetaEquivalence} from '@/lib/social-card';
 
 const mockMaybeSingle = jest.fn();
 const mockEq = jest.fn();
@@ -106,6 +107,11 @@ describe('GET /api/social-card/[slug] (LP-FEAT-020 & LP-FIX-007)', () => {
     const magicBytes = Array.from(new Uint8Array(arrayBuffer.slice(0, 4)));
     expect(magicBytes).toEqual([0x89, 0x50, 0x4e, 0x47]);
   };
+
+  it('uses an ImageResponse-safe approximation label without the unsupported glyph', () => {
+    expect(socialPesetaEquivalence(8500)).toBe('aprox. 14.143 ptas.');
+    expect(socialPesetaEquivalence(8500)).not.toContain('≈');
+  });
 
   it('returns 404 when slug does not contain a valid UUID (AC-06)', async () => {
     const res = await GET(new Request('http://localhost/api/social-card/invalid-slug'), {
