@@ -4,6 +4,10 @@ import {slugify, extractIdFromSlug} from './slugs';
 const photos=['photo-1585298723682-7115561c51b7','photo-1580744996977-bcb703315d8a','photo-1746087867515-e676cb795991','photo-1707050494089-7a69b3a2f738','photo-1569546494896-62e7c30b8aab','photo-1607983859015-f8f6ebcac397'];
 const items=[['Auriculares inalámbricos negros',85,'Tecnología','Madrid','sale'],['Cámara réflex con objetivo',180,'Tecnología','Barcelona','auction'],['Silla de diseño naranja',65,'Hogar','Valencia','sale'],['Bicicleta urbana roja',120,'Deporte','Sevilla','sale'],['Nintendo Switch con mandos',95,'Tecnología','Bilbao','auction'],['Zapatillas blancas · Talla 42',35,'Moda','Madrid','sale']] as const;
 
+const stories: Record<number, string> = {
+  1: 'La compré en un anticuario del Rastro en 2018 para restaurarla durante las tardes de lluvia. Conserva el cuerpo mecánico impecable y ha recorrido media Europa conmigo en viajes de tren. La vendo porque he pasado a formato medio y merece seguir disparando fotos.',
+};
+
 export const demoProducts:Product[]=items.map(([name,price,category,location,type],i)=>({
   id:`demo-${i+1}`,
   slug:`ejemplo-${slugify(name)}-demo-${i+1}`,
@@ -14,6 +18,8 @@ export const demoProducts:Product[]=items.map(([name,price,category,location,typ
   type,
   image:`https://images.unsplash.com/${photos[i]}?auto=format&fit=crop&w=900&q=85`,
   description:'Anuncio de ejemplo para explorar La Pela. La fotografía es ilustrativa. Este artículo no está a la venta.',
+  story: stories[i] || null,
+  has_story: Boolean(stories[i]),
   seller:'Perfil de ejemplo',
   user_id:'demo-seller',
   status:'available',

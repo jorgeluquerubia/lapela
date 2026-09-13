@@ -58,6 +58,18 @@ function ActivityContent() {
     }
   }
 
+  async function removeStory(listingId: string) {
+    setBusy(true);
+    try {
+      await api('remove-story/' + listingId, {});
+      setData(await api('activity'));
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function removeFavorite(listingId: string) {
     setBusy(true);
     try {
@@ -434,11 +446,23 @@ function ActivityContent() {
                   </span>
                 </div>
                 {tab === 'listings' ? (
-                  r.status === 'available' && !r.bid_count ? (
-                    <button className="button" onClick={() => setWithdraw(r.id)}>
-                      Retirar
-                    </button>
-                  ) : null
+                  <div style={{display: 'flex', gap: '8px', alignItems: 'center'}}>
+                    {r.story && (
+                      <button
+                        className="button text-xs"
+                        disabled={busy}
+                        onClick={() => removeStory(r.id)}
+                        title="Retirar la historia de este anuncio"
+                      >
+                        Retirar historia
+                      </button>
+                    )}
+                    {r.status === 'available' && !r.bid_count ? (
+                      <button className="button" onClick={() => setWithdraw(r.id)}>
+                        Retirar
+                      </button>
+                    ) : null}
+                  </div>
                 ) : tab !== 'bids' ? (
                   <Link className="button" href={'/orders/' + r.id}>
                     Ver pedido →

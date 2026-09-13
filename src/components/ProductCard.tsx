@@ -77,6 +77,7 @@ export default function ProductCard({product:p}:{product:Product}){
         {p.featuredEdition && (
           <span className="featured-tag">★ Subasta de la Pela</span>
         )}
+        {(p.has_story || Boolean(p.story)) && <span className="story-badge">Con historia</span>}
       </Link>
       {!isDemo && !isMine && (
         <button
