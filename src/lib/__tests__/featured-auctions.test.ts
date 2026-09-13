@@ -151,17 +151,17 @@ describe('LP-FEAT-019: Subastas destacadas y coordinadas', () => {
       expect(outcome.isExtended).toBe(false);
     });
 
-    it('mantiene estado persistido "En curso" (pendiente de cierre) si ends_at venció pero la base de datos no lo ha cerrado aún', () => {
+    it('marca como pendiente y finalizada para acciones si ends_at venció pero la base de datos no lo ha cerrado aún', () => {
       const listing = {
         status: 'available',
         ends_at: '2026-09-20T19:50:00.000Z',
         bid_count: 4,
       };
       const outcome = getItemAuctionOutcome(listing, now, edition);
-      expect(outcome.status).toBe('active');
-      expect(outcome.label).toBe('En curso');
+      expect(outcome.status).toBe('pending');
+      expect(outcome.label).toBe('Pendiente');
       expect(outcome.detail).toBe('Pendiente de cierre');
-      expect(outcome.isEnded).toBe(false);
+      expect(outcome.isEnded).toBe(true);
       expect(outcome.isExtended).toBe(false);
     });
 

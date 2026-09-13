@@ -201,6 +201,27 @@ describe('EditionDetailInteractive (AC-03, AC-04, AC-05, RNF-03)', () => {
     expect(screen.getByText('Sin pujas suficientes')).toBeInTheDocument();
   });
 
+  it('elimina la acción de pujar cuando el cierre real venció pero el backend aún no persistió el resultado', () => {
+    const pendingEdition: AuctionEdition = {
+      ...baseEdition,
+      items: [
+        {
+          ...baseEdition.items![0],
+          name: 'Subasta pendiente',
+          status: 'available',
+          auction_ends_at: '2026-09-20T19:59:00.000Z',
+          slug: 'subasta-pendiente',
+        },
+      ],
+    };
+
+    render(<EditionDetailInteractive initialEdition={pendingEdition} />);
+
+    expect(screen.getByText('Pendiente de cierre')).toBeInTheDocument();
+    expect(screen.queryByText(/^Pujar ahora/)).not.toBeInTheDocument();
+    expect(screen.getByText('Ver ficha del artículo')).toBeInTheDocument();
+  });
+
   it('actualiza el temporizador de forma reactiva cada segundo', () => {
     const activeEdition: AuctionEdition = {
       ...baseEdition,
