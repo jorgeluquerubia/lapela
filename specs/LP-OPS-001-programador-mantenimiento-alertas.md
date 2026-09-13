@@ -74,7 +74,7 @@ cross_cutting_concerns: [mantenimiento, notificaciones, observabilidad, segurida
 
 - [x] `AC-01` Una petición a `/api/cron/maintain` sin cabecera de autorización o con un token inválido devuelve un código HTTP 401 `No autorizado`.
 - [x] `AC-02` Una petición con la cabecera `Authorization: Bearer <CRON_SECRET>` ejecuta el mantenimiento y devuelve HTTP 200 con `{ ok: true, timestamp, closedAuctions, processedAlerts, expiredOrders }`.
-- [x] `AC-03` La configuración `vercel.json` define la invocación periódica del endpoint `/api/cron/maintain`.
+- [x] `AC-03` La configuración `vercel.json` define una invocación periódica diaria compatible con las restricciones del plan Hobby de Vercel y el proyecto incluye un flujo de GitHub Actions (`.github/workflows/maintenance.yml`) para ejecuciones recurrentes de mayor frecuencia.
 - [x] `AC-04` El middleware de la aplicación no bloquea las rutas `/api/cron/` con el código de error de versión anterior (410).
 - [x] `AC-05` Si ocurre un fallo en una operación de mantenimiento, el endpoint responde con HTTP 500 sin filtrar trazas privadas.
 - [x] `AC-06` La suite de pruebas unitarias, el build de producción y la validación de specs (`npm run specs:check`) finalizan con éxito.
@@ -97,14 +97,17 @@ cross_cutting_concerns: [mantenimiento, notificaciones, observabilidad, segurida
 |---|---|---|---|
 | Seguridad y autorización | HTTP 401 en peticiones no autorizadas | Test unitario Jest en `src/app/api/cron/maintain/__tests__/route.test.ts` | 2026-09-13 |
 | Ejecución exitosa | HTTP 200 y métricas agregadas correctas | Test unitario Jest en `src/app/api/cron/maintain/__tests__/route.test.ts` | 2026-09-13 |
-| Configuración de hosting | Vercel Cron configurado adecuadamente | Archivo `vercel.json` válido | 2026-09-13 |
+| Configuración de hosting | Vercel Cron configurado adecuadamente para plan Hobby | Archivo `vercel.json` con frecuencia diaria (`0 5 * * *`) | 2026-09-13 |
 | Middleware | Sin bloqueos 410 en `/api/cron/*` | Verificación de `src/middleware.ts` | 2026-09-13 |
 | Build y gobernanza | Build de Next.js y specs válidas | `npm run build` y `npm run specs:check` exitosos | 2026-09-13 |
 
 ## 10. Decisiones, riesgos y preguntas abiertas
 
-- **Decisiones:** Utilizar Vercel Cron con cabecera `CRON_SECRET` estándar de la plataforma; modularizar `runMaintenance()` en `marketplace.ts` conservando la llamada oportunista en catálogo como fallback de seguridad.
-- **Riesgos y límites:** En entornos de Vercel sin plan Pro, la frecuencia mínima de cron puede estar limitada por el plan de hosting; el fallback oportunista mitiga cualquier intervalo amplio.
+- **Decisiones:** Vercel impone en cuentas Hobby un límite estricto de ejecuciones cron de máximo una vez al día (`Hobby accounts are limited to daily cron jobs`). Para evitar fallos en el despliegue de Vercel manteniendo un programador de alta frecuencia independiente del tráfico, se adoptó una arquitectura triple:
+  1. `vercel.json` configurado en frecuencia diaria (`0 5 * * *`), garantizando despliegues válidos en cuentas Hobby.
+  2. `.github/workflows/maintenance.yml` como programador recurrente en GitHub Actions ejecutando el endpoint cada 15 minutos mediante token `CRON_SECRET`.
+  3. Mantenimiento oportunista en `maintain()` preservado como mecanismo de contingencia en peticiones web.
+- **Riesgos y límites:** Si `CRON_SECRET` no está configurado en los secretos del repositorio de GitHub, la acción programada omite la invocación remota de forma segura sin romper el workflow.
 
 ## 11. Implementación y trazabilidad
 
@@ -114,6 +117,7 @@ cross_cutting_concerns: [mantenimiento, notificaciones, observabilidad, segurida
   - `PROJECT_CONTEXT.md`
   - `.env.example`
   - `vercel.json`
+  - `.github/workflows/maintenance.yml`
   - `src/middleware.ts`
   - `src/controllers/marketplace.ts`
   - `src/app/api/cron/maintain/route.ts`
