@@ -75,6 +75,7 @@ Prioridades: `P0` bloquea una operación esencial o implica un riesgo grave; `P1
 | `LP-FEAT-018` | `FEATURE` | Favoritos y alertas de artículos | `VERIFIED` | `P1` | 2026-09-12 | [Abrir ficha](specs/LP-FEAT-018-favoritos-alertas.md) |
 | `LP-FEAT-019` | `FEATURE` | Subastas destacadas y coordinadas | `VERIFIED` | `P2` | 2026-09-12 | [Abrir ficha](specs/LP-FEAT-019-subastas-destacadas.md) |
 | `LP-FEAT-020` | `FEATURE` | Tarjetas sociales de anuncios | `VERIFIED` | `P2` | 2026-09-12 | [Abrir ficha](specs/LP-FEAT-020-tarjetas-sociales.md) |
+| `LP-FIX-006` | `FIX` | Notificación de favoritos al vendedor y ocultación en anuncios propios | `VERIFIED` | `P2` | 2026-09-12 | [Abrir ficha](specs/LP-FIX-006-favoritos-vendedor.md) |
 
 
 ## Flujo para una solicitud nueva

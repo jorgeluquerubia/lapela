@@ -83,4 +83,32 @@ describe('ProductCard Favorite button (LP-FEAT-018)', () => {
     });
     expect(screen.getByText('Eliminado de favoritos')).toBeInTheDocument();
   });
+
+  it('hides favorite button when product belongs to the authenticated user (LP-FIX-006 AC-04)', () => {
+    (useAuth as jest.Mock).mockReturnValue({ user: { id: 'seller-user-1' }, loading: false });
+
+    const ownProduct = {
+      ...dummyProduct,
+      isMine: true,
+      seller_id: 'seller-user-1'
+    };
+
+    render(<ProductCard product={ownProduct} />);
+
+    expect(screen.queryByRole('button', { name: /favoritos/i })).not.toBeInTheDocument();
+  });
+
+  it('hides favorite button on demo products (LP-FIX-006 AC-05)', () => {
+    (useAuth as jest.Mock).mockReturnValue({ user: { id: 'buyer-user-1' }, loading: false });
+
+    const demoProduct = {
+      ...dummyProduct,
+      id: 'demo-1'
+    };
+
+    render(<ProductCard product={demoProduct} />);
+
+    expect(screen.queryByRole('button', { name: /favoritos/i })).not.toBeInTheDocument();
+  });
 });
+
