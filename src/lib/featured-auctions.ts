@@ -49,7 +49,7 @@ export function formatCountdown(targetDate: string | Date, now: Date = new Date(
 }
 
 export type AuctionItemOutcome = {
-  status: 'active' | 'awarded' | 'unsold' | 'withdrawn';
+  status: 'active' | 'pending' | 'awarded' | 'unsold' | 'withdrawn';
   label: string;
   detail: string;
   isEnded: boolean;
@@ -153,13 +153,12 @@ export function getItemAuctionOutcome(
       };
     }
 
-    // Si ends_at ya venció pero aún no se ha ejecutado el proceso de cierre (lp_close_auctions),
-    // el estado persistido manda: sigue en curso / pendiente de cierre, no adjudicado automáticamente.
+    // El cierre económico aún no se infiere, pero la puja ya no es una acción válida.
     return {
-      status: 'active',
-      label: 'En curso',
+      status: 'pending',
+      label: 'Pendiente',
       detail: 'Pendiente de cierre',
-      isEnded: false,
+      isEnded: true,
       isExtended: false,
     };
   }

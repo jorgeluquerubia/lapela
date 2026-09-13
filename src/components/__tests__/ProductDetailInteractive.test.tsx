@@ -76,6 +76,23 @@ describe('ProductDetailInteractive Confirmation and Purchase Policy (LP-FEAT-006
     expect(screen.getByRole('button', { name: /Comprar ahora/i })).toBeInTheDocument();
   });
 
+  it('blocks bidding when the auction end time passed before the persisted status changes', () => {
+    const expiredAvailableAuction = {
+      ...sampleItem,
+      mode: 'auction',
+      type: 'auction',
+      bid_count: 2,
+      ends_at: '2020-01-01T00:00:00.000Z',
+      bids: [],
+    };
+
+    render(<ProductDetailInteractive initialItem={expiredAvailableAuction} slug="subasta-pendiente" />);
+
+    expect(screen.getByRole('status')).toHaveTextContent('pendiente de cierre');
+    expect(screen.queryByRole('button', {name: /Revisar puja/i})).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', {name: /Entrar para pujar/i})).not.toBeInTheDocument();
+  });
+
   describe('Object Stories (LP-FEAT-017)', () => {
     it('renders "La historia de este objeto" and "Con historia" badges when story is present (AC-02, AC-03)', () => {
       const itemWithStory = {

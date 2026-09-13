@@ -35,10 +35,17 @@ export default function ProductDetailInteractive({initialItem, slug, demo = fals
   const [favoritesCount, setFavoritesCount] = useState<number>(Number(initialItem?.favoritesCount || 0));
   const [favoriteBusy, setFavoriteBusy] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
+  const [clock, setClock] = useState(() => Date.now());
 
   useEffect(() => {
     trackPesetaHelp('peseta_help_view', { source: 'product_detail', item_id: initialItem?.id });
   }, [initialItem?.id]);
+
+  useEffect(() => {
+    if (item?.mode !== 'auction' || item?.status !== 'available' || !item?.ends_at) return;
+    const timer = window.setInterval(() => setClock(Date.now()), 1000);
+    return () => window.clearInterval(timer);
+  }, [item?.mode, item?.status, item?.ends_at]);
 
   // Fetch updated user-specific state (mine, isHighestBidder, favorites) if user is logged in
   useEffect(() => {
@@ -140,6 +147,12 @@ export default function ProductDetailInteractive({initialItem, slug, demo = fals
   }
 
   const auction = item.mode === 'auction';
+  const auctionPendingClose = Boolean(
+    auction &&
+    item.status === 'available' &&
+    item.ends_at &&
+    new Date(item.ends_at).getTime() <= clock
+  );
 
   return (
     <div className="detail-layout">
@@ -301,8 +314,12 @@ export default function ProductDetailInteractive({initialItem, slug, demo = fals
             <small>{new Date(entry.created_at).toLocaleString('es-ES')}</small>
           </div>):<p className="muted">Todavía no hay pujas.</p>}
         </section>}
-        {item.status !== 'available' ? (
-          item.mine && item.status === 'reserved' ? (
+        {item.status !== 'available' || auctionPendingClose ? (
+          auctionPendingClose ? (
+            <div className="notice" role="status">
+              Esta subasta ha finalizado y está pendiente de cierre. Ya no admite nuevas pujas.
+            </div>
+          ) : item.mine && item.status === 'reserved' ? (
             <div className="seller-alert-banner" style={{ background: '#ecfdf5', borderColor: '#a7f3d0', flexDirection: 'column', alignItems: 'stretch' }}>
               <div>
                 <strong className="text-emerald-950 block mb-1">Artículo reservado · Tienes una venta en curso</strong>
