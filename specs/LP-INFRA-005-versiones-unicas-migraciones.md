@@ -104,7 +104,7 @@ Cada migración ejecutable tiene una versión única. El SQL histórico de perfi
 
 - **Archivos o módulos:** Migraciones, historial, validador y ficha LP-FEAT-013.
 - **Migraciones/configuración:** `202609130001_public_profiles_reviews.sql`.
-- **Commit o despliegue:** Rama `codex/lp-infra-005-versiones-unicas-migraciones`.
+- **Commit o despliegue:** Commit `977d41f`; PR [#74](https://github.com/jorgeluquerubia/lapela/pull/74).
 - **Notas de implementación:** La migración original queda como evidencia histórica; la versión nueva recrea de forma segura esquema, índices, funciones, permisos y datos base. El validador examina únicamente las migraciones ejecutables.
 
 ## 12. Historial
