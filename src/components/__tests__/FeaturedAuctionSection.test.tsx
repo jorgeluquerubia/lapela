@@ -1,4 +1,4 @@
-import {render, screen} from '@testing-library/react';
+import {render, screen, act} from '@testing-library/react';
 import FeaturedAuctionSection from '../FeaturedAuctionSection';
 import type {AuctionEdition} from '@/types';
 
@@ -118,5 +118,32 @@ describe('FeaturedAuctionSection (AC-02, RNF-03, RF-02)', () => {
   it('no renderiza nada si la edición es null', () => {
     const {container} = render(<FeaturedAuctionSection edition={null} />);
     expect(container).toBeEmptyDOMElement();
+  });
+
+  it('transiciona dinámicamente de "Próximamente" a "En curso" al sobrepasar la hora de inicio', () => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date('2026-09-25T09:59:55.000Z'));
+
+    const upcomingEdition: AuctionEdition = {
+      ...mockEdition,
+      starts_at: '2026-09-25T10:00:00.000Z',
+      reference_ends_at: '2026-09-25T18:00:00.000Z',
+      temporal_status: 'upcoming',
+    };
+
+    render(<FeaturedAuctionSection edition={upcomingEdition} />);
+    expect(screen.getByText('Próximamente')).toBeInTheDocument();
+    expect(screen.getByText('Apertura de la edición')).toBeInTheDocument();
+
+    // Avanzar 10 segundos en el tiempo dentro de act para disparar el re-render de React
+    act(() => {
+      jest.advanceTimersByTime(10000);
+    });
+
+    // Ahora son las 10:00:05Z -> debe pasar automáticamente a "En curso" y "Cierre de la edición"
+    expect(screen.getByText('En curso')).toBeInTheDocument();
+    expect(screen.getByText('Cierre de la edición')).toBeInTheDocument();
+
+    jest.useRealTimers();
   });
 });

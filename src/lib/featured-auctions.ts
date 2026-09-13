@@ -34,6 +34,7 @@ export function formatCountdown(targetDate: string | Date, now: Date = new Date(
   const days = Math.floor(totalHours / 24);
   const hours = totalHours % 24;
   const minutes = totalMinutes % 60;
+  const seconds = totalSeconds % 60;
 
   if (days > 0) {
     return `${days} ${days === 1 ? 'día' : 'días'}${hours > 0 ? ` y ${hours} ${hours === 1 ? 'hora' : 'horas'}` : ''}`;
@@ -42,9 +43,78 @@ export function formatCountdown(targetDate: string | Date, now: Date = new Date(
     return `${hours} ${hours === 1 ? 'hora' : 'horas'}${minutes > 0 ? ` y ${minutes} min` : ''}`;
   }
   if (minutes > 0) {
-    return `${minutes} ${minutes === 1 ? 'minuto' : 'minutos'}`;
+    return `${minutes} min${seconds > 0 ? ` y ${seconds} s` : ''}`;
   }
-  return 'Menos de 1 minuto';
+  return `${seconds} s`;
+}
+
+export type AuctionItemOutcome = {
+  status: 'active' | 'awarded' | 'unsold' | 'withdrawn';
+  label: string;
+  detail: string;
+  isEnded: boolean;
+};
+
+/**
+ * Determina de forma unívoca el resultado o estado de un artículo asociado a una edición.
+ * AC-03, AC-04, AC-05: Reconoce 'reserved' y 'sold' como adjudicados, artículos en prórroga
+ * anti-sniping como activos, y 'expired' o sin pujas como sin venta.
+ */
+export function getItemAuctionOutcome(
+  listing: {
+    status?: string;
+    ends_at?: string | null;
+    bid_count?: number;
+    highest_bidder?: string | null;
+  } | null | undefined,
+  now: Date = new Date()
+): AuctionItemOutcome {
+  if (!listing) {
+    return {
+      status: 'unsold',
+      label: 'Sin venta',
+      detail: 'Artículo no disponible',
+      isEnded: true,
+    };
+  }
+
+  if (listing.status === 'withdrawn') {
+    return {
+      status: 'withdrawn',
+      label: 'Retirado',
+      detail: 'Retirado de la subasta',
+      isEnded: true,
+    };
+  }
+
+  const endsAtTime = listing.ends_at ? new Date(listing.ends_at).getTime() : 0;
+  const isTimeRemaining = endsAtTime > now.getTime();
+
+  if (listing.status === 'available' && isTimeRemaining) {
+    return {
+      status: 'active',
+      label: 'En curso',
+      detail: 'En prórroga anti-sniping',
+      isEnded: false,
+    };
+  }
+
+  const hasBids = (listing.bid_count || 0) > 0 || !!listing.highest_bidder;
+  if (['reserved', 'sold'].includes(listing.status || '') || (!isTimeRemaining && hasBids)) {
+    return {
+      status: 'awarded',
+      label: 'Adjudicado',
+      detail: listing.status === 'sold' ? 'Vendido y confirmado' : 'Adjudicado al mejor postor',
+      isEnded: true,
+    };
+  }
+
+  return {
+    status: 'unsold',
+    label: 'Sin venta',
+    detail: 'Sin pujas suficientes',
+    isEnded: true,
+  };
 }
 
 /**
