@@ -39,7 +39,7 @@ export async function getCurrentFeaturedEdition(dbClient?:any,targetEnv?:string)
   const products=valid.map((it:any)=>({
     ...card(it.listing,profiles.get(it.listing.seller_id),editionMeta),
     featuredEdition:editionMeta,
-    auctionOutcome:getItemAuctionOutcome(it.listing,now),
+    auctionOutcome:getItemAuctionOutcome(it.listing,now,chosen),
   }));
 
   return {
@@ -91,7 +91,7 @@ export async function getAuctionEditionBySlug(slugOrId:string,dbClient?:any,targ
   const products=validListings.map((l:any)=>({
     ...card(l,profiles.get(l.seller_id),editionMeta),
     featuredEdition:editionMeta,
-    auctionOutcome:getItemAuctionOutcome(l,now),
+    auctionOutcome:getItemAuctionOutcome(l,now,edition),
   }));
 
   return {

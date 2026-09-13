@@ -112,20 +112,86 @@ describe('EditionDetailInteractive (AC-03, AC-04, AC-05, RNF-03)', () => {
 
     // p-1 con status: reserved debe marcarse como Adjudicado (NO como Sin venta)
     expect(screen.getByText('Cámara telemétrica Leica')).toBeInTheDocument();
-    expect(screen.getByText('Adjudicado al mejor postor')).toBeInTheDocument();
+    expect(screen.getByText('Adjudicado, pendiente del flujo correspondiente')).toBeInTheDocument();
 
-    // p-2 con status: sold debe marcarse como Adjudicado y vendido
+    // p-2 con status: sold debe marcarse como Vendido y confirmado
     expect(screen.getByText('Pluma estilográfica Parker 51')).toBeInTheDocument();
     expect(screen.getByText('Vendido y confirmado')).toBeInTheDocument();
+  });
+
+  it('cuando el ganador no paga y lp_release marca el anuncio como expired con pujas, la edición muestra No adjudicado y jamás Adjudicado', () => {
+    const expiredWithBidsEdition: AuctionEdition = {
+      ...baseEdition,
+      items: [
+        {
+          id: 'p-defaulted',
+          name: 'Reloj Omega Vintage',
+          price: 900,
+          type: 'auction',
+          seller: 'relojes_bcn',
+          location: 'Barcelona',
+          time: '2026-09-12T10:00:00.000Z',
+          image: 'https://example.com/omega.jpg',
+          status: 'expired', // Ganador no pagó y lp_release pasó a expired
+          buyer: null,
+          updated_at: '2026-09-12T10:00:00.000Z',
+          bid_count: 18,
+          auction_ends_at: '2026-09-20T19:50:00.000Z',
+          slug: 'reloj-omega-vintage',
+        },
+      ],
+    };
+
+    render(<EditionDetailInteractive initialEdition={expiredWithBidsEdition} />);
+
+    expect(screen.getByText('Reloj Omega Vintage')).toBeInTheDocument();
+    expect(screen.getByText('No adjudicado')).toBeInTheDocument();
+    expect(screen.getByText('No adjudicado / venta no completada')).toBeInTheDocument();
+    expect(screen.queryByText('Adjudicado')).not.toBeInTheDocument();
+    expect(screen.queryByText('Adjudicado, pendiente del flujo correspondiente')).not.toBeInTheDocument();
   });
 
   it('reconoce artículos en prórroga anti-sniping como activos con enlace prioritario', () => {
     render(<EditionDetailInteractive initialEdition={baseEdition} />);
 
-    // p-3 tiene ends_at en 20:04, 4 minutos después de las 20:00
+    // p-3 tiene ends_at en 20:04, 4 minutos después de las 20:00 y con pujas
     expect(screen.getByText('Gramófono La Voz de su Amo')).toBeInTheDocument();
     expect(screen.getByText('En prórroga anti-sniping')).toBeInTheDocument();
     expect(screen.getByText('Pujar ahora (prórroga activa)')).toBeInTheDocument();
+  });
+
+  it('muestra "En curso" de forma neutral en artículo abierto sin evidencia de prórroga activa en edición finalizada', () => {
+    const neutralEdition: AuctionEdition = {
+      ...baseEdition,
+      items: [
+        {
+          id: 'p-open-normal',
+          name: 'Grabado antiguo',
+          price: 150,
+          type: 'auction',
+          seller: 'arte_madrid',
+          location: 'Madrid',
+          time: '2026-09-12T10:00:00.000Z',
+          image: 'https://example.com/grabado.jpg',
+          status: 'available',
+          buyer: null,
+          updated_at: '2026-09-12T10:00:00.000Z',
+          bid_count: 0, // Sin pujas: no hay evidencia de prórroga anti-sniping
+          auction_ends_at: '2026-09-20T20:02:00.000Z', // 2 minutos más tarde que la edición
+          slug: 'grabado-antiguo',
+        },
+      ],
+    };
+
+    // La edición concluyó a las 20:00:00Z
+    jest.setSystemTime(new Date('2026-09-20T20:00:00.000Z'));
+    render(<EditionDetailInteractive initialEdition={neutralEdition} />);
+
+    expect(screen.getByText('Grabado antiguo')).toBeInTheDocument();
+    expect(screen.getAllByText('En curso').length).toBeGreaterThanOrEqual(1);
+    expect(screen.queryByText('En prórroga anti-sniping')).not.toBeInTheDocument();
+    expect(screen.getByText('Pujar ahora')).toBeInTheDocument();
+    expect(screen.queryByText('Pujar ahora (prórroga activa)')).not.toBeInTheDocument();
   });
 
   it('marca correctamente como "Sin venta" los artículos expirados sin pujas', () => {

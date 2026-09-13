@@ -72,17 +72,21 @@ describe('LP-FEAT-019: Subastas destacadas y coordinadas', () => {
 
   describe('Clasificación precisa de resultados (AC-05, RN-03)', () => {
     const now = new Date('2026-09-20T20:00:00.000Z');
+    const edition = {
+      starts_at: '2026-09-15T10:00:00.000Z',
+      reference_ends_at: '2026-09-20T20:00:00.000Z',
+    };
 
-    it('reconoce anuncios con estado "reserved" como adjudicados al mejor postor', () => {
+    it('reconoce anuncios con estado "reserved" como adjudicados', () => {
       const listing = {
         status: 'reserved',
         ends_at: '2026-09-20T19:59:00.000Z',
         bid_count: 8,
       };
-      const outcome = getItemAuctionOutcome(listing, now);
+      const outcome = getItemAuctionOutcome(listing, now, edition);
       expect(outcome.status).toBe('awarded');
       expect(outcome.label).toBe('Adjudicado');
-      expect(outcome.detail).toBe('Adjudicado al mejor postor');
+      expect(outcome.detail).toBe('Adjudicado, pendiente del flujo correspondiente');
       expect(outcome.isEnded).toBe(true);
     });
 
@@ -92,24 +96,73 @@ describe('LP-FEAT-019: Subastas destacadas y coordinadas', () => {
         ends_at: '2026-09-20T19:00:00.000Z',
         bid_count: 3,
       };
-      const outcome = getItemAuctionOutcome(listing, now);
+      const outcome = getItemAuctionOutcome(listing, now, edition);
       expect(outcome.status).toBe('awarded');
-      expect(outcome.label).toBe('Adjudicado');
+      expect(outcome.label).toBe('Vendido');
       expect(outcome.detail).toBe('Vendido y confirmado');
       expect(outcome.isEnded).toBe(true);
     });
 
-    it('mantiene como activo un artículo con prórroga anti-sniping superando la edición', () => {
+    it('cuando el ganador no paga y lp_release marca el anuncio como expired, conserva las pujas y no lo califica como Adjudicado', () => {
+      // Caso específico: el ganador no paga en el plazo estipulado, lp_release cancela la reserva
+      // y marca el anuncio como 'expired'. Las pujas siguen registradas (bid_count > 0).
+      // La edición debe clasificarlo como No adjudicado / venta no completada, jamás como Adjudicado.
+      const listing = {
+        status: 'expired',
+        ends_at: '2026-09-20T19:59:00.000Z',
+        bid_count: 14,
+        highest_bidder: 'buyer-defaulted-123',
+      };
+      const outcome = getItemAuctionOutcome(listing, now, edition);
+      expect(outcome.status).toBe('unsold');
+      expect(outcome.label).toBe('No adjudicado');
+      expect(outcome.detail).toBe('No adjudicado / venta no completada');
+      expect(outcome.isEnded).toBe(true);
+      expect(outcome.status).not.toBe('awarded');
+      expect(outcome.label).not.toBe('Adjudicado');
+    });
+
+    it('mantiene como activo un artículo con prórroga anti-sniping superando la edición con pujas', () => {
       const listing = {
         status: 'available',
         ends_at: '2026-09-20T20:03:00.000Z', // 3 minutos después del cierre de la edición
         bid_count: 5,
       };
-      const outcome = getItemAuctionOutcome(listing, now);
+      const outcome = getItemAuctionOutcome(listing, now, edition);
       expect(outcome.status).toBe('active');
       expect(outcome.label).toBe('En curso');
       expect(outcome.detail).toBe('En prórroga anti-sniping');
       expect(outcome.isEnded).toBe(false);
+      expect(outcome.isExtended).toBe(true);
+    });
+
+    it('muestra "En curso" de forma neutral si el artículo sigue abierto sin evidencia de prórroga activa', () => {
+      const midEditionTime = new Date('2026-09-18T12:00:00.000Z');
+      const listing = {
+        status: 'available',
+        ends_at: '2026-09-20T19:30:00.000Z', // Dentro del límite de la edición
+        bid_count: 2,
+      };
+      const outcome = getItemAuctionOutcome(listing, midEditionTime, edition);
+      expect(outcome.status).toBe('active');
+      expect(outcome.label).toBe('En curso');
+      expect(outcome.detail).toBe('En curso');
+      expect(outcome.isEnded).toBe(false);
+      expect(outcome.isExtended).toBe(false);
+    });
+
+    it('mantiene estado persistido "En curso" (pendiente de cierre) si ends_at venció pero la base de datos no lo ha cerrado aún', () => {
+      const listing = {
+        status: 'available',
+        ends_at: '2026-09-20T19:50:00.000Z',
+        bid_count: 4,
+      };
+      const outcome = getItemAuctionOutcome(listing, now, edition);
+      expect(outcome.status).toBe('active');
+      expect(outcome.label).toBe('En curso');
+      expect(outcome.detail).toBe('Pendiente de cierre');
+      expect(outcome.isEnded).toBe(false);
+      expect(outcome.isExtended).toBe(false);
     });
 
     it('marca como "Sin venta" subastas expiradas o concluidas con 0 pujas', () => {
@@ -118,7 +171,7 @@ describe('LP-FEAT-019: Subastas destacadas y coordinadas', () => {
         ends_at: '2026-09-20T19:59:00.000Z',
         bid_count: 0,
       };
-      const outcome = getItemAuctionOutcome(listing, now);
+      const outcome = getItemAuctionOutcome(listing, now, edition);
       expect(outcome.status).toBe('unsold');
       expect(outcome.label).toBe('Sin venta');
       expect(outcome.detail).toBe('Sin pujas suficientes');
@@ -131,7 +184,7 @@ describe('LP-FEAT-019: Subastas destacadas y coordinadas', () => {
         ends_at: '2026-09-20T20:00:00.000Z',
         bid_count: 0,
       };
-      const outcome = getItemAuctionOutcome(listing, now);
+      const outcome = getItemAuctionOutcome(listing, now, edition);
       expect(outcome.status).toBe('withdrawn');
       expect(outcome.label).toBe('Retirado');
       expect(outcome.isEnded).toBe(true);
@@ -194,7 +247,31 @@ describe('LP-FEAT-019: Subastas destacadas y coordinadas', () => {
       expect(res.reason).toContain('No se pueden asociar subastas ya finalizadas');
     });
 
-    it('acepta subastas válidas y elegibles', () => {
+    it('rechaza subastas que terminan antes o en la apertura de la edición', () => {
+      const listing = {
+        mode: 'auction',
+        status: 'available',
+        environment: 'sandbox',
+        ends_at: '2026-09-15T09:00:00.000Z', // Antes de starts_at (2026-09-15T10:00:00Z)
+      };
+      const res = validateAuctionEligibility(listing, baseEdition, now);
+      expect(res.eligible).toBe(false);
+      expect(res.reason).toContain('La subasta debe finalizar después de la apertura de la edición');
+    });
+
+    it('rechaza subastas cuyo cierre previsto supera el cierre de referencia de la edición al asociarse', () => {
+      const listing = {
+        mode: 'auction',
+        status: 'available',
+        environment: 'sandbox',
+        ends_at: '2026-09-20T21:00:00.000Z', // Después de reference_ends_at (2026-09-20T20:00:00Z)
+      };
+      const res = validateAuctionEligibility(listing, baseEdition, now);
+      expect(res.eligible).toBe(false);
+      expect(res.reason).toContain('El cierre previsto de la subasta no puede superar el cierre de referencia de la edición');
+    });
+
+    it('acepta subastas válidas y elegibles con cierre compatible con la ventana de la edición', () => {
       const listing = {
         mode: 'auction',
         status: 'available',
