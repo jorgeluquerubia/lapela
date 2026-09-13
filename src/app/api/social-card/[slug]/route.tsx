@@ -31,6 +31,73 @@ async function fetchSafeImageDataUri(url: string): Promise<string | null> {
   }
 }
 
+function PesetaCoin({size}: {size: number}) {
+  const pSize = Math.max(6, Math.round((size * 9) / 56));
+  const lpSize = Math.max(9, Math.round((size * 14) / 56));
+  const pTop = Math.max(2, Math.round((size * 3) / 56));
+  const lpTop = Math.max(1, Math.round((size * 1) / 56));
+
+  return (
+    <div
+      style={{
+        position: 'relative',
+        width: `${size}px`,
+        height: `${size}px`,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 56 56"
+        style={{position: 'absolute', top: 0, left: 0}}
+      >
+        <circle cx="28" cy="29" r="22" fill="#c07a3e" />
+        <circle cx="28" cy="27" r="22" fill="#e8c796" />
+        <circle cx="28" cy="27" r="17.5" fill="none" stroke="#b77943" strokeWidth="1.5" />
+      </svg>
+      <div
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: `${size}px`,
+          height: `${size}px`,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <span
+          style={{
+            fontSize: `${pSize}px`,
+            fontWeight: 700,
+            color: '#7a4b22',
+            lineHeight: 1,
+            marginTop: `${pTop}px`,
+          }}
+        >
+          1 P
+        </span>
+        <span
+          style={{
+            fontSize: `${lpSize}px`,
+            fontWeight: 700,
+            color: '#1b3d2f',
+            lineHeight: 1,
+            marginTop: `${lpTop}px`,
+          }}
+        >
+          lp
+        </span>
+      </div>
+    </div>
+  );
+}
+
 export async function GET(
   _request: Request,
   props: {params: Promise<{slug: string}>}
@@ -65,6 +132,10 @@ export async function GET(
   const displayTitle = item.title.length > 70 ? item.title.slice(0, 68) + '…' : item.title;
   const formattedEuros = money(item.price_cents);
   const formattedPesetas = pesetaEquivalence(item.price_cents, true);
+  const canonicalHost = (process.env.APP_URL || 'https://lapela-nine.vercel.app')
+    .replace(/^https?:\/\//, '')
+    .replace(/\/$/, '');
+  const canonicalDisplayUrl = `${canonicalHost}/articulos/${canonicalSlug}`;
 
   return new ImageResponse(
     (
@@ -119,17 +190,7 @@ export async function GET(
                 textAlign: 'center',
               }}
             >
-              <svg width="120" height="120" viewBox="0 0 56 56">
-                <circle cx="28" cy="29" r="22" fill="#c07a3e" />
-                <circle cx="28" cy="27" r="22" fill="#e8c796" />
-                <circle cx="28" cy="27" r="17.5" fill="none" stroke="#b77943" strokeWidth="1.5" />
-                <text x="28" y="32" textAnchor="middle" fill="#1b3d2f" fontSize="14" fontWeight="bold">
-                  lp
-                </text>
-                <text x="28" y="20" textAnchor="middle" fill="#7a4b22" fontSize="9" fontWeight="bold">
-                  1 P
-                </text>
-              </svg>
+              <PesetaCoin size={120} />
               <span
                 style={{
                   marginTop: '16px',
@@ -164,17 +225,7 @@ export async function GET(
             }}
           >
             <div style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
-              <svg width="36" height="36" viewBox="0 0 56 56">
-                <circle cx="28" cy="29" r="22" fill="#c07a3e" />
-                <circle cx="28" cy="27" r="22" fill="#e8c796" />
-                <circle cx="28" cy="27" r="17.5" fill="none" stroke="#b77943" strokeWidth="1.5" />
-                <text x="28" y="32" textAnchor="middle" fill="#1b3d2f" fontSize="14" fontWeight="bold">
-                  lp
-                </text>
-                <text x="28" y="20" textAnchor="middle" fill="#7a4b22" fontSize="9" fontWeight="bold">
-                  1 P
-                </text>
-              </svg>
+              <PesetaCoin size={36} />
               <div style={{display: 'flex', flexDirection: 'column'}}>
                 <span
                   style={{
@@ -305,7 +356,7 @@ export async function GET(
                 color: '#1b3d2f',
               }}
             >
-              lapela.es/articulos/{canonicalSlug}
+              {canonicalDisplayUrl}
             </span>
             <span
               style={{
@@ -313,7 +364,7 @@ export async function GET(
                 color: '#78716c',
               }}
             >
-              Compra segura sin ofertas ni regateos
+              Segunda mano sin regateos ni contacto previo
             </span>
           </div>
         </div>

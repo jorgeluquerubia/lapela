@@ -127,4 +127,80 @@ describe('SocialShareModal (LP-FEAT-020)', () => {
     fireEvent.keyDown(window, { key: 'Escape' });
     expect(onClose).toHaveBeenCalledTimes(2);
   });
+
+  it('handles image load failure by removing skeleton and displaying accessible retry error state', () => {
+    render(<SocialShareModal isOpen={true} onClose={jest.fn()} item={sampleItem} />);
+
+    // Initial state: skeleton is visible
+    expect(screen.getByText(/cargando vista previa de la tarjeta/i)).toBeInTheDocument();
+
+    // Trigger image error
+    const img = screen.getByAltText(/tarjeta para compartir de reloj vintage de oro/i);
+    fireEvent.error(img);
+
+    // Skeleton is removed
+    expect(screen.queryByText(/cargando vista previa de la tarjeta/i)).not.toBeInTheDocument();
+
+    // Accessible error alert is shown
+    const alert = screen.getByRole('alert');
+    expect(alert).toBeInTheDocument();
+    expect(alert).toHaveTextContent(/no se ha podido cargar la vista previa de la tarjeta/i);
+
+    // Retry button is available
+    const retryBtn = screen.getByRole('button', { name: /reintentar/i });
+    expect(retryBtn).toBeInTheDocument();
+
+    // Clicking retry resets error state and appends retry param
+    fireEvent.click(retryBtn);
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+
+    const retriedImg = screen.getByAltText(/tarjeta para compartir de reloj vintage de oro/i);
+    expect(retriedImg).toHaveAttribute('src', `/api/social-card/${sampleItem.slug}?retry=1`);
+  });
+
+  it('resets state when item changes', () => {
+    const { rerender } = render(
+      <SocialShareModal isOpen={true} onClose={jest.fn()} item={sampleItem} />
+    );
+
+    // Cause error on first item
+    const img1 = screen.getByAltText(/tarjeta para compartir de reloj vintage de oro/i);
+    fireEvent.error(img1);
+    expect(screen.getByRole('alert')).toBeInTheDocument();
+
+    // Rerender with a second listing
+    const sampleItem2 = {
+      ...sampleItem,
+      id: '87654321-4321-4321-8321-0987654321ba',
+      slug: 'camara-antigua-0987654321ba',
+      title: 'Cámara antigua',
+    };
+    rerender(<SocialShareModal isOpen={true} onClose={jest.fn()} item={sampleItem2} />);
+
+    // Error is cleared and skeleton is visible again for the new item
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(screen.getByText(/cargando vista previa de la tarjeta/i)).toBeInTheDocument();
+  });
+
+  it('restores focus to the element that opened the modal when closed', () => {
+    // Create an external trigger button and focus it
+    const triggerButton = document.createElement('button');
+    triggerButton.textContent = 'Abrir modal';
+    document.body.appendChild(triggerButton);
+    triggerButton.focus();
+    expect(document.activeElement).toBe(triggerButton);
+
+    const onClose = jest.fn();
+    const { unmount } = render(
+      <SocialShareModal isOpen={true} onClose={onClose} item={sampleItem} />
+    );
+
+    const closeBtn = screen.getByRole('button', { name: /cerrar modal de compartir/i });
+    fireEvent.click(closeBtn);
+
+    expect(document.activeElement).toBe(triggerButton);
+
+    unmount();
+    document.body.removeChild(triggerButton);
+  });
 });

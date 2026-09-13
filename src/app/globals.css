@@ -413,6 +413,33 @@ h1,h2{font-family:Georgia,'Times New Roman',serif;font-weight:700;letter-spacing
   text-align:center;
   padding:20px;
 }
+.share-card-error{
+  position:absolute;
+  inset:0;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  background:#fef2f2;
+  border:1px solid #fecaca;
+  color:#991b1b;
+  font-size:13px;
+  text-align:center;
+  padding:20px;
+  border-radius:11px;
+}
+.share-card-error-text{
+  margin:0 0 10px 0;
+  font-weight:600;
+}
+.share-card-retry-btn{
+  font-size:13px;
+  padding:6px 16px;
+  background:#ffffff;
+  border:1px solid #d1d5db;
+  border-radius:6px;
+  cursor:pointer;
+}
 .share-feedback-notice{
   padding:10px 14px;
   background:#ebf5ef;
