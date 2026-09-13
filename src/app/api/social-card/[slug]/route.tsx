@@ -2,7 +2,8 @@ import {ImageResponse} from 'next/og';
 import {admin} from '@/models/marketplace';
 import {extractIdFromSlug, productSlug} from '@/lib/slugs';
 import {money, uuid} from '@/lib/rules';
-import {pesetaEquivalence, PESETA_DISCLAIMER} from '@/lib/pesetas';
+import {PESETA_DISCLAIMER} from '@/lib/pesetas';
+import {socialPesetaEquivalence} from '@/lib/social-card';
 
 export const runtime = 'nodejs';
 
@@ -131,7 +132,7 @@ export async function GET(
   const isAuction = item.mode === 'auction';
   const displayTitle = item.title.length > 70 ? item.title.slice(0, 68) + '…' : item.title;
   const formattedEuros = money(item.price_cents);
-  const formattedPesetas = pesetaEquivalence(item.price_cents, true);
+  const formattedPesetas = socialPesetaEquivalence(item.price_cents);
   const canonicalHost = (process.env.APP_URL || 'https://lapela-nine.vercel.app')
     .replace(/^https?:\/\//, '')
     .replace(/\/$/, '');
