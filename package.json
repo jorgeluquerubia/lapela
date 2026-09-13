@@ -15,6 +15,8 @@
     "test:api-functional": "jest src/app/api/__tests__/products-functional.test.ts",
     "test:api-simple": "jest src/app/api/__tests__/simple.test.ts",
     "specs:check": "node tools/validate-specs.mjs",
+    "smoke:deployment": "node tools/smoke-test-deployment.mjs",
+    "schema:check": "node tools/validate-schema-coverage.mjs",
     "test:e2e": "playwright test",
     "test:e2e-ui": "playwright test --ui"
   },

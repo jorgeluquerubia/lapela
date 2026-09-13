@@ -1,7 +1,7 @@
 ---
 id: LP-FEAT-017
 type: FEATURE
-status: IMPLEMENTED
+status: VERIFIED
 priority: P1
 requested_at: 2026-09-12
 requested_by: usuario
@@ -99,11 +99,15 @@ El vendedor puede añadir una historia opcional al publicar un anuncio. La ficha
 
 | Comprobación | Resultado esperado | Evidencia | Fecha |
 |---|---|---|---|
-| Migración | Campo opcional y compatible | `supabase/migrations/202609120003_listing_story.sql` con check <= 1000 caracteres | 2026-09-12 |
+| Migración remota | Campo opcional y compatible | `supabase/migrations/202609120003_listing_story.sql` aplicada y comprobada en BD de producción (`information_schema.columns`: `story text nullable`) | 2026-09-13 |
 | Validación de contenido | Reglas idénticas en cliente y servidor | 10 tests pasando en `rules-story.test.ts` (`validateStory`, `noContact`, `noBargaining`, `noExternalPayment`) | 2026-09-12 |
 | Seguridad de renderizado | Texto plano sin ejecución | Tests en `ProductDetailInteractive.test.tsx` verificando que scripts o etiquetas HTML se renderizan escapados | 2026-09-12 |
 | Revisión visual | Bloque diferenciado y responsive | Badges en `ProductCard.test.tsx` y bloque `La historia de este objeto` en `ProductDetailInteractive.test.tsx` | 2026-09-12 |
 | Build y specs | Comprobaciones sin errores | `npm run build` y `npm run specs:check` exitosos sin errores | 2026-09-12 |
+| Catálogo en producción | `/api/products` responde 200 y proyecta `story` | Comprobado con `curl` y smoke test en `https://lapela-nine.vercel.app/api/products` tras migración | 2026-09-13 |
+| Verificación E2E producción | Publicación con/sin historia, distintivos y retirada | Prueba Playwright en producción: publicación con y sin historia, visualización de distintivos y retirada sin eliminar anuncio | 2026-09-13 |
+| Smoke test de despliegue | Verificación automatizada post-despliegue | Script `tools/smoke-test-deployment.mjs` (`npm run smoke:deployment`) pasando contra producción | 2026-09-13 |
+| Cobertura de esquema | Prevención de columnas sin migrar | Script `tools/validate-schema-coverage.mjs` (`npm run schema:check`) validando columnas locales y remotas | 2026-09-13 |
 
 ## 10. Decisiones, riesgos y preguntas abiertas
 
@@ -113,9 +117,9 @@ El vendedor puede añadir una historia opcional al publicar un anuncio. La ficha
 
 ## 11. Implementación y trazabilidad
 
-- **Archivos o módulos:** `src/lib/rules.ts`, `src/types/index.ts`, `src/models/marketplace.ts`, `src/controllers/marketplace.ts`, `src/app/publish-ad/page.tsx`, `src/components/ProductCard.tsx`, `src/components/ProductDetailInteractive.tsx`, `src/app/articulos/[slug]/page.tsx`, `src/lib/demo-products.ts`, `src/app/my-products/page.tsx`, `src/app/globals.css`, `supabase/migrations/202609120003_listing_story.sql`.
+- **Archivos o módulos:** `src/lib/rules.ts`, `src/types/index.ts`, `src/models/marketplace.ts`, `src/controllers/marketplace.ts`, `src/app/publish-ad/page.tsx`, `src/components/ProductCard.tsx`, `src/components/ProductDetailInteractive.tsx`, `src/app/articulos/[slug]/page.tsx`, `src/lib/demo-products.ts`, `src/app/my-products/page.tsx`, `src/app/globals.css`, `supabase/migrations/202609120003_listing_story.sql`, `tools/smoke-test-deployment.mjs`, `tools/validate-schema-coverage.mjs`.
 - **Migraciones/configuración:** Columna nullable `story text` en `public.lp_listings`.
-- **Commit o despliegue:** Implementado en rama `codex/lp-feat-017-historias-objetos`.
+- **Commit o despliegue:** Implementado en rama `codex/lp-feat-017-historias-objetos`. Migración aplicada en producción de Supabase.
 - **Notas de implementación:** La historia se proyecta en fichas públicas y tarjetas de catálogo (`publicFields`), y el propietario cuenta con acción para retirarla.
 
 ## 12. Historial
@@ -124,4 +128,5 @@ El vendedor puede añadir una historia opcional al publicar un anuncio. La ficha
 |---|---|---|---|
 | 2026-09-12 | `READY` | Ficha e issue creadas; alcance preparado sin implementación | Codex |
 | 2026-09-12 | `IMPLEMENTED` | Implementación completa de historias de objetos, reglas de validación, vistas, distintivos y tests; migración 202609120003 y rebase con main | Antigravity |
+| 2026-09-13 | `VERIFIED` | Migración aplicada en BD de producción; catálogo y /api/products desbloqueados (200); verificación E2E completa en producción (publicación con/sin historia, distintivos, bloque y retirada sin eliminar anuncio); smoke test y comprobación automática de esquema añadidos | Antigravity |
 
