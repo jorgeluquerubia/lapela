@@ -8,6 +8,7 @@ import {pesetaEquivalence, PESETA_DISCLAIMER, trackPesetaHelp} from '@/lib/peset
 import {useAuth} from '@/context/AuthContext';
 import ProductQA from './ProductQA';
 import SocialShareModal from './SocialShareModal';
+import {PRODUCT_FALLBACK_IMAGE} from '@/lib/image-processing';
 import toast from 'react-hot-toast';
 
 interface ProductDetailInteractiveProps {
@@ -158,9 +159,15 @@ export default function ProductDetailInteractive({initialItem, slug, demo = fals
     <div className="detail-layout">
       <section>
         <div className="detail-photo">
-          <img src={item.images[selected]} alt={item.title} />
+          <img
+            src={item.images?.[selected] || PRODUCT_FALLBACK_IMAGE}
+            alt={item.title}
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = PRODUCT_FALLBACK_IMAGE;
+            }}
+          />
         </div>
-        {item.images.length > 1 && (
+        {item.images?.length > 1 && (
           <div className="photo-thumbs">
             {item.images.map((url: string, i: number) => (
               <button
@@ -169,7 +176,13 @@ export default function ProductDetailInteractive({initialItem, slug, demo = fals
                 aria-label={`Ver foto ${i + 1}`}
                 aria-pressed={selected === i}
               >
-                <img src={url} alt="" />
+                <img
+                  src={url}
+                  alt=""
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = PRODUCT_FALLBACK_IMAGE;
+                  }}
+                />
               </button>
             ))}
           </div>

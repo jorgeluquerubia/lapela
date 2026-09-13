@@ -108,4 +108,26 @@ describe('ProductCard', () => {
     render(<ProductCard product={featuredProduct} />);
     expect(screen.getByText('★ Subasta de la Pela')).toBeInTheDocument();
   });
+
+  it('switches to fallback image and removes spinner on image error (LP-FIX-011)', () => {
+    const { fireEvent } = require('@testing-library/react');
+    render(<ProductCard product={mockProduct} />);
+
+    const image = screen.getByAltText('Producto de Prueba');
+    fireEvent.error(image);
+
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    expect(image).toHaveClass('product-image-loaded');
+    expect(image.getAttribute('src')).toContain('data:image/svg+xml');
+  });
+
+  it('renders fallback image without loading spinner when product has no image (LP-FIX-011)', () => {
+    const productWithoutImage = { ...mockProduct, image: '' };
+    render(<ProductCard product={productWithoutImage} />);
+
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    const image = screen.getByAltText('Producto de Prueba');
+    expect(image).toHaveClass('product-image-loaded');
+    expect(image.getAttribute('src')).toContain('data:image/svg+xml');
+  });
 });
