@@ -1,7 +1,7 @@
 ---
 id: LP-INFRA-005
 type: INFRA
-status: IMPLEMENTED
+status: VERIFIED
 priority: P1
 requested_at: 2026-09-13
 requested_by: usuario
@@ -113,3 +113,4 @@ Cada migración ejecutable tiene una versión única. El SQL histórico de perfi
 |---|---|---|---|
 | 2026-09-13 | `IN_PROGRESS` | Creación e inicio de reconciliación | Codex |
 | 2026-09-13 | `IMPLEMENTED` | Reconciliación forward-only y guardia automática validadas | Codex |
+| 2026-09-13 | `VERIFIED` | PR #74 preparada para integrar con specs, Playwright y Vercel correctos | Codex |
