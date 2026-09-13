@@ -6,6 +6,7 @@ import Link from 'next/link';
 import {useAuth} from '@/context/AuthContext';
 import {api} from '@/lib/api';
 import {categories,conditions,validateStory} from '@/lib/rules';
+import {availableTags} from '@/lib/search';
 import {productSlug} from '@/lib/slugs';
 import {normalizeListingImage} from '@/lib/image-processing';
 
@@ -14,6 +15,8 @@ export default function Publish(){
   const router=useRouter();
   const [mode,setMode]=useState('sale');
   const [delivery,setDelivery]=useState('pickup');
+  const [category,setCategory]=useState(categories[0]);
+  const [tags,setTags]=useState<string[]>([]);
   const [images,setImages]=useState<string[]>([]);
   const [story,setStory]=useState('');
   const [uploading,setUploading]=useState(false);
@@ -45,9 +48,13 @@ export default function Publish(){
     const data=Object.fromEntries(new FormData(e.currentTarget));
     try{
       const validatedStory = validateStory(story);
-      const l=await api('publish',{...data,mode,delivery,images,story:validatedStory,ends_at:data.ends_at?new Date(String(data.ends_at)).toISOString():null});
+      const l=await api('publish',{...data,category,tags,mode,delivery,images,story:validatedStory,ends_at:data.ends_at?new Date(String(data.ends_at)).toISOString():null});
       router.push('/articulos/'+productSlug(l.id,String(data.title||'')));
     }catch(e){setError((e as Error).message)}finally{setBusy(false)}
+  }
+
+  function toggleTag(tag:string){
+    setTags(previous=>previous.includes(tag)?previous.filter(value=>value!==tag):previous.length<5?[...previous,tag]:previous);
   }
 
   if(loading)return <p>Cargando cuenta…</p>;
@@ -60,7 +67,12 @@ export default function Publish(){
       <label className="upload-area">{uploading?'Subiendo fotos…':'＋ Añadir fotos'}<span>Hasta 6 fotos · Se ajustan automáticamente para verse completas y centradas · 5 MB por foto</span><input aria-label="Fotos del artículo" type="file" multiple accept="image/jpeg,image/png,image/webp" disabled={uploading||images.length>=6} onChange={e=>upload(e.target.files)}/></label>
       <div className="photo-thumbs">{images.map((url,i)=><div key={url}><img src={url} alt={`Foto ${i+1}`}/><button type="button" onClick={()=>setImages(images.filter(x=>x!==url))}>Quitar {i+1}</button></div>)}</div>
       <label>Título<input name="title" placeholder="Por ejemplo: cámara réflex con objetivo 18–55 mm" minLength={5} maxLength={100} required/></label>
-      <div className="form-pair"><label>Categoría<select name="category">{categories.map(c=><option key={c}>{c}</option>)}</select></label><label>Estado<select name="condition">{conditions.map(c=><option key={c}>{c}</option>)}</select></label></div>
+      <div className="form-pair"><label>Categoría<select name="category" value={category} onChange={event=>{setCategory(event.target.value);setTags([])}}>{categories.map(c=><option key={c}>{c}</option>)}</select></label><label>Estado<select name="condition">{conditions.map(c=><option key={c}>{c}</option>)}</select></label></div>
+      <fieldset className="tag-picker">
+        <legend>Etiquetas para encontrarlo mejor <span>Opcional · hasta 5</span></legend>
+        <p>Elige las que describan el artículo. Ayudan a encontrarlo con palabras parecidas.</p>
+        <div>{availableTags(category).map(tag=><label key={tag} className={tags.includes(tag)?'selected':''}><input type="checkbox" checked={tags.includes(tag)} onChange={()=>toggleTag(tag)}/><span>{tag}</span></label>)}</div>
+      </fieldset>
       <label>Descripción y defectos<textarea name="description" rows={5} minLength={30} maxLength={4000} placeholder="Qué incluye, cuánto uso tiene y cualquier detalle o defecto que deba conocer quien lo compra." required/></label>
       <div className="story-field-group">
         <label htmlFor="story-input">

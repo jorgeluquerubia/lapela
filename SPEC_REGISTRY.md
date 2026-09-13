@@ -65,8 +65,9 @@ Prioridades: `P0` bloquea una operación esencial o implica un riesgo grave; `P1
 | `LP-FEAT-010` | `FEATURE` | Notificaciones contextuales y cierre de subastas | `VERIFIED` | `P1` | 2026-09-10 | [Abrir ficha](specs/LP-FEAT-010-notificaciones-contextuales.md) |
 | `LP-FIX-003` | `FIX` | Entrega fiable de novedades en la campana | `VERIFIED` | `P1` | 2026-09-10 | [Abrir ficha](specs/LP-FIX-003-panel-notificaciones.md) |
 | `LP-FEAT-011` | `FEATURE` | Aviso de nuevas pujas al vendedor | `VERIFIED` | `P1` | 2026-09-10 | [Abrir ficha](specs/LP-FEAT-011-aviso-pujas-vendedor.md) |
-| `LP-FEAT-013` | `FEATURE` | Identidad pública, perfiles y valoraciones | `VERIFIED` | `P1` | 2026-09-11 | [Abrir ficha](specs/LP-FEAT-013-public-profiles-reviews.md) |
+| `LP-FEAT-013` | `FEATURE` | Identidad pública, perfiles y valoraciones (con aislamiento de entorno) | `VERIFIED` | `P1` | 2026-09-11 | [Abrir ficha](specs/LP-FEAT-013-public-profiles-reviews.md) |
 | `LP-FIX-004` | `FIX` | Ruta correcta para la campana de notificaciones | `VERIFIED` | `P0` | 2026-09-11 | [Abrir ficha](specs/LP-FIX-004-ruta-campana-notificaciones.md) |
+| `LP-FEAT-014` | `FEATURE` | Buscador de productos con relevancia y sugerencias | `IMPLEMENTED` | `P1` | 2026-09-11 | [Abrir ficha](specs/LP-FEAT-014-buscador-relevancia-sugerencias.md) |
 | `LP-FEAT-012` | `FEATURE` | Escalado y centrado de imágenes en anuncios | `VERIFIED` | `P2` | 2026-09-11 | [Abrir ficha](specs/LP-FEAT-012-imagenes-centradas.md) |
 | `LP-FIX-005` | `FIX` | Lectura de notificaciones desde la campana | `VERIFIED` | `P1` | 2026-09-11 | [Abrir ficha](specs/LP-FIX-005-lectura-notificaciones-campana.md) |
 | `LP-FEAT-015` | `FEATURE` | Identidad visual inspirada en la peseta | `IMPLEMENTED` | `P2` | 2026-09-12 | [Abrir ficha](specs/LP-FEAT-015-identidad-visual-peseta.md) |
@@ -79,6 +80,7 @@ Prioridades: `P0` bloquea una operación esencial o implica un riesgo grave; `P1
 | `LP-FIX-007` | `FIX` | Permitir endpoint de tarjetas sociales en middleware | `VERIFIED` | `P1` | 2026-09-13 | [Abrir ficha](specs/LP-FIX-007-middleware-tarjetas-sociales.md) |
 | `LP-OPS-001` | `OPS` | Programador periódico de mantenimiento y alertas de favoritos | `IN_PROGRESS` | `P2` | 2026-09-13 | [Abrir ficha](specs/LP-OPS-001-programador-mantenimiento-alertas.md) |
 
+<!-- LP-FEAT-019 actualizado el 2026-09-13 tras subsanación de observaciones de QA -->
 
 ## Flujo para una solicitud nueva
 

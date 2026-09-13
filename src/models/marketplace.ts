@@ -1,6 +1,6 @@
 import {createClient} from '@supabase/supabase-js';
 import {productSlug, extractIdFromSlug} from '@/lib/slugs';
-import {getEditionTemporalStatus} from '@/lib/featured-auctions';
+import {getEditionTemporalStatus, getItemAuctionOutcome} from '@/lib/featured-auctions';
 import type {AuctionEdition} from '@/types';
 
 export type PublicProfile={alias:string};
@@ -38,7 +38,8 @@ export async function getCurrentFeaturedEdition(dbClient?:any,targetEnv?:string)
 
   const products=valid.map((it:any)=>({
     ...card(it.listing,profiles.get(it.listing.seller_id),editionMeta),
-    featuredEdition:editionMeta
+    featuredEdition:editionMeta,
+    auctionOutcome:getItemAuctionOutcome(it.listing,now),
   }));
 
   return {
@@ -57,10 +58,13 @@ export async function getCurrentFeaturedEdition(dbClient?:any,targetEnv?:string)
   };
 }
 
-export async function getAuctionEditionBySlug(slugOrId:string,dbClient?:any,targetEnv?:string):Promise<AuctionEdition|null>{
+export async function getAuctionEditionBySlug(slugOrId:string,dbClient?:any,targetEnv?:string,includeDrafts=false):Promise<AuctionEdition|null>{
   const env=targetEnv||(process.env.LAPELA_PAYMENTS_MODE==='simulated'?'sandbox':'live');
   const db=dbClient||admin();
   let query=db.from('lp_auction_editions').select('*').eq('environment',env);
+  if(!includeDrafts){
+    query=query.eq('status','published');
+  }
   if(/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(slugOrId)){
     query=query.or(`id.eq.${slugOrId},slug.eq.${slugOrId}`);
   }else{
@@ -74,13 +78,20 @@ export async function getAuctionEditionBySlug(slugOrId:string,dbClient?:any,targ
   const {data:items,error:itemsError}=await db.from('lp_auction_edition_items').select(`sort_order,listing:lp_listings(${publicFields})`).eq('edition_id',edition.id).order('sort_order',{ascending:true});
   if(itemsError)return null;
 
-  const validListings=(items||[]).map((it:any)=>it.listing).filter(Boolean);
+  const allListings=(items||[]).map((it:any)=>it.listing).filter(Boolean);
+  // RN-05: En ediciones activas o próximas solo se muestran anuncios disponibles en subasta.
+  // AC-05: Tras finalizar, se muestran los resultados reales de cada artículo que formó parte.
+  const validListings=temporalStatus==='ended'
+    ? allListings
+    : allListings.filter((l:any)=>l.status==='available'&&l.mode==='auction');
+
   const profiles=await profilesById(db,validListings.map((l:any)=>l.seller_id));
   const editionMeta={id:edition.id,slug:edition.slug,title:edition.title,status:edition.status,temporal_status:temporalStatus};
 
   const products=validListings.map((l:any)=>({
     ...card(l,profiles.get(l.seller_id),editionMeta),
-    featuredEdition:editionMeta
+    featuredEdition:editionMeta,
+    auctionOutcome:getItemAuctionOutcome(l,now),
   }));
 
   return {
@@ -102,13 +113,13 @@ export async function getAuctionEditionBySlug(slugOrId:string,dbClient?:any,targ
 export async function getListingByIdOrSlug(idOrSlug:string){const id=extractIdFromSlug(idOrSlug);if(!id)return null;const env=process.env.LAPELA_PAYMENTS_MODE==='simulated'?'sandbox':'live';const db=admin();const {data,error}=await db.from('lp_listings').select('*').eq('id',id).maybeSingle();if(error||!data||data.environment!==env)return null;const {data:bids,error:bidsError}=await db.from('lp_bids').select('id,bidder_id,amount_cents,created_at').eq('listing_id',id).order('created_at',{ascending:false}).limit(50);if(bidsError)return null;const profiles=await profilesById(db,[data.seller_id,...(bids||[]).map((b:any)=>b.bidder_id)]);const {seller_id,highest_bidder,...safe}=data;
   let featuredEdition=undefined;
   try{
-    const {data:itemLink}=await db.from('lp_auction_edition_items').select('edition:lp_auction_editions(id,slug,title,status,starts_at,reference_ends_at)').eq('listing_id',data.id).maybeSingle();
-    if(itemLink?.edition&&(itemLink.edition as any).status==='published'){
+    const {data:itemLink}=await db.from('lp_auction_edition_items').select('edition:lp_auction_editions!inner(id,slug,title,status,starts_at,reference_ends_at)').eq('listing_id',data.id).eq('edition.status','published').maybeSingle();
+    if(itemLink?.edition){
       const ed=itemLink.edition as any;
       featuredEdition={id:ed.id,slug:ed.slug,title:ed.title,status:ed.status,temporal_status:getEditionTemporalStatus(ed.starts_at,ed.reference_ends_at)};
     }
   }catch{}
   return {...safe,seller:profiles.get(seller_id),bids:(bids||[]).map(({bidder_id,...b}:any)=>({...b,bidder:profiles.get(bidder_id)})),slug:productSlug(data.id,data.title),featuredEdition}}
 
-export async function getPublicProfile(alias:string){const db=admin();const normalized=alias.trim().toLowerCase();const {data:profile,error}=await db.from('lp_profiles').select('id,alias,show_purchases,created_at').eq('alias',normalized).maybeSingle();if(error||!profile)return null;const env=process.env.LAPELA_PAYMENTS_MODE==='simulated'?'sandbox':'live';const [activeResult,salesResult,reviewsResult,purchasesResult]=await Promise.all([db.from('lp_listings').select(publicFields).eq('seller_id',profile.id).eq('status','available').eq('environment',env).order('created_at',{ascending:false}).limit(24),db.from('lp_orders').select('id',{head:true,count:'exact'}).eq('seller_id',profile.id).eq('status','completed'),db.from('lp_reviews').select('id,author_id,score,comment,created_at').eq('recipient_id',profile.id).order('created_at',{ascending:false}).limit(30),profile.show_purchases?db.from('lp_orders').select('id,listing:lp_listings(id,seller_id,title,description,category,location,images,mode,price_cents,ends_at,status,bid_count,created_at)').eq('buyer_id',profile.id).eq('status','completed').order('created_at',{ascending:false}).limit(24):Promise.resolve({data:[]})]);if(activeResult.error||salesResult.error||reviewsResult.error||(purchasesResult as any).error)throw Error('No se ha podido cargar el perfil.');const reviews=reviewsResult.data||[];const purchases=(purchasesResult as any).data||[];const ids=[...reviews.map((r:any)=>r.author_id),...purchases.map((o:any)=>o.listing?.seller_id).filter(Boolean),profile.id];const profiles=await profilesById(db,ids);const scoreCount=reviews.length;const averageScore=scoreCount?Math.round((reviews.reduce((sum:number,r:any)=>sum+r.score,0)/scoreCount)*10)/10:null;return {profile:{alias:profile.alias,memberSince:profile.created_at,showPurchases:profile.show_purchases},stats:{completedSales:salesResult.count||0,averageScore,reviewCount:scoreCount},activeListings:(activeResult.data||[]).map((l:any)=>card(l,profiles.get(profile.id))),purchases:profile.show_purchases?purchases.filter((o:any)=>o.listing).map((o:any)=>card(o.listing,profiles.get(o.listing.seller_id))):[],reviews:reviews.map((r:any)=>({id:r.id,score:r.score,comment:r.comment,created_at:r.created_at,author:profiles.get(r.author_id)}))}}
+export async function getPublicProfile(alias:string){const db=admin();const normalized=alias.trim().toLowerCase();const {data:profile,error}=await db.from('lp_profiles').select('id,alias,show_purchases,created_at').eq('alias',normalized).maybeSingle();if(error||!profile)return null;const env=process.env.LAPELA_PAYMENTS_MODE==='simulated'?'sandbox':'live';const [activeResult,salesResult,reviewsResult,purchasesResult]=await Promise.all([db.from('lp_listings').select(publicFields).eq('seller_id',profile.id).eq('status','available').eq('environment',env).order('created_at',{ascending:false}).limit(24),db.from('lp_orders').select('id,listing:lp_listings!inner(environment)',{head:true,count:'exact'}).eq('seller_id',profile.id).eq('status','completed').eq('listing.environment',env),db.from('lp_reviews').select('id,author_id,score,comment,created_at,order:lp_orders!inner(id,listing:lp_listings!inner(environment))').eq('recipient_id',profile.id).eq('order.listing.environment',env).order('created_at',{ascending:false}).limit(30),profile.show_purchases?db.from('lp_orders').select('id,listing:lp_listings!inner(id,seller_id,title,description,category,location,images,mode,price_cents,ends_at,status,bid_count,created_at,environment)').eq('buyer_id',profile.id).eq('status','completed').eq('listing.environment',env).order('created_at',{ascending:false}).limit(24):Promise.resolve({data:[]})]);if(activeResult.error||salesResult.error||reviewsResult.error||(purchasesResult as any).error)throw Error('No se ha podido cargar el perfil.');const reviews=reviewsResult.data||[];const purchases=(purchasesResult as any).data||[];const ids=[...reviews.map((r:any)=>r.author_id),...purchases.map((o:any)=>o.listing?.seller_id).filter(Boolean),profile.id];const profiles=await profilesById(db,ids);const scoreCount=reviews.length;const averageScore=scoreCount?Math.round((reviews.reduce((sum:number,r:any)=>sum+r.score,0)/scoreCount)*10)/10:null;return {profile:{alias:profile.alias,memberSince:profile.created_at,showPurchases:profile.show_purchases},stats:{completedSales:salesResult.count||0,averageScore,reviewCount:scoreCount},activeListings:(activeResult.data||[]).map((l:any)=>card(l,profiles.get(profile.id))),purchases:profile.show_purchases?purchases.filter((o:any)=>o.listing).map((o:any)=>card(o.listing,profiles.get(o.listing.seller_id))):[],reviews:reviews.map((r:any)=>({id:r.id,score:r.score,comment:r.comment,created_at:r.created_at,author:profiles.get(r.author_id)}))}}
 

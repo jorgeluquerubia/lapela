@@ -22,7 +22,7 @@ export default function Catalog({initialCategory, initialMode}: CatalogProps = {
   const [min,setMin]=useState('');
   const [max,setMax]=useState('');
   const [location,setLocation]=useState('');
-  const [sort,setSort]=useState('recent');
+  const [sort,setSort]=useState(q?'relevance':'recent');
   const [products,setProducts]=useState<Product[]>([]);
   const [count,setCount]=useState(0);
   const [loading,setLoading]=useState(true);
@@ -35,8 +35,9 @@ export default function Catalog({initialCategory, initialMode}: CatalogProps = {
   useEffect(()=>{
     setCategory(initialCategory||params.get('category')||'Todas');
     setMode(initialMode||params.get('mode')||'all');
+    setSort(q?'relevance':'recent');
     setPage(1);
-  },[params, initialCategory, initialMode]);
+  },[params, initialCategory, initialMode, q]);
 
   useEffect(()=>{
     const controller=new AbortController();
@@ -163,6 +164,7 @@ export default function Catalog({initialCategory, initialMode}: CatalogProps = {
           </div>
           <button className="button mobile-filters" aria-expanded={filters} onClick={()=>setFilters(!filters)}>Filtros</button>
           <select aria-label="Ordenar productos" value={sort} onChange={e=>{setSort(e.target.value);setPage(1)}}>
+            {q&&<option value="relevance">Más relevantes</option>}
             <option value="recent">Más recientes</option>
             <option value="price-asc">Precio: menor a mayor</option>
             <option value="price-desc">Precio: mayor a menor</option>
