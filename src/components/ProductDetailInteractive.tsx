@@ -1,11 +1,13 @@
 'use client';
 import {useState, useEffect} from 'react';
 import Link from 'next/link';
+import {useRouter} from 'next/navigation';
 import {api} from '@/lib/api';
 import {money} from '@/lib/rules';
 import {pesetaEquivalence, PESETA_DISCLAIMER, trackPesetaHelp} from '@/lib/pesetas';
 import {useAuth} from '@/context/AuthContext';
 import ProductQA from './ProductQA';
+import SocialShareModal from './SocialShareModal';
 
 interface ProductDetailInteractiveProps {
   initialItem: any;
@@ -15,6 +17,7 @@ interface ProductDetailInteractiveProps {
 
 export default function ProductDetailInteractive({initialItem, slug, demo = false}: ProductDetailInteractiveProps) {
   const {user} = useAuth();
+  const router = useRouter();
   const [item, setItem] = useState<any>(initialItem);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
@@ -27,12 +30,16 @@ export default function ProductDetailInteractive({initialItem, slug, demo = fals
   const [notice, setNotice] = useState('');
   const [report, setReport] = useState(false);
   const [reason, setReason] = useState('');
+  const [isFavorite, setIsFavorite] = useState(Boolean(initialItem?.isFavorite));
+  const [favoritesCount, setFavoritesCount] = useState<number>(Number(initialItem?.favoritesCount || 0));
+  const [favoriteBusy, setFavoriteBusy] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
 
   useEffect(() => {
     trackPesetaHelp('peseta_help_view', { source: 'product_detail', item_id: initialItem?.id });
   }, [initialItem?.id]);
 
-  // Fetch updated user-specific state (mine, isHighestBidder) if user is logged in
+  // Fetch updated user-specific state (mine, isHighestBidder, favorites) if user is logged in
   useEffect(() => {
     if (demo || !user || !initialItem?.id) return;
     let active = true;
@@ -40,6 +47,8 @@ export default function ProductDetailInteractive({initialItem, slug, demo = fals
       .then((l) => {
         if (active) {
           setItem((prev: any) => ({...prev, ...l}));
+          if (typeof l.isFavorite === 'boolean') setIsFavorite(l.isFavorite);
+          if (typeof l.favoritesCount === 'number') setFavoritesCount(l.favoritesCount);
         }
       })
       .catch(() => {});
@@ -47,6 +56,32 @@ export default function ProductDetailInteractive({initialItem, slug, demo = fals
       active = false;
     };
   }, [user, initialItem?.id, demo]);
+
+  async function toggleFavorite() {
+    if (!user) {
+      router.push('/login');
+      return;
+    }
+    if (favoriteBusy) return;
+    setFavoriteBusy(true);
+    const next = !isFavorite;
+    setIsFavorite(next);
+    setNotice(next ? 'Guardado en favoritos. Lo encontrarás en Mi actividad.' : 'Eliminado de favoritos.');
+    try {
+      const res = await api('favorite/' + (item?.id || slug), { active: next });
+      if (res.error) {
+        setIsFavorite(!next);
+        setError(res.error);
+      } else if (typeof res.is_favorite === 'boolean') {
+        setIsFavorite(res.is_favorite);
+      }
+    } catch (e) {
+      setIsFavorite(!next);
+      setError((e as Error).message);
+    } finally {
+      setFavoriteBusy(false);
+    }
+  }
 
   async function action(kind: string) {
     setBusy(true);
@@ -177,6 +212,15 @@ export default function ProductDetailInteractive({initialItem, slug, demo = fals
       </section>
 
       <aside className="purchase-panel">
+        {item.featuredEdition && (
+          <Link
+            href={`/subastas/ediciones/${item.featuredEdition.slug}`}
+            className="featured-detail-chip"
+            aria-label={`Ver edición ${item.featuredEdition.title} de La Subasta de la Pela`}
+          >
+            ★ La Subasta de la Pela · {item.featuredEdition.title} ↗
+          </Link>
+        )}
         <div className="detail-panel-tags">
           <span className={`sale-tag static-tag ${auction ? 'auction' : ''}`}>
             {auction ? 'Subasta' : 'Precio cerrado'}
@@ -210,6 +254,28 @@ export default function ProductDetailInteractive({initialItem, slug, demo = fals
               }`
             : 'Este es el precio. Sin ofertas ni regateos.'}
         </p>
+        {item.mine ? (
+          <div className="favorites-seller-badge mb-3 text-xs text-stone-600 flex items-center gap-1.5" role="status">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="#dc2626" stroke="#dc2626" strokeWidth="2" aria-hidden="true">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+            </svg>
+            <span>{favoritesCount === 1 ? '1 persona ha guardado este artículo' : `${favoritesCount} personas han guardado este artículo`}</span>
+          </div>
+        ) : !demo && (
+          <button
+            type="button"
+            className={`button secondary w-full mb-3 favorite-action-btn flex items-center justify-center gap-2 ${isFavorite ? 'favorite-active' : ''}`}
+            onClick={toggleFavorite}
+            disabled={favoriteBusy}
+            aria-label={isFavorite ? 'Eliminar de favoritos' : 'Guardar en favoritos'}
+            aria-pressed={isFavorite}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill={isFavorite ? '#dc2626' : 'none'} stroke={isFavorite ? '#dc2626' : 'currentColor'} strokeWidth="2" aria-hidden="true">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+            </svg>
+            <span>{isFavorite ? 'Guardado en favoritos' : 'Guardar en favoritos'}</span>
+          </button>
+        )}
         {notice && (
           <div className="notice" role="status">
             {notice}
@@ -388,6 +454,49 @@ export default function ProductDetailInteractive({initialItem, slug, demo = fals
               )
             )}
           </>
+        )}
+        {!demo && item.status === 'available' && (
+          <div className="mt-3">
+            <button
+              type="button"
+              className="button secondary w-full flex items-center justify-center gap-2"
+              onClick={() => setShareOpen(true)}
+              aria-haspopup="dialog"
+            >
+              <svg
+                width="17"
+                height="17"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <circle cx="18" cy="5" r="3" />
+                <circle cx="6" cy="12" r="3" />
+                <circle cx="18" cy="19" r="3" />
+                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+              </svg>
+              Compartir anuncio
+            </button>
+          </div>
+        )}
+        {!demo && item.status === 'available' && (
+          <SocialShareModal
+            isOpen={shareOpen}
+            onClose={() => setShareOpen(false)}
+            item={{
+              id: item.id,
+              title: item.title,
+              price_cents: item.price_cents,
+              mode: item.mode,
+              slug: item.slug || slug,
+              images: item.images,
+            }}
+          />
         )}
         <div className="purchase-promise">
           <strong>Un trato claro, de principio a fin.</strong>

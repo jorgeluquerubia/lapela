@@ -1,7 +1,7 @@
 ---
 id: LP-FEAT-017
 type: FEATURE
-status: VERIFIED
+status: IMPLEMENTED
 priority: P1
 requested_at: 2026-09-12
 requested_by: usuario
@@ -99,7 +99,7 @@ El vendedor puede añadir una historia opcional al publicar un anuncio. La ficha
 
 | Comprobación | Resultado esperado | Evidencia | Fecha |
 |---|---|---|---|
-| Migración | Campo opcional y compatible | `supabase/migrations/202609120001_listing_story.sql` con check <= 1000 caracteres | 2026-09-12 |
+| Migración | Campo opcional y compatible | `supabase/migrations/202609120003_listing_story.sql` con check <= 1000 caracteres | 2026-09-12 |
 | Validación de contenido | Reglas idénticas en cliente y servidor | 10 tests pasando en `rules-story.test.ts` (`validateStory`, `noContact`, `noBargaining`, `noExternalPayment`) | 2026-09-12 |
 | Seguridad de renderizado | Texto plano sin ejecución | Tests en `ProductDetailInteractive.test.tsx` verificando que scripts o etiquetas HTML se renderizan escapados | 2026-09-12 |
 | Revisión visual | Bloque diferenciado y responsive | Badges en `ProductCard.test.tsx` y bloque `La historia de este objeto` en `ProductDetailInteractive.test.tsx` | 2026-09-12 |
@@ -113,7 +113,7 @@ El vendedor puede añadir una historia opcional al publicar un anuncio. La ficha
 
 ## 11. Implementación y trazabilidad
 
-- **Archivos o módulos:** `src/lib/rules.ts`, `src/types/index.ts`, `src/models/marketplace.ts`, `src/controllers/marketplace.ts`, `src/app/publish-ad/page.tsx`, `src/components/ProductCard.tsx`, `src/components/ProductDetailInteractive.tsx`, `src/app/articulos/[slug]/page.tsx`, `src/lib/demo-products.ts`, `src/app/my-products/page.tsx`, `src/app/globals.css`, `supabase/migrations/202609120001_listing_story.sql`.
+- **Archivos o módulos:** `src/lib/rules.ts`, `src/types/index.ts`, `src/models/marketplace.ts`, `src/controllers/marketplace.ts`, `src/app/publish-ad/page.tsx`, `src/components/ProductCard.tsx`, `src/components/ProductDetailInteractive.tsx`, `src/app/articulos/[slug]/page.tsx`, `src/lib/demo-products.ts`, `src/app/my-products/page.tsx`, `src/app/globals.css`, `supabase/migrations/202609120003_listing_story.sql`.
 - **Migraciones/configuración:** Columna nullable `story text` en `public.lp_listings`.
 - **Commit o despliegue:** Implementado en rama `codex/lp-feat-017-historias-objetos`.
 - **Notas de implementación:** La historia se proyecta en fichas públicas y tarjetas de catálogo (`publicFields`), y el propietario cuenta con acción para retirarla.
@@ -123,5 +123,5 @@ El vendedor puede añadir una historia opcional al publicar un anuncio. La ficha
 | Fecha | Estado | Cambio | Autor/agente |
 |---|---|---|---|
 | 2026-09-12 | `READY` | Ficha e issue creadas; alcance preparado sin implementación | Codex |
-| 2026-09-12 | `VERIFIED` | Implementación completa de historias de objetos, reglas de validación, vistas, distintivos y tests | Antigravity |
+| 2026-09-12 | `IMPLEMENTED` | Implementación completa de historias de objetos, reglas de validación, vistas, distintivos y tests; migración 202609120003 y rebase con main | Antigravity |
 

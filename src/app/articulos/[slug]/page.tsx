@@ -56,11 +56,13 @@ export async function generateMetadata({params}: ArticuloPageProps): Promise<Met
     };
   }
 
-  const {item, canonicalSlug} = result;
+  const {item, demo, canonicalSlug} = result;
   const title = `${item.title} · ${money(item.price_cents)}`;
   const description = `${item.description.slice(0, 150)}. ${item.mode === 'auction' ? 'Subasta' : 'Compra directa'} en ${item.location}. Segunda mano sin regateos en La Pela.`;
   const canonicalUrl = `/articulos/${canonicalSlug}`;
-  const mainImage = item.images?.[0];
+  const socialCardUrl = !demo && item.status === 'available'
+    ? `/api/social-card/${canonicalSlug}`
+    : item.images?.[0];
 
   return {
     title,
@@ -73,13 +75,13 @@ export async function generateMetadata({params}: ArticuloPageProps): Promise<Met
       description,
       url: canonicalUrl,
       type: 'website',
-      images: mainImage ? [{url: mainImage, alt: item.title}] : [],
+      images: socialCardUrl ? [{url: socialCardUrl, width: 1200, height: 630, alt: item.title}] : [],
     },
     twitter: {
       card: 'summary_large_image',
       title: `${title} | La Pela`,
       description,
-      images: mainImage ? [mainImage] : [],
+      images: socialCardUrl ? [socialCardUrl] : [],
     },
   };
 }
