@@ -104,7 +104,7 @@ Una subasta con cierre real vencido queda inmediatamente sin acciones de puja, s
 
 - **Archivos o módulos:** Dominio de subastas y componentes de edición/ficha.
 - **Migraciones/configuración:** Ninguna.
-- **Commit o despliegue:** Rama `codex/lp-fix-009-subasta-cierre-pendiente`.
+- **Commit o despliegue:** Commit `a926746`; PR [#78](https://github.com/jorgeluquerubia/lapela/pull/78).
 - **Notas de implementación:** El dominio deriva `pending` al vencer `ends_at`; la ficha actualiza un reloj local y sustituye las acciones por un aviso con `role=status`.
 
 ## 12. Historial
