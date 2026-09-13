@@ -1,20 +1,20 @@
 'use client';
 import Link from 'next/link';
+import {useRouter} from 'next/navigation';
 import {useAuth} from '@/context/AuthContext';
 import {useEffect, useState} from 'react';
-import {useRouter} from 'next/navigation';
 import {productSlug} from '@/lib/slugs';
 import Brand from './Brand';
+import ProductSearch from './ProductSearch';
 
 function notificationArticleHref(notification:any){return '/articulos/'+productSlug(notification.listing_id,notification.listing?.title||'articulo')}
 
 export default function Header(){
   const {user}=useAuth();
-  const [q,setQ]=useState('');
+  const router=useRouter();
   const [unreadCount,setUnreadCount]=useState(0);
   const [notifications,setNotifications]=useState<any[]>([]);
   const [open,setOpen]=useState(false);
-  const router=useRouter();
 
   useEffect(()=>{
     if(!user){setUnreadCount(0);setNotifications([]);setOpen(false);return}
@@ -49,11 +49,7 @@ export default function Header(){
   return <header className="site-header">
     <div className="header-inner">
       <Brand/>
-      <form className="global-search" onSubmit={e=>{e.preventDefault();router.push('/search?q='+encodeURIComponent(q))}}>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><circle cx="10" cy="10" r="6.5"/><path d="m15 15 5 5"/></svg>
-        <input aria-label="Buscar productos" placeholder="¿Qué estás buscando?" value={q} onChange={e=>setQ(e.target.value)}/>
-        <button aria-label="Buscar" type="submit">↵</button>
-      </form>
+      <ProductSearch/>
       <nav className="header-actions">
         {user&&<div className="notification-menu">
           <button className="notification-bell" type="button" aria-label={unreadCount?`${unreadCount} novedades sin leer`:'No tienes novedades sin leer'} aria-expanded={open} aria-controls="notification-panel" onClick={()=>setOpen(v=>!v)}>
