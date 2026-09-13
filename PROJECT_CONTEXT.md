@@ -41,9 +41,13 @@ La propuesta combina la sencillez de uso de un marketplace móvil con dos mecani
 - Orden por fecha, precio y próxima finalización de subasta.
 - Catálogo de ejemplo como alternativa cuando no hay conexión o resultados.
 - Ficha de artículo con fotografías, estado, ubicación, entrega, precio y reglas de compra.
+- Bloque semántico 'La historia de este objeto' en la ficha de producto y distintivo 'Con historia' tanto en catálogo como en ficha.
 - Rutas semánticas para categorías (`/categoria/:slug`), subastas (`/subastas`) y artículos (`/articulos/:slug-con-id`).
 - Metadatos canónicos y sociales, Schema.org, `robots.txt` y sitemap dinámico para indexación.
 - Indicador no bloqueante con spinner de marca (moneda de La Pela girando en 3D) durante transiciones asíncronas de catálogo y carga diferida de imágenes en tarjetas.
+- Guardado y retirada de favoritos desde tarjetas de catálogo y ficha de producto, con vista privada en `Mi actividad` y ruta `/favoritos`.
+- Contador agregado de favoritos en anuncios para el vendedor, sin revelar identidades ni aliases de seguidores, con ocultación del botón de favoritos en anuncios propios y artículos demo.
+- Alertas internas en la campana de novedades sobre cierre de subastas favoritas en su última hora, finalización, indisponibilidad y aviso al vendedor cuando un artículo es guardado en favoritos.
 - Equivalencia histórica en pesetas: los importes comerciales en catálogo, ficha de artículo, subastas, Mi actividad y pedidos muestran junto al precio principal en euros su cálculo oficial irrevocable (1 EUR = 166,386 ESP), manteniendo el euro como la única moneda contractual, de cobro, filtro y datos estructurados.
 - Tarjetas sociales automáticas y modal de compartir: generación determinista de imagen en endpoint seguro (`/api/social-card/[slug]`), diálogo accesible con previsualización, compartir nativo mediante Web Share API con cancelación silenciosa, copia de enlace canónico y descarga de la imagen PNG con avisos en vivo. Metadatos Open Graph y Twitter Cards sincronizados.
 
@@ -62,9 +66,10 @@ La propuesta combina la sencillez de uso de un marketplace móvil con dos mecani
 - Entre una y seis imágenes JPG, PNG o WebP, de hasta 5 MB por archivo.
 - Las imágenes nuevas se normalizan al subirlas, conservando proporción y centrado dentro de un formato 4:3 para su presentación en los anuncios.
 - Categoría, estado, ubicación, descripción, modalidad de entrega y gastos de envío.
+- Campo opcional 'Historia de este objeto' (hasta 1.000 caracteres) separado de la descripción objetiva, con preguntas guía y contador, que puede retirarse sin eliminar el anuncio.
 - Precio entre 1 € y 10.000 €; compra inmediata opcional en subastas por encima de la salida.
 - Subastas entre una hora y treinta días.
-- Bloqueo de teléfonos, emails, enlaces y referencias a redes o mensajería dentro del anuncio.
+- Bloqueo de teléfonos, emails, enlaces, pagos externos y fórmulas de regateo dentro del anuncio y de su historia.
 - Límite de veinte publicaciones por hora y usuario.
 - Retirada de un anuncio disponible si todavía no tiene pujas.
 

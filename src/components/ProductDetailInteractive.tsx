@@ -1,12 +1,14 @@
 'use client';
 import {useState, useEffect} from 'react';
 import Link from 'next/link';
+import {useRouter} from 'next/navigation';
 import {api} from '@/lib/api';
 import {money} from '@/lib/rules';
 import {pesetaEquivalence, PESETA_DISCLAIMER, trackPesetaHelp} from '@/lib/pesetas';
 import {useAuth} from '@/context/AuthContext';
 import ProductQA from './ProductQA';
 import SocialShareModal from './SocialShareModal';
+import toast from 'react-hot-toast';
 
 interface ProductDetailInteractiveProps {
   initialItem: any;
@@ -16,6 +18,7 @@ interface ProductDetailInteractiveProps {
 
 export default function ProductDetailInteractive({initialItem, slug, demo = false}: ProductDetailInteractiveProps) {
   const {user} = useAuth();
+  const router = useRouter();
   const [item, setItem] = useState<any>(initialItem);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
@@ -28,13 +31,16 @@ export default function ProductDetailInteractive({initialItem, slug, demo = fals
   const [notice, setNotice] = useState('');
   const [report, setReport] = useState(false);
   const [reason, setReason] = useState('');
+  const [isFavorite, setIsFavorite] = useState(Boolean(initialItem?.isFavorite));
+  const [favoritesCount, setFavoritesCount] = useState<number>(Number(initialItem?.favoritesCount || 0));
+  const [favoriteBusy, setFavoriteBusy] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
 
   useEffect(() => {
     trackPesetaHelp('peseta_help_view', { source: 'product_detail', item_id: initialItem?.id });
   }, [initialItem?.id]);
 
-  // Fetch updated user-specific state (mine, isHighestBidder) if user is logged in
+  // Fetch updated user-specific state (mine, isHighestBidder, favorites) if user is logged in
   useEffect(() => {
     if (demo || !user || !initialItem?.id) return;
     let active = true;
@@ -42,6 +48,8 @@ export default function ProductDetailInteractive({initialItem, slug, demo = fals
       .then((l) => {
         if (active) {
           setItem((prev: any) => ({...prev, ...l}));
+          if (typeof l.isFavorite === 'boolean') setIsFavorite(l.isFavorite);
+          if (typeof l.favoritesCount === 'number') setFavoritesCount(l.favoritesCount);
         }
       })
       .catch(() => {});
@@ -49,6 +57,35 @@ export default function ProductDetailInteractive({initialItem, slug, demo = fals
       active = false;
     };
   }, [user, initialItem?.id, demo]);
+
+  async function toggleFavorite() {
+    if (!user) {
+      router.push('/login');
+      return;
+    }
+    if (favoriteBusy) return;
+    setFavoriteBusy(true);
+    const next = !isFavorite;
+    setIsFavorite(next);
+    setNotice(next ? 'Guardado en favoritos. Lo encontrarás en Mi actividad.' : 'Eliminado de favoritos.');
+    try {
+      const res = await api('favorite/' + (item?.id || slug), { active: next });
+      if (res.error) {
+        setIsFavorite(!next);
+        setError(res.error);
+        toast.error(res.error);
+      } else if (typeof res.is_favorite === 'boolean') {
+        setIsFavorite(res.is_favorite);
+        toast.success(res.is_favorite ? 'Guardado en favoritos' : 'Eliminado de favoritos');
+      }
+    } catch (e) {
+      setIsFavorite(!next);
+      setError((e as Error).message);
+      toast.error((e as Error).message);
+    } finally {
+      setFavoriteBusy(false);
+    }
+  }
 
   async function action(kind: string) {
     setBusy(true);
@@ -70,6 +107,21 @@ export default function ProductDetailInteractive({initialItem, slug, demo = fals
         const r = await api('checkout/' + target, {});
         window.location.assign(r.url);
       }
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function removeStory() {
+    if (!item?.id) return;
+    setBusy(true);
+    setError('');
+    try {
+      await api('remove-story/' + item.id, {});
+      setItem((prev: any) => ({...prev, story: null}));
+      setNotice('La historia se ha retirado del anuncio.');
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -126,8 +178,27 @@ export default function ProductDetailInteractive({initialItem, slug, demo = fals
             <span>{item.condition}</span>
             <span>{item.category}</span>
             <span>{item.location}</span>
+            {item.story && <span className="story-chip">Con historia</span>}
           </div>
           <p className="whitespace-pre-wrap">{item.description}</p>
+          {item.story && (
+            <section className="detail-story-box" aria-labelledby="story-heading">
+              <h3 id="story-heading">La historia de este objeto</h3>
+              <p className="whitespace-pre-wrap">{item.story}</p>
+              {item.mine && !demo && (
+                <div className="story-actions">
+                  <button
+                    type="button"
+                    onClick={removeStory}
+                    disabled={busy}
+                    className="button secondary text-xs py-1 px-3"
+                  >
+                    Retirar historia
+                  </button>
+                </div>
+              )}
+            </section>
+          )}
           <h3>Entrega</h3>
           <p>
             {item.delivery === 'shipping'
@@ -154,9 +225,14 @@ export default function ProductDetailInteractive({initialItem, slug, demo = fals
             ★ La Subasta de la Pela · {item.featuredEdition.title} ↗
           </Link>
         )}
-        <span className={`sale-tag static-tag ${auction ? 'auction' : ''}`}>
-          {auction ? 'Subasta' : 'Precio cerrado'}
-        </span>
+        <div className="detail-panel-tags">
+          <span className={`sale-tag static-tag ${auction ? 'auction' : ''}`}>
+            {auction ? 'Subasta' : 'Precio cerrado'}
+          </span>
+          {item.story && (
+            <span className="sale-tag static-tag story-badge-panel">Con historia</span>
+          )}
+        </div>
         <h1>{item.title}</h1>
         {item.seller?.alias&&<Link className="profile-link detail-seller" href={`/usuarios/${item.seller.alias}`}>Vendido por @{item.seller.alias}</Link>}
         <div className="detail-price-box">
@@ -182,6 +258,28 @@ export default function ProductDetailInteractive({initialItem, slug, demo = fals
               }`
             : 'Este es el precio. Sin ofertas ni regateos.'}
         </p>
+        {item.mine ? (
+          <div className="favorites-seller-badge mb-3 text-xs text-stone-600 flex items-center gap-1.5" role="status">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="#dc2626" stroke="#dc2626" strokeWidth="2" aria-hidden="true">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+            </svg>
+            <span>{favoritesCount === 1 ? '1 persona ha guardado este artículo' : `${favoritesCount} personas han guardado este artículo`}</span>
+          </div>
+        ) : !demo && (
+          <button
+            type="button"
+            className={`button secondary w-full mb-3 favorite-action-btn flex items-center justify-center gap-2 ${isFavorite ? 'favorite-active' : ''}`}
+            onClick={toggleFavorite}
+            disabled={favoriteBusy}
+            aria-label={isFavorite ? 'Eliminar de favoritos' : 'Guardar en favoritos'}
+            aria-pressed={isFavorite}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill={isFavorite ? '#dc2626' : 'none'} stroke={isFavorite ? '#dc2626' : 'currentColor'} strokeWidth="2" aria-hidden="true">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+            </svg>
+            <span>{isFavorite ? 'Guardado en favoritos' : 'Guardar en favoritos'}</span>
+          </button>
+        )}
         {notice && (
           <div className="notice" role="status">
             {notice}
