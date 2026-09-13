@@ -20,9 +20,9 @@ export async function GET(request: Request) {
       timestamp: new Date().toISOString(),
       ...metrics,
     });
-  } catch {
+  } catch (error: any) {
     return NextResponse.json(
-      { error: 'Error durante la ejecución del mantenimiento programado' },
+      { error: error?.message || 'Error durante la ejecución del mantenimiento programado' },
       { status: 500 }
     );
   }

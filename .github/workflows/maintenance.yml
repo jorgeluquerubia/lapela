@@ -10,10 +10,28 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Trigger maintenance
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
         run: |
-          if [ -n "${{ secrets.CRON_SECRET }}" ]; then
-            curl -s -f -X POST "https://lapela-nine.vercel.app/api/cron/maintain" \
-              -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" || echo "Maintenance trigger completed with fallback"
-          else
-            echo "CRON_SECRET secret not set in GitHub repository settings. Skipping invocation."
+          if [ -z "$CRON_SECRET" ]; then
+            echo "::error::CRON_SECRET is not configured in GitHub Secrets"
+            exit 1
           fi
+
+          echo "Triggering scheduled maintenance..."
+          HTTP_RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" -X POST "https://lapela-nine.vercel.app/api/cron/maintain" \
+            -H "Authorization: Bearer $CRON_SECRET" \
+            -H "Content-Type: application/json")
+
+          HTTP_BODY=$(echo "$HTTP_RESPONSE" | sed -e '$d')
+          HTTP_STATUS=$(echo "$HTTP_RESPONSE" | tail -n1 | sed -e 's/HTTP_STATUS://')
+
+          echo "Response HTTP Status: $HTTP_STATUS"
+
+          if [ "$HTTP_STATUS" -ne 200 ]; then
+            echo "::error::Maintenance endpoint failed with HTTP $HTTP_STATUS: $HTTP_BODY"
+            exit 1
+          fi
+
+          echo "Maintenance executed successfully:"
+          echo "$HTTP_BODY"
