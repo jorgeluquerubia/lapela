@@ -1,9 +1,11 @@
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
+import {duplicateMigrationVersions} from './migration-versions.mjs';
 
 const root = resolve(import.meta.dirname, '..');
 const specsDir = join(root, 'specs');
+const migrationsDir = join(root, 'supabase', 'migrations');
 const allowedTypes = new Set([
   'FEATURE',
   'FIX',
@@ -84,6 +86,10 @@ const specFiles = readdirSync(specsDir)
   .filter((name) => /^LP-[A-Z-]+-\d{3}-.+\.md$/.test(name))
   .sort();
 const specs = new Map();
+
+for (const duplicate of duplicateMigrationVersions(readdirSync(migrationsDir))) {
+  fail(`supabase/migrations: versión '${duplicate.version}' duplicada en '${duplicate.files[0]}' y '${duplicate.files[1]}'.`);
+}
 
 for (const fileName of specFiles) {
   const file = `specs/${fileName}`;

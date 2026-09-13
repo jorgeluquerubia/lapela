@@ -146,7 +146,7 @@ Servicios externos
 - **Modelo:** `src/models/marketplace.ts` encapsula el cliente administrativo, el mapeo del catálogo y las RPC.
 - **Dominio:** `src/lib/rules.ts` contiene categorías, importes, validación de texto, bloqueo de contacto y autorización de chat.
 - **Pagos:** `src/lib/payments.ts` protege la inicialización de Stripe y exige una activación adicional para claves live.
-- **Persistencia:** migraciones versionadas en `supabase/migrations`.
+- **Persistencia:** migraciones ejecutables con versiones únicas en `supabase/migrations`; SQL retirado por colisiones se conserva en `supabase/migration-history` y se reconcilia mediante nuevas migraciones forward-only.
 
 ## 7. Infraestructura y servicios
 

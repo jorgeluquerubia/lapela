@@ -1,7 +1,8 @@
--- Public identity and transaction-bound reputation. The app server remains the only caller.
+-- LP-INFRA-005: forward-only reconciliation for the historical profiles migration.
+-- Safe both after the manually applied schema and on a clean database.
 begin;
 
-create table public.lp_profiles (
+create table if not exists public.lp_profiles (
  id uuid primary key references auth.users(id) on delete cascade,
  alias text not null unique check(alias ~ '^[a-z0-9][a-z0-9_-]{2,29}$'),
  alias_customized boolean not null default false,
@@ -10,7 +11,7 @@ create table public.lp_profiles (
  updated_at timestamptz not null default now()
 );
 
-create table public.lp_reviews (
+create table if not exists public.lp_reviews (
  id uuid primary key default gen_random_uuid(),
  order_id uuid not null references public.lp_orders(id) on delete cascade,
  author_id uuid not null references auth.users(id),
@@ -22,11 +23,10 @@ create table public.lp_reviews (
  unique(order_id, author_id)
 );
 
-create index lp_profiles_alias on public.lp_profiles(alias);
-create index lp_reviews_recipient_created on public.lp_reviews(recipient_id, created_at desc);
-create index lp_reviews_order on public.lp_reviews(order_id);
+create index if not exists lp_profiles_alias on public.lp_profiles(alias);
+create index if not exists lp_reviews_recipient_created on public.lp_reviews(recipient_id, created_at desc);
+create index if not exists lp_reviews_order on public.lp_reviews(order_id);
 
--- Existing accounts get an opaque, stable fallback. It deliberately never uses email data.
 insert into public.lp_profiles(id, alias)
 select id, 'usuario-' || substring(replace(id::text, '-', '') from 1 for 12)
 from auth.users
@@ -97,4 +97,5 @@ end $$;
 
 revoke execute on function public.lp_ensure_profile(uuid), public.lp_update_profile(uuid,text,boolean), public.lp_create_review(uuid,uuid,smallint,text) from public, anon, authenticated;
 grant execute on function public.lp_ensure_profile(uuid), public.lp_update_profile(uuid,text,boolean), public.lp_create_review(uuid,uuid,smallint,text) to service_role;
+
 commit;

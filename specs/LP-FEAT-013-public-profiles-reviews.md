@@ -118,7 +118,7 @@ Cada cuenta dispone de un alias público único y estable. Los anuncios, pujas, 
 ## 11. Implementación y trazabilidad
 
 - **Archivos o módulos:** Modelo, controlador, componentes de catálogo/ficha/pedido/cuenta/actividad, ruta de perfiles, estilos y pruebas.
-- **Migraciones/configuración:** Nueva migración aditiva de perfiles y valoraciones (`202609110001_public_profiles_reviews.sql`), aplicada y comprobada en Supabase.
+- **Migraciones/configuración:** El SQL histórico aplicado el 2026-09-11 se conserva en `supabase/migration-history/202609110001_public_profiles_reviews.sql`; `202609130001_public_profiles_reviews.sql` lo reconcilia de forma idempotente y con versión única para futuros despliegues (`LP-INFRA-005`).
 - **Commit o despliegue:** Rama `gemini/lp-feat-013-public-profiles-reviews`.
 - **Notas de implementación:** Se preservan las reglas de chat y no contacto existentes; el alias no abre ningún canal de comunicación. Se asegura aislamiento estricto entre sandbox y producción mediante joins a `lp_listings.environment`.
 
@@ -131,4 +131,3 @@ Cada cuenta dispone de un alias público único y estable. Los anuncios, pujas, 
 | 2026-09-11 | `IMPLEMENTED` | PR #42 abierta para revisión | Codex |
 | 2026-09-12 | `VERIFIED` | Verificación completa de base de datos en Supabase, suites de tests automatizados de UI y perfiles, robustecimiento de página de pedidos y compilación de producción | Gemini |
 | 2026-09-13 | `VERIFIED` | Corrección de aislamiento sandbox vs producción tras QA: ventas, reseñas y compras filtradas por listing.environment en getPublicProfile y validación en valoraciones | Gemini |
-
