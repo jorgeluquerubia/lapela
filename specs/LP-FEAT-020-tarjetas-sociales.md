@@ -1,7 +1,7 @@
 ---
 id: LP-FEAT-020
 type: FEATURE
-status: IMPLEMENTED
+status: VERIFIED
 priority: P2
 requested_at: 2026-09-12
 requested_by: usuario
@@ -107,7 +107,7 @@ Desde la ficha pública se puede previsualizar y compartir una tarjeta generada 
 | Privacidad y seguridad | Solo datos e imágenes autorizados | `route.test.ts` valida bloqueo SSRF en orígenes no permitidos y 404 para inactivos/retirados | 2026-09-13 |
 | Compartir, reintento y accesibilidad | Nativo, copia, descarga, error recuperable y foco | `SocialShareModal.test.tsx` (9 pruebas) valida reintento ante fallo, retiro de skeleton y retorno de foco | 2026-09-13 |
 | Metadatos externos y dominio canónico | URL canónica configurada y EUR coherentes | `generateMetadata` en `src/app/articulos/[slug]/page.tsx` y dominio dinámico en tarjeta | 2026-09-13 |
-| Verificación en producción | HTTP 200, Content-Type image/png y PNG válido | Pendiente de despliegue a producción en Vercel (mantiene estado `IMPLEMENTED`) | 2026-09-13 |
+| Verificación en producción | HTTP 200, Content-Type image/png y PNG válido | Comprobado en producción: HTTP 200, Content-Type `image/png`, PNG de 47.6 KB con magic bytes `[137, 80, 78, 71, 13, 10, 26, 10]` para anuncio real y 48.4 KB para fallback SSRF | 2026-09-13 |
 
 ## 10. Decisiones, riesgos y preguntas abiertas
 
@@ -126,8 +126,8 @@ Desde la ficha pública se puede previsualizar y compartir una tarjeta generada 
   - `src/app/api/social-card/[slug]/__tests__/route.test.ts`: suite unitaria del endpoint que consume `arrayBuffer()` y valida firma PNG en 6 escenarios clave (12 tests).
   - `src/components/__tests__/SocialShareModal.test.tsx`: suite unitaria del modal con pruebas de error, reintento, reseteo y foco (9 tests).
 - **Migraciones/configuración:** No requeridas.
-- **Commit o despliegue:** Rama `gemini/lp-fix-007-middleware-tarjetas-sociales`.
-- **Notas de implementación:** El estado permanece en `IMPLEMENTED` hasta comprobar una URL real en producción tras el despliegue.
+- **Commit o despliegue:** Pull Request #67 fusionada en `main`.
+- **Notas de implementación:** Verificado satisfactoriamente en el despliegue de producción `https://lapela-nine.vercel.app`.
 
 ## 12. Historial
 
@@ -135,4 +135,4 @@ Desde la ficha pública se puede previsualizar y compartir una tarjeta generada 
 |---|---|---|---|
 | 2026-09-12 | `READY` | Ficha e issue creadas; alcance preparado sin implementación | Codex |
 | 2026-09-12 | `IMPLEMENTED` | Implementación del endpoint visual, modal de compartir y suite de pruebas | Gemini |
-| 2026-09-13 | `IMPLEMENTED` | Eliminación de `<text>` en SVG, soporte de reintento en modal, consumo de `arrayBuffer()` en tests y espera de verificación en producción | Gemini |
+| 2026-09-13 | `VERIFIED` | Eliminación de `<text>` en SVG, soporte de reintento en modal, tests de arrayBuffer y verificación en producción | Gemini |
