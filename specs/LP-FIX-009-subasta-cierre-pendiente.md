@@ -1,7 +1,7 @@
 ---
 id: LP-FIX-009
 type: FIX
-status: IMPLEMENTED
+status: VERIFIED
 priority: P1
 requested_at: 2026-09-13
 requested_by: usuario
@@ -113,3 +113,4 @@ Una subasta con cierre real vencido queda inmediatamente sin acciones de puja, s
 |---|---|---|---|
 | 2026-09-13 | `IN_PROGRESS` | Creación e inicio de implementación | Codex |
 | 2026-09-13 | `IMPLEMENTED` | Estado transitorio y bloqueo de puja validados localmente | Codex |
+| 2026-09-13 | `VERIFIED` | PR #78 preparada para integrar con specs, Playwright y Vercel correctos | Codex |
