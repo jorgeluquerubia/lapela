@@ -1,11 +1,12 @@
 'use client';
-import {useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import Link from 'next/link';
 import {useRouter} from 'next/navigation';
 import {useAuth} from '@/context/AuthContext';
 import {Product} from '@/types';
 import {productSlug} from '@/lib/slugs';
 import {pesetaEquivalence} from '@/lib/pesetas';
+import {PRODUCT_FALLBACK_IMAGE} from '@/lib/image-processing';
 import BrandSpinner from './BrandSpinner';
 import toast from 'react-hot-toast';
 
@@ -13,6 +14,8 @@ export default function ProductCard({product:p}:{product:Product}){
   const {user}=useAuth();
   const router=useRouter();
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
+  const imgRef = useRef<HTMLImageElement | null>(null);
   const [isFavorite, setIsFavorite] = useState(Boolean((p as any).isFavorite));
   const [favoriteBusy, setFavoriteBusy] = useState(false);
   const [favoriteNotice, setFavoriteNotice] = useState('');
@@ -21,6 +24,17 @@ export default function ProductCard({product:p}:{product:Product}){
   const href=`/articulos/${p.slug||productSlug(p.id,p.name)}`;
   const isDemo = p.id.startsWith('demo-') || p.id.startsWith('ejemplo-');
   const isMine = Boolean((p as any).isMine || (p as any).mine || (user && ((p as any).seller_id === user.id || p.user_id === user.id)));
+
+  const imageSrc = imageError || !p.image ? PRODUCT_FALLBACK_IMAGE : p.image;
+
+  useEffect(() => {
+    if (imgRef.current?.complete) {
+      if (imgRef.current.naturalWidth === 0 && p.image) {
+        setImageError(true);
+      }
+      setImageLoaded(true);
+    }
+  }, [imageSrc, p.image]);
 
   const toggleFavorite = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -61,17 +75,22 @@ export default function ProductCard({product:p}:{product:Product}){
   return <article className="product-card">
     <div style={{ position: 'relative' }}>
       <Link href={href} className="product-image">
-        {!imageLoaded && (
+        {!imageLoaded && !imageError && Boolean(p.image) && (
           <div className="product-image-loading">
             <BrandSpinner size="sm" label={`Cargando imagen de ${p.name}…`} />
           </div>
         )}
         <img
-          src={p.image}
+          ref={imgRef}
+          src={imageSrc}
           alt={p.name}
           loading="lazy"
           onLoad={() => setImageLoaded(true)}
-          className={imageLoaded ? 'product-image-loaded' : 'product-image-unloaded'}
+          onError={() => {
+            setImageError(true);
+            setImageLoaded(true);
+          }}
+          className={imageLoaded || imageError || !p.image ? 'product-image-loaded' : 'product-image-unloaded'}
         />
         <span className={`sale-tag ${auction?'auction':''}`}>{auction?'↗ Subasta':'Precio cerrado'}</span>
         {p.featuredEdition && (

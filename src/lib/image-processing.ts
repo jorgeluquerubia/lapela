@@ -1,6 +1,19 @@
 const CANVAS_WIDTH = 1400;
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
+export const PRODUCT_FALLBACK_IMAGE =
+  'data:image/svg+xml;utf8,' +
+  encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 350" width="100%" height="100%">
+  <rect width="100%" height="100%" fill="#f1ede3"/>
+  <circle cx="200" cy="155" r="54" fill="#e2dac9" stroke="#d5cbba" stroke-width="2"/>
+  <path d="M178 145h44v24h-44z M192 135h16v10h-16z" fill="#a96038" opacity="0.6"/>
+  <circle cx="200" cy="157" r="7" fill="#f1ede3"/>
+  <text x="200" y="240" font-family="Arial,sans-serif" font-size="13" font-weight="600" fill="#788176" text-anchor="middle" letter-spacing="0.5">Sin imagen disponible</text>
+  <text x="200" y="260" font-family="Georgia,serif" font-size="11" font-style="italic" fill="#a96038" text-anchor="middle">La Pela</text>
+</svg>`.trim()
+  );
+
 export function getCenteredImagePlacement(sourceWidth: number, sourceHeight: number) {
   const canvasWidth = Math.min(
     CANVAS_WIDTH,
