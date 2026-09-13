@@ -1,7 +1,7 @@
 ---
 id: LP-FIX-010
 type: FIX
-status: IMPLEMENTED
+status: VERIFIED
 priority: P2
 requested_at: 2026-09-13
 requested_by: usuario
@@ -108,3 +108,4 @@ La equivalencia secundaria se muestra completa y legible con una expresión comp
 |---|---|---|---|
 | 2026-09-13 | `IN_PROGRESS` | Creación e inicio de implementación | Codex |
 | 2026-09-13 | `IMPLEMENTED` | Formato y render PNG validados localmente | Codex |
+| 2026-09-13 | `VERIFIED` | PR #77 preparada para integrar con specs, Playwright y Vercel correctos | Codex |

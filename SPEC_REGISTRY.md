@@ -81,7 +81,7 @@ Prioridades: `P0` bloquea una operación esencial o implica un riesgo grave; `P1
 | `LP-OPS-001` | `OPS` | Programador periódico de mantenimiento y alertas de favoritos | `VERIFIED` | `P2` | 2026-09-13 | [Abrir ficha](specs/LP-OPS-001-programador-mantenimiento-alertas.md) |
 | `LP-INFRA-005` | `INFRA` | Versiones únicas de migraciones Supabase | `VERIFIED` | `P1` | 2026-09-13 | [Abrir ficha](specs/LP-INFRA-005-versiones-unicas-migraciones.md) |
 | `LP-FIX-008` | `FIX` | Endurecer errores y Stripe en mantenimiento programado | `VERIFIED` | `P1` | 2026-09-13 | [Abrir ficha](specs/LP-FIX-008-mantenimiento-seguro-stripe.md) |
-| `LP-FIX-010` | `FIX` | Renderizar equivalencia completa en tarjetas sociales | `IMPLEMENTED` | `P2` | 2026-09-13 | [Abrir ficha](specs/LP-FIX-010-simbolo-pesetas-tarjeta-social.md) |
+| `LP-FIX-010` | `FIX` | Renderizar equivalencia completa en tarjetas sociales | `VERIFIED` | `P2` | 2026-09-13 | [Abrir ficha](specs/LP-FIX-010-simbolo-pesetas-tarjeta-social.md) |
 
 <!-- LP-FEAT-019 en IMPLEMENTED el 2026-09-13: subsanadas observaciones de QA, verificación final en edición cerrada pendiente de QA real en entorno desplegado -->
 
