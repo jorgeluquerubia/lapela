@@ -36,10 +36,10 @@ begin
  perform lp_ensure_profile(seller); perform lp_ensure_profile(buyer); perform lp_ensure_profile(outsider);
  p:=lp_update_profile(seller,'vendedor-prueba',false); if p.alias<>'vendedor-prueba' or not p.alias_customized then raise exception 'FAIL profile custom alias'; end if;
  blocked:=false;begin perform lp_update_profile(seller,'otro-vendedor',false);exception when others then blocked:=true;end;if not blocked then raise exception 'FAIL immutable custom alias';end if;
- review:=lp_create_review(ord.id,buyer,5,'Todo correcto.'); if review.recipient_id<>seller or review.score<>5 then raise exception 'FAIL buyer review';end if;
- review:=lp_create_review(ord.id,seller,4,'Comprador puntual.'); if review.recipient_id<>buyer then raise exception 'FAIL seller review';end if;
- blocked:=false;begin perform lp_create_review(ord.id,buyer,5,'Duplicada');exception when others then blocked:=true;end;if not blocked then raise exception 'FAIL duplicate review';end if;
- blocked:=false;begin perform lp_create_review(ord.id,outsider,5,'Intruso');exception when others then blocked:=true;end;if not blocked then raise exception 'FAIL outsider review';end if;
+ review:=lp_create_review(ord.id,buyer,5::smallint,'Todo correcto.'); if review.recipient_id<>seller or review.score<>5 then raise exception 'FAIL buyer review';end if;
+ review:=lp_create_review(ord.id,seller,4::smallint,'Comprador puntual.'); if review.recipient_id<>buyer then raise exception 'FAIL seller review';end if;
+ blocked:=false;begin perform lp_create_review(ord.id,buyer,5::smallint,'Duplicada');exception when others then blocked:=true;end;if not blocked then raise exception 'FAIL duplicate review';end if;
+ blocked:=false;begin perform lp_create_review(ord.id,outsider,5::smallint,'Intruso');exception when others then blocked:=true;end;if not blocked then raise exception 'FAIL outsider review';end if;
  insert into public.lp_listings(seller_id,title,description,category,condition,location,images,mode,price_cents,delivery) values(seller,'Artículo cobro en persona','Descripción válida para comprobar el cobro en persona.','Tecnología','Como nuevo','Madrid',array['https://example.invalid/ip.jpg'],'sale',1500,'pickup') returning id into item2;
  ord2:=lp_reserve(item2,buyer);
  blocked:=false;begin perform lp_confirm_in_person_payment(ord2.id,buyer);exception when others then blocked:=true;end;if not blocked then raise exception 'FAIL buyer confirm in person';end if;

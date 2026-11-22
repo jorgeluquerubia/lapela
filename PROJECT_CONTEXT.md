@@ -1,18 +1,18 @@
 # Contexto canónico de La Pela
 
-> Estado documentado: 2026-09-10. Este es el resumen vigente del producto y su infraestructura. Para cambios y decisiones por solicitud consulta [`SPEC_REGISTRY.md`](SPEC_REGISTRY.md). `ANALISIS_FUNCIONAL.md` es un documento histórico de la versión anterior.
+> Estado documentado: 2026-11-22. Este es el resumen vigente del producto y su infraestructura. Para cambios y decisiones por solicitud consulta [`SPEC_REGISTRY.md`](SPEC_REGISTRY.md). `ANALISIS_FUNCIONAL.md` es un documento histórico de la versión anterior.
 
 ## 1. Descripción del proyecto
 
-La Pela es un marketplace español de productos de segunda mano diseñado para reducir el estrés de vender. El vendedor elige entre un precio cerrado o una subasta. No existen ofertas privadas ni regateos y el comprador no puede contactar con el vendedor antes de formalizar y pagar la operación.
+La Pela es un marketplace español de productos de segunda mano diseñado para reducir el estrés de vender. El vendedor elige entre un precio cerrado o una subasta. No existen ofertas privadas ni regateos. El chat privado requiere una reserva formalizada.
 
-El chat se abre únicamente entre comprador y vendedor cuando el pedido está pagado. Su propósito es coordinar el envío, el seguimiento o la entrega en persona; no renegociar el precio.
+El chat se abre únicamente entre comprador y vendedor desde la reserva. Sirve para coordinar el método de pago, el envío, el seguimiento o la entrega en persona.
 
 La propuesta combina la sencillez de uso de un marketplace móvil con dos mecanismos de venta claros: compra directa y subasta. El portal funciona en móvil y escritorio.
 
 ## 2. Estado actual
 
-- **Fase:** beta funcional.
+- **Fase:** beta con pagos simulados. El 22 de noviembre de 2026, la base alojada figura inactiva y el catálogo y la búsqueda devuelven HTTP 503. La restauración depende de resolver la restricción de la organización de Supabase.
 - **Producción:** `https://lapela-nine.vercel.app`.
 - **Pagos:** simulados; no se mueve dinero.
 - **Datos:** los anuncios activos están separados por entorno `sandbox` o `live`; la beta consulta `sandbox`.
@@ -23,7 +23,7 @@ La propuesta combina la sencillez de uso de un marketplace móvil con dos mecani
 ## 3. Principios de producto
 
 1. **El precio no se negocia.** En compra directa es fijo; en subasta cambia solo mediante pujas válidas.
-2. **No hay contacto antes del pago.** La conversación existe únicamente dentro de un pedido pagado.
+2. **El chat requiere una reserva.** La conversación existe únicamente entre las partes de un pedido habilitado para chat.
 3. **Las operaciones críticas son transaccionales.** Reservas, pujas, pagos y cambios de estado se protegen en PostgreSQL.
 4. **La beta no debe confundirse con dinero real.** Los artículos y pagos de prueba se identifican de forma visible y persistente.
 5. **Los datos privados no salen del pedido.** Una dirección de envío solo se entrega a las partes autorizadas cuando el estado lo permite.
@@ -284,7 +284,9 @@ Las rutas antiguas bajo `/api/bids`, `/api/messages`, `/api/orders`, `/api/quest
 
 ## 12. Operación automática
 
-El mantenimiento periódico se ejecuta de forma autónoma e independiente del tráfico mediante un programador periódico (Vercel Cron) configurado en `vercel.json` invocando el endpoint seguro `/api/cron/maintain` autenticado con la cabecera `Authorization: Bearer <CRON_SECRET>` (`LP-OPS-001`). Como mecanismo de contingencia y resiliencia (*fallback*), el backend conserva además la ejecución oportunista al consultar catálogo o detalle.
+El despliegue configura un programador de Vercel Cron en `vercel.json` para invocar `/api/cron/maintain` con la cabecera `Authorization: Bearer <CRON_SECRET>` (`LP-OPS-001`). El backend conserva la ejecución oportunista al consultar catálogo o detalle.
+
+El 22 de noviembre de 2026, GitHub Actions indica que su programador está desactivado por inactividad. La cadencia efectiva del cron diario de Vercel queda pendiente de validación en la beta desplegada.
 
 En cada ciclo de mantenimiento se realizan las siguientes tareas:
 - Cierre transaccional de subastas vencidas (`lp_close_auctions`).
@@ -301,6 +303,7 @@ No hay todavía un panel de administración, alertas centralizadas, métricas de
 - `tests/database/marketplace.sql` valida propiedad, reservas, importe, idempotencia, chat, transiciones, pujas, expiración, anti-sniping, cierre y privilegios; se ejecutó satisfactoriamente el 2026-09-06.
 - Existen suites Jest creadas para la versión anterior. Parte de ellas todavía espera textos, componentes y endpoints legacy, por lo que el conjunto completo no representa fielmente la aplicación reconstruida.
 - El workflow de GitHub ejecuta un smoke test Playwright vigente en push y pull request. Usa datos de demostración y valores sintéticos de Supabase, por lo que valida el arranque y la navegación pública sin acceder a producción. Aún no cubre autenticación, persistencia, publicación, compra ni pagos.
+- La suite `npm run test:e2e:mvp` usa un Supabase local con Mailpit para comprobar los recorridos críticos de beta. Los pasos y la evidencia están en [`README.md`](README.md#validación-del-mvp-de-beta) y [`LP-INFRA-006`](specs/LP-INFRA-006-validacion-mvp.md).
 - La producción beta y sus rutas principales se comprobaron mediante build, peticiones HTTP y revisión visual en navegador.
 
 ## 14. Mapa rápido del repositorio

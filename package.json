@@ -16,6 +16,7 @@
     "test:api-simple": "jest src/app/api/__tests__/simple.test.ts",
     "specs:check": "node tools/validate-specs.mjs",
     "test:e2e": "playwright test",
+    "test:e2e:mvp": "playwright test --config=playwright.mvp.config.ts",
     "test:e2e-ui": "playwright test --ui"
   },
   "dependencies": {

@@ -1,7 +1,14 @@
 -- Retire legacy access paths; retain every old row for audit/recovery.
 begin;
-revoke all on public.products,public.orders,public.bids,public.questions,public.messages,public.shipping_addresses from anon,authenticated;
-revoke all on public.profiles from anon,authenticated;
+do $$
+declare legacy_table text;
+begin
+  foreach legacy_table in array array['products', 'orders', 'bids', 'questions', 'messages', 'shipping_addresses', 'profiles'] loop
+    if to_regclass(format('public.%I', legacy_table)) is not null then
+      execute format('revoke all on table public.%I from anon, authenticated', legacy_table);
+    end if;
+  end loop;
+end $$;
 do $$ declare f record; begin
 for f in select p.oid::regprocedure as signature from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public' and p.proname in ('buy_product','get_conversations_for_user','create_order_and_reserve_product','pay_order_and_update_product') loop
  execute format('revoke execute on function %s from public, anon, authenticated',f.signature);
