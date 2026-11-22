@@ -80,6 +80,7 @@ Prioridades: `P0` bloquea una operación esencial o implica un riesgo grave; `P1
 | `LP-FIX-007` | `FIX` | Permitir endpoint de tarjetas sociales en middleware | `VERIFIED` | `P1` | 2026-09-13 | [Abrir ficha](specs/LP-FIX-007-middleware-tarjetas-sociales.md) |
 | `LP-OPS-001` | `OPS` | Programador periódico de mantenimiento y alertas de favoritos | `VERIFIED` | `P2` | 2026-09-13 | [Abrir ficha](specs/LP-OPS-001-programador-mantenimiento-alertas.md) |
 | `LP-INFRA-005` | `INFRA` | Versiones únicas de migraciones Supabase | `VERIFIED` | `P1` | 2026-09-13 | [Abrir ficha](specs/LP-INFRA-005-versiones-unicas-migraciones.md) |
+| `LP-INFRA-007` | `INFRA` | Pruebas de integración multiusuario de la beta | `IMPLEMENTED` | `P1` | 2026-11-22 | [Abrir ficha](specs/LP-INFRA-007-integracion-multiusuario.md) |
 | `LP-FIX-008` | `FIX` | Endurecer errores y Stripe en mantenimiento programado | `VERIFIED` | `P1` | 2026-09-13 | [Abrir ficha](specs/LP-FIX-008-mantenimiento-seguro-stripe.md) |
 | `LP-FIX-010` | `FIX` | Renderizar equivalencia completa en tarjetas sociales | `VERIFIED` | `P2` | 2026-09-13 | [Abrir ficha](specs/LP-FIX-010-simbolo-pesetas-tarjeta-social.md) |
 | `LP-FIX-009` | `FIX` | Bloquear pujas durante cierre pendiente | `VERIFIED` | `P1` | 2026-09-13 | [Abrir ficha](specs/LP-FIX-009-subasta-cierre-pendiente.md) |
