@@ -1,3 +1,4 @@
+import {marketplaceEnvironment} from '@/lib/payment-mode';
 import {ImageResponse} from 'next/og';
 import {admin} from '@/models/marketplace';
 import {extractIdFromSlug, productSlug} from '@/lib/slugs';
@@ -113,7 +114,7 @@ export async function GET(
     return new Response('Artículo no encontrado', {status: 404});
   }
 
-  const env = process.env.LAPELA_PAYMENTS_MODE === 'simulated' ? 'sandbox' : 'live';
+  const env = marketplaceEnvironment();
   const db = admin();
   const {data: item, error} = await db
     .from('lp_listings')
