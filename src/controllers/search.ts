@@ -8,6 +8,7 @@ const ok=(data:unknown,status=200)=>NextResponse.json(data,{status,headers:{'Cac
 const pageSize=12;
 
 function numberParam(value:string|null, maximum:number) {
+  if (!value?.trim()) return null;
   const number=Number(value);
   return Number.isFinite(number)&&number>=0?Math.min(number,maximum):null;
 }
