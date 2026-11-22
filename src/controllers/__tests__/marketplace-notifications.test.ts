@@ -53,7 +53,8 @@ describe('Marketplace Controller - Notification Actions (LP-FEAT-021)', () => {
       error: null,
     });
     const mockEqRead = jest.fn().mockReturnValue({select: mockSelect});
-    const mockEqUser = jest.fn().mockReturnValue({eq: mockEqRead});
+    const mockEqEnvironment = jest.fn().mockReturnValue({eq: mockEqRead});
+    const mockEqUser = jest.fn().mockReturnValue({eq: mockEqEnvironment});
     const mockUpdate = jest.fn().mockReturnValue({eq: mockEqUser});
     const mockFrom = jest.fn().mockReturnValue({update: mockUpdate});
 
@@ -73,6 +74,7 @@ describe('Marketplace Controller - Notification Actions (LP-FEAT-021)', () => {
     expect(mockFrom).toHaveBeenCalledWith('lp_notifications');
     expect(mockUpdate).toHaveBeenCalledWith(expect.objectContaining({read: true}));
     expect(mockEqUser).toHaveBeenCalledWith('user_id', 'user-abc');
+    expect(mockEqEnvironment).toHaveBeenCalledWith('environment', 'sandbox');
     expect(mockEqRead).toHaveBeenCalledWith('read', false);
   });
 });
