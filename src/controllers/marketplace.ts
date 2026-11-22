@@ -178,7 +178,20 @@ export async function handle(request:Request,path:string[]){try{
   const accounts = stripeAccountsTable();
   let account = await result(db.from(accounts).select('stripe_account_id').eq('user_id', user.id).maybeSingle());
   if (!account) {
-    const connected = await st.accounts.create({
+    const connected = stripeSandboxPayments() ? await st.v2.core.accounts.create({
+      contact_email: user.email,
+      dashboard: 'express',
+      identity: {country: 'ES'},
+      defaults: {
+        responsibilities: {fees_collector: 'application', losses_collector: 'application'},
+      },
+      configuration: {
+        merchant: {capabilities: {card_payments: {requested: true}}},
+        recipient: {capabilities: {stripe_balance: {stripe_transfers: {requested: true}}}},
+      },
+      metadata: {user_id: user.id},
+    }, {idempotencyKey: 'lapela-sandbox-v2-account-' + user.id})
+    : await st.accounts.create({
       type: 'express',
       country: 'ES',
       email: user.email,
@@ -188,10 +201,21 @@ export async function handle(request:Request,path:string[]){try{
     account = {stripe_account_id: connected.id};
     await result(db.from(accounts).upsert({user_id: user.id, ...account}, {onConflict: 'user_id'}));
   }
-  const link = await st.accountLinks.create({
+  const profileUrl = base + '/user-profile';
+  const link = stripeSandboxPayments() ? await st.v2.core.accountLinks.create({
     account: account.stripe_account_id,
-    refresh_url: base + '/user-profile',
-    return_url: base + '/user-profile',
+    use_case: {
+      type: 'account_onboarding',
+      account_onboarding: {
+        configurations: ['merchant', 'recipient'],
+        refresh_url: profileUrl,
+        return_url: profileUrl,
+      },
+    },
+  }) : await st.accountLinks.create({
+    account: account.stripe_account_id,
+    refresh_url: profileUrl,
+    return_url: profileUrl,
     type: 'account_onboarding',
   });
   return ok({url: link.url});

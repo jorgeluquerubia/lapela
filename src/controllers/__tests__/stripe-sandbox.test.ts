@@ -16,8 +16,8 @@ const order = '35117c59-4c7a-43d1-b799-65f16d77ac45';
 const connectedAccount = 'acct_prueba';
 const from = jest.fn();
 const client = {
-  accounts: {create: jest.fn(), retrieve: jest.fn()},
-  accountLinks: {create: jest.fn()},
+  accounts: {retrieve: jest.fn()},
+  v2: {core: {accounts: {create: jest.fn()}, accountLinks: {create: jest.fn()}}},
   checkout: {sessions: {create: jest.fn()}},
 };
 
@@ -55,13 +55,21 @@ afterEach(() => {
 test('onboards a test seller and stores the connected account under sandbox', async () => {
   const account = lookup(null);
   from.mockReturnValue(account);
-  client.accounts.create.mockResolvedValue({id: connectedAccount});
-  client.accountLinks.create.mockResolvedValue({url: 'https://connect.stripe.com/test-onboarding'});
+  client.v2.core.accounts.create.mockResolvedValue({id: connectedAccount});
+  client.v2.core.accountLinks.create.mockResolvedValue({url: 'https://connect.stripe.com/test-onboarding'});
 
   const response = await post(['onboard']);
   expect(response.status).toBe(200);
   expect(await response.json()).toEqual({url: 'https://connect.stripe.com/test-onboarding'});
   expect(from).toHaveBeenCalledWith('lp_stripe_sandbox_accounts');
+  expect(client.v2.core.accounts.create).toHaveBeenCalledWith(expect.objectContaining({
+    contact_email: actor.email,
+    dashboard: 'express',
+  }), {idempotencyKey: 'lapela-sandbox-v2-account-' + actor.id});
+  expect(client.v2.core.accountLinks.create).toHaveBeenCalledWith(expect.objectContaining({
+    account: connectedAccount,
+    use_case: expect.objectContaining({type: 'account_onboarding'}),
+  }));
   expect(account.upsert).toHaveBeenCalledWith(
     {user_id: actor.id, stripe_account_id: connectedAccount},
     {onConflict: 'user_id'},
