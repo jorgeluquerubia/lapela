@@ -373,3 +373,73 @@ test('los filtros de categoría, ciudad y precio se aplican juntos', async () =>
   await json(await post(seller, `remove-story/${plane.id}`));
   expect((await detail(visitor, plane))).toMatchObject({status: 'available', story: null});
 });
+
+test('los avisos de pedido llegan una sola vez a la parte correspondiente', async () => {
+  const lamp = await publish(seller, products.lamp, 'avisos de pedido');
+  const id = await reserve(buyer, lamp);
+  expect(await reserve(buyer, lamp)).toBe(id);
+
+  const sent = await post(seller, `message/${id}`, {content: 'Confirmo que el embalaje está preparado.'});
+  await json(sent, 201);
+  const payments = await Promise.all([buyer, buyer, buyer].map(actor => post(actor, `simulate-payment/${id}`)));
+  for (const response of payments) {
+    expect(await json<Order>(response)).toMatchObject({status: 'paid'});
+  }
+  await json(await post(seller, `ship/${id}`, {tracking: 'PAQUETE-DEMO'}));
+  await json(await post(buyer, `complete/${id}`));
+
+  const types = async (actor: Actor) => (await notifications(actor)).filter(n => n.order_id === id)
+    .map(n => n.type).sort();
+  expect(await types(seller)).toEqual(['order_created', 'payment_confirmed', 'status_changed']);
+  expect(await types(buyer)).toEqual(['new_message', 'status_changed']);
+  expect(await types(observer)).toEqual([]);
+  await order(buyer, id);
+  expect(await types(buyer)).toEqual([]);
+  expect(await types(seller)).toEqual(['order_created', 'payment_confirmed', 'status_changed']);
+
+  const page = await seller.context.newPage();
+  try {
+    await page.goto('/');
+    await page.getByRole('button', {name: /^\d+ novedades sin leer$/}).click();
+    const panel = page.getByRole('region', {name: 'Novedades'});
+    const shipmentNotice = panel.getByRole('listitem').filter({hasText: lamp.title}).filter({hasText: 'Pago confirmado'});
+    await expect(shipmentNotice).toBeVisible();
+    await expect(shipmentNotice.getByRole('link', {name: 'Ver pedido'})).toHaveAttribute('href', `/orders/${id}`);
+    await panel.getByRole('button', {name: 'Marcar todas como vistas'}).click();
+    await expect(panel.getByText('No tienes novedades pendientes.')).toBeVisible();
+    await expect(page.getByRole('button', {name: 'No tienes novedades sin leer'})).toBeVisible();
+  } finally { await page.close(); }
+
+  await json(await post(seller, 'mark-all-notifications-read'));
+  expect(await types(seller)).toEqual([]);
+  const {data, error} = await admin.from('lp_notifications').select('read,read_at').eq('order_id', id);
+  expect(error?.message).toBeUndefined();
+  expect(data).toHaveLength(5);
+  for (const notice of data!) expect(notice).toEqual({read: true, read_at: expect.any(String)});
+});
+
+test('el mantenimiento concurrente no duplica avisos de subastas favoritas', async () => {
+  const rover = await publish(secondSeller, products.rover, 'avisos de subasta');
+  await json(await post(buyer, `favorite/${rover.id}`, {active: true}));
+  await json(await post(observer, `favorite/${rover.id}`, {active: true}));
+
+  async function maintainTogether() {
+    const responses = await Promise.all([seller, secondSeller, buyer, rival, observer].map(a => get(a, 'activity')));
+    for (const response of responses) await json(response);
+  }
+  const {error} = await admin.from('lp_listings').update({
+    ends_at: new Date(Date.now() + 20 * 60_000).toISOString(),
+  }).eq('id', rover.id);
+  expect(error?.message).toBeUndefined();
+  await maintainTogether();
+  await expireFixtures('lp_listings', [rover.id]);
+  await maintainTogether();
+  await maintainTogether();
+  for (const actor of [buyer, observer]) {
+    const types = (await notifications(actor)).filter(n => n.listing_id === rover.id).map(n => n.type).sort();
+    expect(types).toEqual(['favorite_auction_closing_soon', 'favorite_auction_ended']);
+  }
+  expect((await notifications(rival)).filter(n => n.listing_id === rover.id)).toEqual([]);
+  expect((await notifications(secondSeller)).filter(n => n.listing_id === rover.id).map(n => n.type).sort())
+    .toEqual(['auction_ended', 'favorite_received']);
+});

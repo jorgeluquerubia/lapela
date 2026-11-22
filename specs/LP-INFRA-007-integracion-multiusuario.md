@@ -38,3 +38,7 @@ Véase [la matriz y cómo ejecutar la suite](../integration/README.md). El runne
 - La app en modo `simulated` cubrió compraventa y subastas. El piloto `stripe_test` verificó rechazo, reintento y confirmación por webhook en un mismo pedido de 25 €. El pedido quedó pagado y el anuncio vendido.
 - Se verificó sobre el piloto basado en `d28b8d1`, con la actualización a Accounts v2 del PR [#84](https://github.com/jorgeluquerubia/lapela/pull/84). La rama de la suite contiene pruebas y material de prueba.
 - Pendiente de revisión e integración en GitHub. La comprobación abarcó Chromium. Quedan fuera de esta ejecución los reembolsos, las disputas y el pago con autenticación 3D Secure.
+
+### Ampliación de integridad y notificaciones
+
+Se añadieron dos escenarios automatizados para avisos durante el ciclo del pedido y deduplicación tras mantenimiento concurrente. La suite ampliada pasó 15 de 15 casos. La auditoría SQL de solo lectura comprueba invariantes y se complementó con un reenvío paralelo de webhook y pruebas de casos adversos. Los resultados y las incidencias abiertas están en [la auditoría de integridad](../integration/integrity-findings.md).

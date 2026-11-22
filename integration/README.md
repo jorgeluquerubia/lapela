@@ -36,3 +36,7 @@ La suite utiliza el proveedor de pagos simulado de la app para repetir los recor
 
 
 Para ejecutar también Stripe, proporciona `LAPELA_STRIPE_INTEGRATION_URL`, `LAPELA_STRIPE_SELLER_STATE` y `LAPELA_STRIPE_BUYER_STATE`. Son la URL local del piloto en modo `stripe_test` y los archivos Playwright de una cuenta ficticia Connect con cobros ya activos y una cuenta compradora ficticia. El piloto necesita recibir el webhook firmado del sandbox. Conserva esos archivos de sesión fuera del repositorio. La prueba rechaza una tarjeta, reintenta el mismo pedido con una tarjeta válida y espera la confirmación por webhook.
+
+## Auditoría de integridad
+
+Ejecuta `psql -X -v ON_ERROR_STOP=1 -f integration/audit-integrity.sql` desde una conexión a la base local del piloto. La auditoría usa una transacción de solo lectura y muestra recuentos de coherencia de importes, pedidos, anuncios, pujas, avisos, mensajes y valoraciones. Véanse [los hallazgos reproducidos](integrity-findings.md).
