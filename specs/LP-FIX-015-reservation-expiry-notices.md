@@ -95,7 +95,7 @@ Cada aviso de caducidad describe el estado final del anuncio: disponible cuando 
 ## 11. Implementación y trazabilidad
 
 - **Archivos o módulos:** `supabase/migrations/20261122194009_reservation_expiry_notification_copy.sql`, `tests/database/reservation-expiry-notices.sql`, `SPEC_REGISTRY.md`.
-- **Commit o despliegue:** Pendiente.
+- **Commit o despliegue:** `278ede1` (implementación); publicación de rama y PR pendientes por permisos remotos.
 - **Notas de implementación:** Cambio limitado al texto condicionado por el estado final de `lp_release`.
 
 ## 12. Historial
