@@ -1,13 +1,14 @@
+import {marketplaceEnvironment} from '@/lib/payment-mode';
 import {NextResponse} from 'next/server';
 import {admin, card} from '@/models/marketplace';
 import {categories} from '@/lib/rules';
 import {matchingSearchSuggestions, normalizeSearch} from '@/lib/search';
 
-const environment=()=>process.env.LAPELA_PAYMENTS_MODE==='simulated'?'sandbox':'live';
 const ok=(data:unknown,status=200)=>NextResponse.json(data,{status,headers:{'Cache-Control':'no-store'}});
 const pageSize=12;
 
 function numberParam(value:string|null, maximum:number) {
+  if (!value?.trim()) return null;
   const number=Number(value);
   return Number.isFinite(number)&&number>=0?Math.min(number,maximum):null;
 }
@@ -36,7 +37,7 @@ export async function relevantCatalog(request:Request) {
     if(!params.query)return ok({products:[],totalCount:0});
     const {data,error}=await admin().rpc('lp_search_listings',{
       p_query:params.query,
-      p_environment:environment(),
+      p_environment:marketplaceEnvironment(),
       p_category:params.category,
       p_mode:params.mode,
       p_min_price_cents:params.minPrice===null?null:Math.round(params.minPrice*100),
@@ -59,7 +60,7 @@ export async function searchSuggestions(request:Request) {
   try{
     const {data,error}=await admin().rpc('lp_search_listings',{
       p_query:query,
-      p_environment:environment(),
+      p_environment:marketplaceEnvironment(),
       p_category:null,
       p_mode:null,
       p_min_price_cents:null,

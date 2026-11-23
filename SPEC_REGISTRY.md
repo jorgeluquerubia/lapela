@@ -80,11 +80,18 @@ Prioridades: `P0` bloquea una operación esencial o implica un riesgo grave; `P1
 | `LP-FIX-007` | `FIX` | Permitir endpoint de tarjetas sociales en middleware | `VERIFIED` | `P1` | 2026-09-13 | [Abrir ficha](specs/LP-FIX-007-middleware-tarjetas-sociales.md) |
 | `LP-OPS-001` | `OPS` | Programador periódico de mantenimiento y alertas de favoritos | `VERIFIED` | `P2` | 2026-09-13 | [Abrir ficha](specs/LP-OPS-001-programador-mantenimiento-alertas.md) |
 | `LP-INFRA-005` | `INFRA` | Versiones únicas de migraciones Supabase | `VERIFIED` | `P1` | 2026-09-13 | [Abrir ficha](specs/LP-INFRA-005-versiones-unicas-migraciones.md) |
+| `LP-INFRA-007` | `INFRA` | Pruebas de integración multiusuario de la beta | `IMPLEMENTED` | `P1` | 2026-11-22 | [Abrir ficha](specs/LP-INFRA-007-integracion-multiusuario.md) |
 | `LP-FIX-008` | `FIX` | Endurecer errores y Stripe en mantenimiento programado | `VERIFIED` | `P1` | 2026-09-13 | [Abrir ficha](specs/LP-FIX-008-mantenimiento-seguro-stripe.md) |
 | `LP-FIX-010` | `FIX` | Renderizar equivalencia completa en tarjetas sociales | `VERIFIED` | `P2` | 2026-09-13 | [Abrir ficha](specs/LP-FIX-010-simbolo-pesetas-tarjeta-social.md) |
 | `LP-FIX-009` | `FIX` | Bloquear pujas durante cierre pendiente | `VERIFIED` | `P1` | 2026-09-13 | [Abrir ficha](specs/LP-FIX-009-subasta-cierre-pendiente.md) |
 | `LP-FIX-011` | `FIX` | Corrección de solapamiento del panel de notificaciones y carga robusta de imágenes | `VERIFIED` | `P1` | 2026-09-13 | [Abrir ficha](specs/LP-FIX-011-panel-notificaciones-imagenes.md) |
 | `LP-FEAT-021` | `FEATURE` | Marcar todas las notificaciones como vistas desde el panel | `VERIFIED` | `P2` | 2026-09-13 | [Abrir ficha](specs/LP-FEAT-021-marcar-todas-notificaciones-vistas.md) |
+| `LP-FEAT-022` | `FEATURE` | Probar pagos con Stripe Connect en sandbox | `IMPLEMENTED` | `P1` | 2026-11-22 | [Abrir ficha](specs/LP-FEAT-022-stripe-connect-sandbox.md) |
+| `LP-FIX-013` | `FIX` | Exclusión mutua entre Checkout y cobro en persona | `IMPLEMENTED` | `P0` | 2026-11-22 | [Abrir ficha](specs/LP-FIX-013-checkout-cobro-en-persona.md) |
+| `LP-FIX-014` | `FIX` | Carrera en avisos de favoritos al vendedor | `IMPLEMENTED` | `P1` | 2026-11-22 | [Abrir ficha](specs/LP-FIX-014-favorite-notification-race.md) |
+| `LP-FIX-015` | `FIX` | Corregir avisos al caducar reservas | `IMPLEMENTED` | `P1` | 2026-11-22 | [Abrir ficha](specs/LP-FIX-015-reservation-expiry-notices.md) |
+| `LP-FIX-016` | `FIX` | Aislamiento de entorno en actividad y notificaciones | `IMPLEMENTED` | `P1` | 2026-11-22 | [Abrir ficha](specs/LP-FIX-016-activity-notifications-environment.md) |
+| `LP-FIX-012` | `FIX` | Respetar los filtros de precio vacíos en la búsqueda | `IMPLEMENTED` | `P1` | 2026-11-22 | [Abrir ficha](specs/LP-FIX-012-busqueda-precios.md) |
 
 <!-- LP-FEAT-019 en IMPLEMENTED el 2026-09-13: subsanadas observaciones de QA, verificación final en edición cerrada pendiente de QA real en entorno desplegado -->
 

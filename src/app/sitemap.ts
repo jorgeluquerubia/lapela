@@ -1,3 +1,4 @@
+import {marketplaceEnvironment} from '@/lib/payment-mode';
 import type {MetadataRoute} from 'next';
 import {admin} from '@/models/marketplace';
 import {demoProducts} from '@/lib/demo-products';
@@ -6,7 +7,7 @@ import {categoryToSlug, productSlug} from '@/lib/slugs';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.APP_URL || 'https://lapela-nine.vercel.app';
-  const env = process.env.LAPELA_PAYMENTS_MODE === 'simulated' ? 'sandbox' : 'live';
+  const env = marketplaceEnvironment();
 
   const routes: MetadataRoute.Sitemap = [
     {

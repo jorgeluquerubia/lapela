@@ -83,6 +83,9 @@ export default function Order(){
       {(data.simulated||o.payment_mode==='simulation')&&(
         <div className="notice">Pedido de prueba · Pago simulado, sin cargo real.</div>
       )}
+      {data.stripeTest&&(
+        <div className="notice">Pedido de prueba · Stripe sandbox, sin cargo real.</div>
+      )}
       {o.payment_mode==='in_person'&&(
         <div className="notice">Pago en persona registrado · Venta finalizada directamente entre las partes.</div>
       )}
@@ -109,7 +112,7 @@ export default function Order(){
               </div>
               {buyer&&(
                 <button className="button primary" disabled={busy} onClick={()=>data.simulated?setConfirmPayment(true):action('checkout')}>
-                  {data.simulated?'Simular pago por plataforma':'Pagar con tarjeta'}
+                  {data.simulated?'Simular pago por plataforma':data.stripeTest?'Pagar con tarjeta de prueba':'Pagar con tarjeta'}
                 </button>
               )}
               {confirmPayment&&(

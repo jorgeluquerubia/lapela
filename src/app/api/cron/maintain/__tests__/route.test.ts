@@ -55,6 +55,7 @@ describe('Scheduled Maintenance Cron Endpoint (LP-OPS-001)', () => {
       eq: mockEq,
     });
     mockEq.mockReturnValue({
+      eq: mockEq,
       lt: mockLt,
     });
     mockLt.mockReturnValue({

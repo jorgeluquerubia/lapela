@@ -5,6 +5,7 @@ import Header from '@/components/Header';
 import Brand from '@/components/Brand';
 import Link from 'next/link';
 import {Toaster} from 'react-hot-toast';
+import {stripeSandboxPayments} from '@/lib/payment-mode';
 
 const baseUrl = process.env.APP_URL || 'https://lapela-nine.vercel.app';
 
@@ -81,6 +82,11 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
           {process.env.LAPELA_PAYMENTS_MODE === 'simulated' && (
             <div className="sandbox-banner">
               BETA DE PRUEBA · Las compras y los pagos son simulados. No se mueve dinero.
+            </div>
+          )}
+          {stripeSandboxPayments() && (
+            <div className="sandbox-banner">
+              BETA DE PRUEBA · Usa tarjetas de prueba de Stripe. Los pagos no mueven dinero.
             </div>
           )}
           <main id="contenido" className="page-shell">
