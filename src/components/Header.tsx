@@ -42,13 +42,18 @@ export default function Header(){
   const panel=useRef<HTMLElement>(null);
   const [notificationError,setNotificationError]=useState('');
 
+  function closeNotifications() {
+    bell.current?.focus({preventScroll:true});
+    setOpen(false);
+  }
+
   useEffect(()=>{
     if(!open)return;
     closeButton.current?.focus();
     function onKeyDown(event:KeyboardEvent){
       if(event.key!=='Escape'||event.defaultPrevented)return;
-      setOpen(false);
-      bell.current?.focus();
+      event.preventDefault();
+      closeNotifications();
     }
     function onPointerDown(event:PointerEvent){
       if(event.target instanceof Node && !panel.current?.contains(event.target) && !bell.current?.contains(event.target))setOpen(false);
@@ -64,8 +69,7 @@ export default function Header(){
   const openNotification=async(event:React.MouseEvent<HTMLAnchorElement>,notification:Notification,href:string)=>{
     if(event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
     event.preventDefault();
-    setOpen(false);
-    bell.current?.focus();
+    closeNotifications();
     try{
       const response=await fetch('/api/market/mark-notification-read/'+notification.id,{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
       if(response.ok){
@@ -112,17 +116,17 @@ export default function Header(){
       <ProductSearch/>
       <nav className="header-actions" aria-label="Cuenta y actividad">
         {user&&<div className="notification-menu">
-          <button className="notification-bell" type="button" aria-label={unreadCount?`${unreadCount} novedades sin leer`:'No tienes novedades sin leer'} aria-expanded={open} aria-controls="notification-panel" onClick={()=>{setNotificationError('');setOpen(v=>!v)}}>
+          <button ref={bell} className="notification-bell" type="button" aria-label={unreadCount?`${unreadCount} novedades sin leer`:'No tienes novedades sin leer'} aria-expanded={open} aria-controls="notification-panel" onClick={()=>{setNotificationError('');setOpen(v=>!v)}}>
             <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></svg>
             {unreadCount>0&&<span className="activity-dot">{unreadCount>9?'9+':unreadCount}</span>}
           </button>
           {open&&<section ref={panel} id="notification-panel" className="notification-panel" aria-labelledby="notification-title">
             <div className="notification-panel-heading">
               <strong id="notification-title">Novedades</strong>
-              <button ref={closeButton} type="button" className="notification-close" onClick={()=>{setOpen(false);bell.current?.focus();}}>Cerrar</button>
+              <button ref={closeButton} type="button" className="notification-close" onClick={closeNotifications}>Cerrar</button>
               <div className="notification-panel-actions">
                 {notifications.length>0&&<button type="button" className="notification-mark-all" onClick={markAllAsRead} disabled={markingAll}>{markingAll?'Marcando...':'Marcar todas como vistas'}</button>}
-                <Link href="/my-products" onClick={()=>{setOpen(false);bell.current?.focus();}}>Ver actividad</Link>
+                <Link href="/my-products" onClick={closeNotifications}>Ver actividad</Link>
               </div>
             </div>
             {notificationError&&<p role="alert" className="error-message">{notificationError}</p>}
@@ -149,6 +153,6 @@ export default function Header(){
         <Link className="button primary" href="/publish-ad"><span aria-hidden="true">＋</span> Vender</Link>
       </nav>
     </div>
-    <nav className="category-nav" aria-label="Catálogo"><Link href="/">Explorar</Link><Link href="/subastas">Subastas</Link>{user&&<Link href="/my-products" className="mobile-activity-link">Mi actividad</Link>}<span className="nav-separator"/><Link href="/categoria/tecnologia">Tecnología</Link><Link href="/categoria/hogar">Hogar</Link><Link href="/categoria/moda">Moda</Link><Link href="/categoria/deporte">Deporte</Link><Link href="/categoria/coleccionismo">Coleccionismo</Link><Link href="/como-funciona" className="nav-about">Así funciona La Pela ↗</Link></nav>
+    <nav className="category-nav" aria-label="Catálogo"><Link href="/">Explorar</Link><Link href="/subastas">Subastas</Link>{user&&<Link href="/my-products" className="mobile-activity-link">Mi actividad</Link>}<span className="nav-separator"/><Link prefetch={false} href="/categoria/tecnologia">Tecnología</Link><Link prefetch={false} href="/categoria/hogar">Hogar</Link><Link prefetch={false} href="/categoria/moda">Moda</Link><Link prefetch={false} href="/categoria/deporte">Deporte</Link><Link prefetch={false} href="/categoria/coleccionismo">Coleccionismo</Link><Link href="/como-funciona" className="nav-about">Así funciona La Pela ↗</Link></nav>
   </header>;
 }

@@ -1,5 +1,5 @@
 'use client';
-import {useEffect,useState} from 'react';
+import {useEffect,useState,type MouseEvent} from 'react';
 import {usePathname,useSearchParams} from 'next/navigation';
 import Link from 'next/link';
 import {Product} from '@/types';
@@ -87,8 +87,27 @@ export default function Catalog({initialCategory, initialMode}: CatalogProps = {
     };
   },[q,category,mode,min,max,location,sort,page,examples,retry]);
 
+  useEffect(()=>{
+    if(loading||!products.length)return;
+    const position=window.history.state?.lapelaCatalogScroll;
+    if(typeof position!=='number')return;
+    const frame=window.requestAnimationFrame(()=>{
+      window.scrollTo(0,position);
+      const state={...window.history.state};
+      delete state.lapelaCatalogScroll;
+      window.history.replaceState(state,'');
+    });
+    return ()=>window.cancelAnimationFrame(frame);
+  },[loading,products.length]);
+
+  function rememberScroll(event:MouseEvent<HTMLElement>) {
+    if(event.defaultPrevented||event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
+    if(!(event.target instanceof Element)||!event.target.closest('a[href^="/articulos/"]'))return;
+    window.history.replaceState({...window.history.state,lapelaCatalogScroll:window.scrollY},'');
+  }
+
   const categories=['Todas','Tecnología','Hogar','Moda','Deporte','Coleccionismo','Otros'];
-  const home=!q&&!initialCategory&&!initialMode;
+  const home=pathname==='/'&&!q&&!initialCategory&&!initialMode;
   const chips=[
     {name:'category',label:category!== (initialCategory||'Todas')?category:''},
     {name:'mode',label:mode!==(initialMode||'all')?(mode==='sale'?'Compra directa':mode==='auction'?'Subastas':'Todo'):''},
@@ -133,10 +152,10 @@ export default function Catalog({initialCategory, initialMode}: CatalogProps = {
     </section>}
 
     <div className="catalog-head">
-      {home ? <h2>Explorar artículos</h2> : <h1>{q?`Resultados para “${q}”`:initialMode==='auction'?'Subastas':initialCategory}</h1>}
+      {home ? <h2>Explorar artículos</h2> : <h1>{q?`Resultados para “${q}”`:initialMode==='auction'?'Subastas':initialCategory||'Buscar artículos'}</h1>}
       {!initialMode&&<div className="mode-tabs" aria-label="Tipo de venta">
         {[['all','Todo'],['sale','Compra directa'],['auction','Subastas']].map(([v,label])=>(
-          <button key={v} aria-pressed={mode===v} className={mode===v?'active':''} onClick={()=>update({mode:v==='all'?'':v})}>{label}</button>
+          <button key={v} aria-pressed={mode===v} className={mode===v?'active':''} onClick={()=>update({mode:v==='all'?'':v,...(v!=='auction'&&sort==='ending'?{sort:''}:{})})}>{label}</button>
         ))}
       </div>}
     </div>
@@ -148,11 +167,11 @@ export default function Catalog({initialCategory, initialMode}: CatalogProps = {
         {filterFields()}
       </aside>
 
-      <section aria-label="Productos" id="catalog-results">
+      <section aria-label="Productos" id="catalog-results" onClickCapture={rememberScroll}>
         <div className="catalog-toolbar">
           <span role="status" className="muted">{loading?'Buscando…':totalLabel}</span>
           <button className="button mobile-filters" aria-haspopup="dialog" onClick={event=>{event.currentTarget.focus();setFilters(true);}}>Filtros{chips.length?` (${chips.length})`:''}</button>
-          <select aria-label="Ordenar productos" value={sort} onChange={e=>update({sort:e.target.value===defaultSort?'':e.target.value})}>
+          <select aria-label="Ordenar productos" value={sort} onChange={e=>update({sort:e.target.value===defaultSort?'':e.target.value,...(e.target.value==='ending'&&mode!=='auction'?{mode:'auction'}:{})})}>
             {q&&<option value="relevance">Más relevantes</option>}
             <option value="recent">Más recientes</option>
             <option value="price-asc">Menor precio</option>

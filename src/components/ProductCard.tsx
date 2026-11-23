@@ -75,7 +75,7 @@ export default function ProductCard({product:p}:{product:Product}){
 
   return <article className="product-card">
     <div style={{ position: 'relative' }}>
-      <Link href={href} className="product-image">
+      <Link href={href} prefetch={false} className="product-image">
         {!imageLoaded && !imageError && Boolean(p.image) && (
           <div className="product-image-loading">
             <BrandSpinner size="sm" label={`Cargando imagen de ${p.name}…`} />
@@ -125,12 +125,12 @@ export default function ProductCard({product:p}:{product:Product}){
         </div>
         <span>{auction?`${p.bid_count||0} ${p.bid_count===1?'puja':'pujas'}`:null}</span>
       </div>
-      <Link href={href}><h3>{p.name}</h3></Link>
+      <Link href={href} prefetch={false}><h3>{p.name}</h3></Link>
       <div className="product-meta">
         <span>{p.location||'España'}</span>
         <span>{auction&&ending?ending:p.delivery==='shipping'?'Envío':p.delivery==='pickup'?'Recogida':p.condition}</span>
       </div>
-      {p.sellerProfile?.alias&&<Link className="profile-link product-seller" href={`/usuarios/${p.sellerProfile.alias}`}>Vendedor · @{p.sellerProfile.alias}</Link>}
+      {p.sellerProfile?.alias&&<Link prefetch={false} className="profile-link product-seller" href={`/usuarios/${p.sellerProfile.alias}`}>Vendedor · @{p.sellerProfile.alias}</Link>}
     </div>
   </article>;
 }

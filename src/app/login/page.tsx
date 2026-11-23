@@ -17,7 +17,10 @@ export default function Login() {
   const [forgotLoading, setForgotLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  function afterLogin() {
+  const { session, loading: authLoading } = useAuth();
+
+  useEffect(() => {
+    if (authLoading || !session) return;
     const path = new URLSearchParams(window.location.search).get('next');
     let target = '/';
     if (path?.startsWith('/')) {
@@ -30,14 +33,7 @@ export default function Login() {
         // Invalid return paths fall back to the catalogue.
       }
     }
-    router.push(target);
-  }
-  const { session, loading: authLoading } = useAuth();
-
-  useEffect(() => {
-    if (!authLoading && session) {
-      afterLogin();
-    }
+    router.replace(target);
   }, [session, authLoading, router]);
 
   const handleSignIn = async (e: React.FormEvent) => {
@@ -56,9 +52,6 @@ export default function Login() {
       setError(error.message);
       setShowResend(/email not confirmed|email no confirmado|confirm your email|confirma tu correo/i.test(error.message));
       setLoading(false);
-    } else {
-      afterLogin();
-      router.refresh();
     }
   };
 

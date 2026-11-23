@@ -398,7 +398,7 @@ export default function ProductDetailInteractive({initialItem, slug, demo = fals
                   <strong>
                     {money((auction ? item.buy_now_cents : item.price_cents) + item.shipping_cents)}
                   </strong>
-                  {item.shipping_cents > 0 ? ' (envío incluido)' : ' (recogida en persona)'}.
+                  {item.delivery === 'shipping' ? ' (envío incluido)' : ' (recogida en persona)'}.
                 </p>
                 <p className="peseta-approx text-xs mb-1">
                   {pesetaEquivalence(
