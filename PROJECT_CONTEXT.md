@@ -81,7 +81,7 @@ La propuesta combina la sencillez de uso de un marketplace móvil con dos mecani
 - Reserva temporal de 48 horas mientras el pago está pendiente (actualizado desde los 31 minutos iniciales).
 - Política de compras pública y canónica en `/politica-de-compras` enlazada desde el diálogo de confirmación y el pie de página.
 - En beta, confirmación explícita de un pago simulado sin cargo.
-- Confirmación de cobro en persona por parte del vendedor (`pay-in-person`), marcando el pedido como completado (`completed`, `payment_mode = 'in_person'`) y el artículo como vendido (`sold`).
+- Confirmación de cobro en persona por parte del vendedor (`pay-in-person`) requiere cerrar de forma segura cualquier Checkout abierto; una sesión Stripe completada conserva el flujo Stripe.
 - Envío con información de seguimiento o coordinación de recogida.
 - Confirmación de recepción por el comprador.
 - Estados del modelo de pedido: `pending_payment`, `paid`, `shipped`, `completed`, `cancelled`, `refunded` y `disputed`. Las acciones de usuario actuales cubren pago, envío y recepción; disputa y reembolso todavía requieren operación futura.
