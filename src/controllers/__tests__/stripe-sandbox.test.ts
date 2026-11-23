@@ -80,7 +80,9 @@ test('creates a Stripe Checkout session for a sandbox listing and matching selle
   const listing = lookup({id: item, seller_id: seller, title: 'Radio de prueba', delivery: 'pickup'});
   const account = lookup({stripe_account_id: connectedAccount});
   const update = jest.fn().mockReturnValue({
-    eq: jest.fn().mockReturnValue({eq: jest.fn().mockResolvedValue({data: null, error: null})}),
+    eq: jest.fn().mockReturnThis(),
+    is: jest.fn().mockReturnThis(),
+    select: jest.fn().mockResolvedValue({data: [{id: order}], error: null}),
   });
   const tables: Record<string, unknown> = {lp_listings: listing, lp_stripe_sandbox_accounts: account, lp_orders: {update}};
   from.mockImplementation((table: string) => tables[table]);

@@ -20,3 +20,7 @@ La comprobación se hizo el 22 de noviembre de 2026 en el piloto de Ubuntu, con 
 - Tres reenvíos simultáneos de un evento válido de Stripe respondieron HTTP 200. PostgreSQL conservó un evento registrado y un aviso de pago. Una petición sin firma válida respondió HTTP 400.
 
 De las 16 comprobaciones SQL, 14 quedaron a cero. Las otras dos detectaron las inconsistencias persistidas por los ensayos de doble vía de cobro y favoritos duplicados. El caso de aislamiento se limpió al concluir y la prueba de texto de caducidad se revirtió en su transacción.
+
+## Verificación posterior de las correcciones
+
+El 23 de noviembre se combinaron LP-FIX-013 a LP-FIX-016 con Stripe sandbox del PR #84 en una instancia Supabase local aislada. Las cuatro pruebas SQL pasaron y las 16 comprobaciones de integridad devolvieron cero incidencias. La suite incluye regresiones de la campana y de la separación de entornos, Checkout expirado al cobrar en persona y rechazo de cobro presencial después del pago por tarjeta. Los casos de carrera de asociación de Checkout y pago presencial se cubren además en pruebas del controlador.

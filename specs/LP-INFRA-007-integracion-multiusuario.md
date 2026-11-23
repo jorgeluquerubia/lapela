@@ -42,3 +42,13 @@ Véase [la matriz y cómo ejecutar la suite](../integration/README.md). El runne
 ### Ampliación de integridad y notificaciones
 
 Se añadieron dos escenarios automatizados para avisos durante el ciclo del pedido y deduplicación tras mantenimiento concurrente. La suite ampliada pasó 15 de 15 casos. La auditoría SQL de solo lectura comprueba invariantes y se complementó con un reenvío paralelo de webhook y pruebas de casos adversos. Los resultados y las incidencias abiertas están en [la auditoría de integridad](../integration/integrity-findings.md).
+
+## Integración conjunta del 23 de noviembre de 2026
+
+La rama codex/lp-infra-007-combined reúne Stripe sandbox y Accounts v2 del PR #84, las correcciones LP-FIX-013 a LP-FIX-016 y la suite del PR #86. También incorpora LP-FIX-012, necesario para que los filtros de precio vacíos de la búsqueda permitan encontrar los anuncios.
+
+Se resolvieron los conflictos del controlador conservando el aislamiento sandbox de Stripe, la confirmación presencial atómica y los filtros de entorno en actividad y avisos. Se añadió una regresión E2E con registros live y sandbox de la misma identidad, y dos recorridos de Stripe para cobro presencial con Checkout abierto y rechazo de cobro presencial tras pago con tarjeta.
+
+La validación usa una instancia Supabase local aislada, dos apps en loopback con modos simulated y stripe_test, y un receptor de webhooks firmado del sandbox de Stripe. Pasaron las cuatro regresiones SQL, 21 pruebas de controlador/webhook/modo de pago y TypeScript. La auditoría de 16 invariantes devolvió cero incidencias. La ejecución de navegador usa Chromium.
+
+Resultado final del navegador en la integración conjunta del 23 de noviembre de 2026 — 18 de 18 escenarios pasaron, sin omisiones ni reintentos inestables. Los tres recorridos de Stripe se ejecutaron contra su sandbox, con webhooks firmados recibidos por el piloto. La auditoría SQL posterior mantuvo las 16 comprobaciones a cero.

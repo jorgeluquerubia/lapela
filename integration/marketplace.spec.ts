@@ -230,7 +230,7 @@ test('dos compradores compiten por una reserva y solo gana uno', async () => {
   expect((await order(seller, id)).order.status).toBe('pending_payment');
   await denied(await get(loser.actor, `order/${id}`), /no encontrado/i, 404);
   await denied(await post(observer, `message/${id}`, {content: 'Mensaje ajeno al pedido'}), /solo entre las partes/i);
-  await denied(await post(winner.actor, `pay-in-person/${id}`), /solo el vendedor/i);
+  await denied(await post(winner.actor, `pay-in-person/${id}`), /solo el vendedor/i, 403);
   expect((await json<Order>(await post(seller, `pay-in-person/${id}`)))).toMatchObject({
     status: 'completed', payment_mode: 'in_person', amount_cents: 2500,
   });
@@ -442,4 +442,34 @@ test('el mantenimiento concurrente no duplica avisos de subastas favoritas', asy
   expect((await notifications(rival)).filter(n => n.listing_id === rover.id)).toEqual([]);
   expect((await notifications(secondSeller)).filter(n => n.listing_id === rover.id).map(n => n.type).sort())
     .toEqual(['auction_ended', 'favorite_received']);
+});
+
+test('actividad y campana aíslan avisos live de la misma cuenta sandbox', async () => {
+  const buyerProfile=await json<{id:string}>(await get(buyer,'profile/me'));
+  const sellerProfile=await json<{id:string}>(await get(seller,'profile/me'));
+  const live=await admin.from('lp_listings').insert({
+    seller_id:sellerProfile.id,environment:'live',title:'Anuncio aislado '+run,
+    description:products.radio.description,category:'Tecnología',condition:'Buen estado',location:'Madrid',
+    images:['https://example.invalid/photo.jpg'],mode:'sale',delivery:'pickup',price_cents:2500,status:'reserved',
+  }).select('id').single();
+  expect(live.error?.message).toBeUndefined();
+  const inserted=await admin.from('lp_orders').insert({
+    listing_id:live.data!.id,buyer_id:buyerProfile.id,seller_id:sellerProfile.id,
+    amount_cents:2500,expires_at:new Date(Date.now()+3600000).toISOString(),
+  }).select('id').single();
+  expect(inserted.error?.message).toBeUndefined();
+  const notice=await admin.from('lp_notifications').insert({
+    user_id:buyerProfile.id,listing_id:live.data!.id,order_id:inserted.data!.id,
+    type:'order_created',title:'Aviso live ficticio',body:'Prueba de separación de entornos.',
+  }).select('id,environment').single();
+  expect(notice.error?.message).toBeUndefined();
+  expect(notice.data!.environment).toBe('live');
+  const activity=await json<{orders:{id:string}[]}>(await get(buyer,'activity'));
+  expect(activity.orders.map(o=>o.id)).not.toContain(inserted.data!.id);
+  expect((await notifications(buyer)).map(n=>n.id)).not.toContain(notice.data!.id);
+  const read=await json<{marked:boolean}>(await post(buyer,'mark-notification-read/'+notice.data!.id));
+  expect(read.marked).toBe(false);
+  await json(await post(buyer,'mark-all-notifications-read'));
+  const unchanged=await admin.from('lp_notifications').select('read,read_at').eq('id',notice.data!.id).single();
+  expect(unchanged.data).toEqual({read:false,read_at:null});
 });

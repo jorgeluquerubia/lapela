@@ -1,3 +1,4 @@
+import Stripe from 'stripe';
 import {randomUUID} from 'node:crypto';
 import {readFile} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
@@ -81,6 +82,153 @@ test('Stripe sandbox rechaza una tarjeta y acepta el reintento en el mismo pedid
       const r = await buyer.request.get(orderEndpoint + orderId);
       return (await r.json()).order.status;
     }).toBe('paid');
+    const paid = await seller.request.get(orderEndpoint + orderId);
+    expect((await paid.json()).order).toMatchObject({status: 'paid', amount_cents: 2500});
+    const item = await buyer.request.get(`/api/market/listing/${listing}`);
+    expect((await item.json()).status).toBe('sold');
+  } finally {
+    await Promise.allSettled([seller.close(), buyer.close()]);
+  }
+});
+
+test('Checkout abierto se cierra al cobrar en persona y el reintento conserva un solo aviso', async ({browser}) => {
+  test.skip(!stripeUrl && !sellerState && !buyerState, 'Sin piloto de Stripe de prueba configurado.');
+  if (!stripeUrl || !sellerState || !buyerState) throw new Error('Falta la URL o una sesión ficticia de Stripe.');
+  const app = new URL(stripeUrl);
+  if (app.protocol !== 'http:' || !['127.0.0.1', 'localhost', '[::1]'].includes(app.hostname)) {
+    throw new Error('El piloto de Stripe debe estar en loopback.');
+  }
+  const seller = await browser.newContext({baseURL: app.origin, storageState: sellerState});
+  const buyer = await browser.newContext({baseURL: app.origin, storageState: buyerState});
+  try {
+    const {photo, ...product} = products.radio;
+    const image = await readFile(fileURLToPath(new URL(`./fixtures/${photo}`, import.meta.url)));
+    const upload = await seller.request.post('/api/market/upload', {
+      multipart: {file: {name: photo, mimeType: 'image/jpeg', buffer: image}},
+    });
+    expect(upload.ok()).toBeTruthy();
+    const title = `${product.title} Stripe ${randomUUID().slice(0, 8)}`;
+    const published = await seller.request.post('/api/market/publish', {
+      data: {...product, title, images: [(await upload.json()).url]},
+    });
+    expect(published.status()).toBe(201);
+    const {id: listing} = await published.json();
+    const response = await buyer.request.post(`/api/market/checkout/${listing}`, {data: {}});
+    expect(response.ok()).toBeTruthy();
+    const url = new URL((await response.json()).url);
+    expect(url.origin).toBe('https://checkout.stripe.com');
+    expect(url.pathname).toMatch(/\/cs_test_/);
+
+    const page = await buyer.newPage();
+    page.setDefaultTimeout(15_000);
+    await page.goto(url.href, {waitUntil: 'domcontentloaded', timeout: 25_000});
+    await expect(page.getByText(/entorno de prueba|test mode|sandbox/i).first()).toBeVisible();
+    const returnLink = page.locator('a[href*="/orders/"]').first();
+    const cancelUrl = new URL((await returnLink.getAttribute('href'))!, app);
+    expect(cancelUrl.origin).toBe(app.origin);
+    expect(cancelUrl.pathname).toMatch(/^\/orders\/[\da-f-]+$/);
+    const orderId = cancelUrl.pathname.split('/').at(-1)!;
+    // Hosted Checkout can render the payment form in its own Stripe frame.
+    let form: Frame | undefined;
+    await expect.poll(async () => {
+      for (const frame of page.frames()) {
+        const origin = new URL(frame.url() || 'about:blank').origin;
+        if (origin !== url.origin && origin !== 'https://js.stripe.com') continue;
+        if (await frame.locator('input[autocomplete="cc-number"]').count()) {
+          form = frame;
+          return true;
+        }
+      }
+      return false;
+    }).toBe(true);
+    const cardForm = form!;
+    const pay = cardForm.getByTestId('payment-form-submit-button');
+
+    const key = process.env.STRIPE_SECRET_KEY;
+    if (!key || !key.startsWith('sk_test_')) throw Error('Falta la clave de Stripe de prueba.');
+    const provider = new Stripe(key);
+    const sessionId = url.pathname.match(/cs_test_[A-Za-z0-9]+/)![0];
+    const unauthorized = await buyer.request.post('/api/market/pay-in-person/' + orderId, {data: {}});
+    expect(unauthorized.status()).toBe(403);
+    expect((await provider.checkout.sessions.retrieve(sessionId)).status).toBe('open');
+    for (let retry=0; retry<2; retry++) {
+      const cash = await seller.request.post('/api/market/pay-in-person/' + orderId, {data:{}});
+      expect(cash.ok()).toBeTruthy();
+      expect(await cash.json()).toMatchObject({status:'completed',payment_mode:'in_person',stripe_session_id:null});
+    }
+    expect((await provider.checkout.sessions.retrieve(sessionId)).status).toBe('expired');
+    await page.reload({waitUntil:'domcontentloaded'});
+    await expect(page.locator('body')).toContainText(/expired|timed out|all done|caducad|expirad/i);
+    const notes = await buyer.request.get('/api/market/notifications');
+    const matching=(await notes.json()).notifications.filter((n: {order_id:string;type:string}) => n.order_id===orderId && n.type==='status_changed');
+    expect(matching).toHaveLength(1);
+  } finally {
+    await Promise.allSettled([seller.close(), buyer.close()]);
+  }
+});
+
+test('un pago Stripe confirmado bloquea el cobro en persona', async ({browser}) => {
+  test.skip(!stripeUrl && !sellerState && !buyerState, 'Sin piloto de Stripe de prueba configurado.');
+  if (!stripeUrl || !sellerState || !buyerState) throw new Error('Falta la URL o una sesión ficticia de Stripe.');
+  const app = new URL(stripeUrl);
+  if (app.protocol !== 'http:' || !['127.0.0.1', 'localhost', '[::1]'].includes(app.hostname)) {
+    throw new Error('El piloto de Stripe debe estar en loopback.');
+  }
+  const seller = await browser.newContext({baseURL: app.origin, storageState: sellerState});
+  const buyer = await browser.newContext({baseURL: app.origin, storageState: buyerState});
+  try {
+    const {photo, ...product} = products.radio;
+    const image = await readFile(fileURLToPath(new URL(`./fixtures/${photo}`, import.meta.url)));
+    const upload = await seller.request.post('/api/market/upload', {
+      multipart: {file: {name: photo, mimeType: 'image/jpeg', buffer: image}},
+    });
+    expect(upload.ok()).toBeTruthy();
+    const title = `${product.title} Stripe ${randomUUID().slice(0, 8)}`;
+    const published = await seller.request.post('/api/market/publish', {
+      data: {...product, title, images: [(await upload.json()).url]},
+    });
+    expect(published.status()).toBe(201);
+    const {id: listing} = await published.json();
+    const response = await buyer.request.post(`/api/market/checkout/${listing}`, {data: {}});
+    expect(response.ok()).toBeTruthy();
+    const url = new URL((await response.json()).url);
+    expect(url.origin).toBe('https://checkout.stripe.com');
+    expect(url.pathname).toMatch(/\/cs_test_/);
+
+    const page = await buyer.newPage();
+    page.setDefaultTimeout(15_000);
+    await page.goto(url.href, {waitUntil: 'domcontentloaded', timeout: 25_000});
+    await expect(page.getByText(/entorno de prueba|test mode|sandbox/i).first()).toBeVisible();
+    const returnLink = page.locator('a[href*="/orders/"]').first();
+    const cancelUrl = new URL((await returnLink.getAttribute('href'))!, app);
+    expect(cancelUrl.origin).toBe(app.origin);
+    expect(cancelUrl.pathname).toMatch(/^\/orders\/[\da-f-]+$/);
+    const orderId = cancelUrl.pathname.split('/').at(-1)!;
+    // Hosted Checkout can render the payment form in its own Stripe frame.
+    let form: Frame | undefined;
+    await expect.poll(async () => {
+      for (const frame of page.frames()) {
+        const origin = new URL(frame.url() || 'about:blank').origin;
+        if (origin !== url.origin && origin !== 'https://js.stripe.com') continue;
+        if (await frame.locator('input[autocomplete="cc-number"]').count()) {
+          form = frame;
+          return true;
+        }
+      }
+      return false;
+    }).toBe(true);
+    const cardForm = form!;
+    const pay = cardForm.getByTestId('payment-form-submit-button');
+    await enterCard(cardForm, '4242424242424242');
+    await pay.click();
+    await expect(page).toHaveURL(new RegExp(`/orders/${orderId}\\?payment=received`), {timeout: 35_000});
+    await expect.poll(async () => {
+      const r = await buyer.request.get(orderEndpoint + orderId);
+      return (await r.json()).order.status;
+    }).toBe('paid');
+
+    const cash = await seller.request.post('/api/market/pay-in-person/' + orderId, {data:{}});
+    expect(cash.ok()).toBeFalsy();
     const paid = await seller.request.get(orderEndpoint + orderId);
     expect((await paid.json()).order).toMatchObject({status: 'paid', amount_cents: 2500});
     const item = await buyer.request.get(`/api/market/listing/${listing}`);

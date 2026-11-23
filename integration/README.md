@@ -40,3 +40,9 @@ Para ejecutar también Stripe, proporciona `LAPELA_STRIPE_INTEGRATION_URL`, `LAP
 ## Auditoría de integridad
 
 Ejecuta `psql -X -v ON_ERROR_STOP=1 -f integration/audit-integrity.sql` desde una conexión a la base local del piloto. La auditoría usa una transacción de solo lectura y muestra recuentos de coherencia de importes, pedidos, anuncios, pujas, avisos, mensajes y valoraciones. Véanse [los hallazgos reproducidos](integrity-findings.md).
+
+## Validación de la integración conjunta
+
+Los recorridos Stripe adicionales comprueban que el comprador no puede cerrar Checkout, que el vendedor puede expirar una sesión abierta antes de confirmar el cobro presencial y que repetir esa confirmación produce un único aviso. Se verifica el estado expired consultando Stripe y volviendo a abrir la página de Checkout. Un pago por tarjeta registrado por webhook conserva su modo de pago y bloquea la confirmación presencial.
+
+Para estos recorridos, proporciona STRIPE_SECRET_KEY de prueba al runner. Los archivos de sesión pertenecen a cuentas ficticias de la misma instancia local, con un vendedor Connect de sandbox ya habilitado. El runner recibe los secretos mediante variables de entorno. Los secretos y las sesiones permanecen fuera del repositorio.
