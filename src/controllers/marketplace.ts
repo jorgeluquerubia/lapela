@@ -110,19 +110,70 @@ export async function handle(request:Request,path:string[]){try{
  if(action==='review'&&uuid(id||'')){const score=Number(body.score);if(!Number.isInteger(score)||score<1||score>5)throw Error('Elige una puntuación entre 1 y 5 estrellas.');const comment=body.comment?noContact(text(body.comment,0,500)):'';const ord=await result(db.from('lp_orders').select('id,listing:lp_listings!inner(environment)').eq('id',id).maybeSingle());if(!ord||ord.listing?.environment!==environment())throw Error('Solo puedes valorar pedidos del entorno activo.');return ok(await rpc('lp_create_review',{p_order:id,p_actor:user.id,p_score:score,p_comment:comment}),201)}
   if(action==='publish'){const title=noContact(text(body.title,5,100)),description=noContact(text(body.description,30,4000)),location=noContact(text(body.location,2,80)),story=validateStory(body.story);if(!categories.includes(body.category)||!conditions.includes(body.condition)||!['sale','auction'].includes(body.mode)||!['pickup','shipping'].includes(body.delivery))throw Error('Revisa la categoría, el estado y el tipo de venta.');if(!Array.isArray(body.images)||body.images.length<1||body.images.length>6||body.images.some((url:unknown)=>typeof url!=='string'||!url.startsWith(process.env.NEXT_PUBLIC_SUPABASE_URL+'/storage/v1/object/public/product-images/v2/'+user.id+'/')))throw Error('Sube entre una y seis fotos del artículo.');const end=body.mode==='auction'?new Date(body.ends_at):null;if(end&&(!Number.isFinite(end.getTime())||end.getTime()<Date.now()+3600000||end.getTime()>Date.now()+30*86400000))throw Error('La subasta debe durar entre una hora y treinta días.');const price=cents(body.price),buyNow=body.mode==='auction'&&body.buy_now?cents(body.buy_now):null;if(buyNow&&buyNow<=price)throw Error('Comprar ahora debe superar el precio de salida.');const shipping=body.delivery==='shipping'?Math.round(Number(body.shipping||0)*100):0;if(!Number.isInteger(shipping)||shipping<0||shipping>10000)throw Error('Revisa los gastos de envío.');const recent=await db.from('lp_listings').select('id',{head:true,count:'exact'}).eq('seller_id',user.id).gte('created_at',new Date(Date.now()-3600000).toISOString());if((recent.count||0)>=20)return ok({error:'Has alcanzado el límite de publicaciones por hora.'},429);const tags=normalizeTags(body.category,body.tags);const l=await result(db.from('lp_listings').insert({seller_id:user.id,environment:environment(),title,description,story,location,category:body.category,condition:body.condition,mode:body.mode,delivery:body.delivery,images:body.images,tags,price_cents:price,buy_now_cents:buyNow,shipping_cents:shipping,ends_at:end?.toISOString()||null}).select('id').single());return ok(l,201)}
  if(action==='bid'&&uuid(targetId||'')){const l=await rpc('lp_bid',{p_listing:targetId,p_actor:user.id,p_amount:cents(body.amount)});return ok({price_cents:l.price_cents,bid_count:l.bid_count,ends_at:l.ends_at})}
- if(action==='checkout'&&uuid(targetId||'')){if(simulated()){let o;if(body.order)o=await result(db.from('lp_orders').select('*').eq('id',targetId).eq('buyer_id',user.id).eq('status','pending_payment').single());const l=await result(db.from('lp_listings').select('environment').eq('id',o?o.listing_id:targetId).single());if(l.environment!=='sandbox')throw Error('Solo puedes simular compras de prueba.');if(!o)o=await rpc('lp_reserve',{p_listing:targetId,p_actor:user.id});return ok({url:'/orders/'+o.id})}const st=stripe();const base=origin();let o;if(body.order)o=await result(db.from('lp_orders').select('*').eq('id',targetId).eq('buyer_id',user.id).eq('status','pending_payment').single());const listing=await result(db.from('lp_listings').select('*').eq('id',o?o.listing_id:targetId).single());if(listing.environment!=='live')throw Error('Los artículos de prueba no admiten cobros reales.');const account=await result(db.from('lp_accounts').select('stripe_account_id').eq('user_id',listing.seller_id).maybeSingle());if(!account)throw Error('El vendedor todavía no ha activado sus cobros. No se ha realizado ningún cargo.');const connected=await st.accounts.retrieve(account.stripe_account_id);if(!connected.charges_enabled)throw Error('El vendedor debe completar la activación de sus cobros.');if(!o)o=await rpc('lp_reserve',{p_listing:targetId,p_actor:user.id});if(o.stripe_session_id){const existing=await st.checkout.sessions.retrieve(o.stripe_session_id);if(existing.status==='open'&&existing.url)return ok({url:existing.url});throw Error('El pago ya se ha procesado o ha caducado. Revisa Mis compras.')}const session=await st.checkout.sessions.create({mode:'payment',payment_method_types:['card'],client_reference_id:o.id,metadata:{order_id:o.id},customer_email:user.email,expires_at:Math.floor(Date.now()/1000)+30*60,line_items:[{price_data:{currency:'eur',unit_amount:o.amount_cents,product_data:{name:listing.title+(listing.delivery==='shipping'?' · envío incluido':' · recogida en persona')}},quantity:1}],shipping_address_collection:listing.delivery==='shipping'?{allowed_countries:['ES']}:undefined,payment_intent_data:{transfer_data:{destination:account.stripe_account_id},metadata:{order_id:o.id}},success_url:base+'/orders/'+o.id+'?payment=received',cancel_url:base+'/orders/'+o.id},{idempotencyKey:'lapela-order-'+o.id});await result(db.from('lp_orders').update({stripe_session_id:session.id,expires_at:new Date((session.expires_at+60)*1000).toISOString()}).eq('id',o.id).eq('status','pending_payment'));return ok({url:session.url})}
+ if(action==='checkout'&&uuid(targetId||'')){
+  let order=body.order
+    ? await result(db.from('lp_orders').select('*').eq('id',targetId).eq('buyer_id',user.id).eq('status','pending_payment').single())
+    : null;
+  const listing=await result(db.from('lp_listings').select('*').eq('id',order?.listing_id ?? targetId).single());
+  if(simulated()){
+   if(listing.environment!=='sandbox')throw Error('Solo puedes simular compras de prueba.');
+   order ??= await rpc('lp_reserve',{p_listing:targetId,p_actor:user.id});
+   return ok({url:'/orders/'+order.id});
+  }
+  const st=stripe();
+  const base=origin();
+  if(listing.environment!=='live')throw Error('Los artículos de prueba no admiten cobros reales.');
+  const account=await result(db.from('lp_accounts').select('stripe_account_id').eq('user_id',listing.seller_id).maybeSingle());
+  if(!account)throw Error('El vendedor todavía no ha activado sus cobros. No se ha realizado ningún cargo.');
+  const connected=await st.accounts.retrieve(account.stripe_account_id);
+  if(!connected.charges_enabled)throw Error('El vendedor debe completar la activación de sus cobros.');
+  order ??= await rpc('lp_reserve',{p_listing:targetId,p_actor:user.id});
+  if(order.stripe_session_id){
+   const existing=await st.checkout.sessions.retrieve(order.stripe_session_id);
+   if(existing.status==='open'&&existing.url)return ok({url:existing.url});
+   throw Error('El pago ya se ha procesado o ha caducado. Revisa Mis compras.');
+  }
+  const session=await st.checkout.sessions.create({
+   mode:'payment',payment_method_types:['card'],client_reference_id:order.id,
+   metadata:{order_id:order.id},customer_email:user.email,expires_at:Math.floor(Date.now()/1000)+31*60,
+   line_items:[{price_data:{currency:'eur',unit_amount:order.amount_cents,product_data:{name:listing.title+(listing.delivery==='shipping'?' · envío incluido':' · recogida en persona')}},quantity:1}],
+   shipping_address_collection:listing.delivery==='shipping'?{allowed_countries:['ES']}:undefined,
+   payment_intent_data:{transfer_data:{destination:account.stripe_account_id},metadata:{order_id:order.id}},
+   success_url:base+'/orders/'+order.id+'?payment=received',cancel_url:base+'/orders/'+order.id,
+  },{idempotencyKey:'lapela-order-'+order.id});
+  const attached=await result(db.from('lp_orders')
+   .update({stripe_session_id:session.id,expires_at:new Date((session.expires_at+60)*1000).toISOString()})
+   .eq('id',order.id).eq('status','pending_payment').is('stripe_session_id',null).select('id'));
+  if(!attached.length){
+   const current=await result(db.from('lp_orders').select('status,stripe_session_id').eq('id',order.id).maybeSingle());
+   const fresh=await st.checkout.sessions.retrieve(session.id);
+   if(current?.status==='pending_payment'&&current.stripe_session_id===fresh.id){
+    if(fresh.status==='open'&&fresh.url)return ok({url:fresh.url});
+   }else if(fresh.status==='open'){
+    await st.checkout.sessions.expire(fresh.id);
+   }
+   return ok({error:'El estado del pedido ha cambiado. Actualiza el pedido.'},409);
+  }
+  return ok({url:session.url});
+ }
  if(action==='simulate-payment'&&uuid(id||'')){if(!simulated())return ok({error:'La simulación está desactivada'},403);return ok(await rpc('lp_simulate_payment',{p_order:id,p_actor:user.id}))}
  if(action==='pay-in-person'&&uuid(id||'')){
-  const order=await result(db.from('lp_orders').select('stripe_session_id').eq('id',id).maybeSingle());
-  if(order?.stripe_session_id){
-   const st=stripe(); const session=await st.checkout.sessions.retrieve(order.stripe_session_id);
-   if(session.status==='complete')return ok({error:'El pago con tarjeta ya está confirmado. Espera a que se registre.'},409);
-   if(session.status==='open')await st.checkout.sessions.expire(session.id);
-   else if(session.status!=='expired')return ok({error:'No se ha podido cerrar el pago con tarjeta. Inténtalo de nuevo.'},409);
-   const cleared=await result(db.from('lp_orders').update({stripe_session_id:null}).eq('id',id).eq('status','pending_payment').eq('stripe_session_id',order.stripe_session_id).select('id'));
-   if(!cleared.length)return ok({error:'El estado del pago ha cambiado. Actualiza el pedido.'},409);
+  const order=await result(db.from('lp_orders').select('stripe_session_id,status')
+   .eq('id',id).eq('seller_id',user.id).maybeSingle());
+  if(!order)return ok({error:'Solo el vendedor puede confirmar el pago en persona'},403);
+  if(order.status!=='pending_payment'||!order.stripe_session_id){
+   return ok(await rpc('lp_confirm_in_person_payment',{p_order:id,p_actor:user.id}));
   }
-  return ok(await rpc('lp_confirm_in_person_payment',{p_order:id,p_actor:user.id}));
+  const st=stripe();
+  let session=await st.checkout.sessions.retrieve(order.stripe_session_id);
+  if(session.status==='open'){
+   // If payment or another seller request won, recover the provider's current state.
+   try{session=await st.checkout.sessions.expire(session.id);}
+   catch{session=await st.checkout.sessions.retrieve(session.id);}
+  }
+  if(session.status==='complete')return ok({error:'El pago con tarjeta ya está confirmado. Espera a que se registre.'},409);
+  if(session.status!=='expired')return ok({error:'No se ha podido cerrar el pago con tarjeta. Inténtalo de nuevo.'},409);
+  return ok(await rpc('lp_confirm_in_person_payment',{p_order:id,p_actor:user.id,p_closed_stripe_session:session.id}));
  }
  if(action==='message'&&uuid(id||'')){const content=text(body.content,1,2000);const recent=await db.from('lp_messages').select('id',{count:'exact',head:true}).eq('sender_id',user.id).gte('created_at',new Date(Date.now()-60000).toISOString());if((recent.count||0)>=20)return ok({error:'Espera un momento antes de enviar más mensajes.'},429);return ok(await rpc('lp_send_message',{p_order:id,p_actor:user.id,p_content:content}),201)}
  if(['ship','complete'].includes(action)&&uuid(id||''))return ok(await rpc('lp_transition',{p_order:id,p_actor:user.id,p_action:action,p_tracking:body.tracking?text(body.tracking,2,200):null}));
