@@ -7,7 +7,7 @@ requested_at: 2026-11-22
 requested_by: usuario
 source: conversación y auditoría PR #86
 owner: codex
-github_issue: pending
+github_issue: https://github.com/jorgeluquerubia/lapela/issues/88
 related_specs: [LP-FEAT-010, LP-FIX-003, LP-FIX-004, LP-FIX-005, LP-FEAT-021]
 dependencies: []
 cross_cutting_concerns: [aislamiento-de-entornos, actividad, notificaciones, privacidad, base-de-datos]
@@ -107,3 +107,9 @@ Cada vista y acción de actividad usa exclusivamente el entorno activo. Una mism
 
 ## 12. Historial
 
+
+## Validación y publicación del 23 de noviembre de 2026
+
+La prueba SQL se corrigió para respetar las restricciones del modelo y distinguir avisos de anuncio y pedido. Pasó en Supabase local con PostgreSQL 17. Tres regresiones de controlador verificaron sesión y ambos modos. La comprobación HTTP autenticada confirmó que actividad y campana filtran sandbox y que la lectura individual y masiva conservan intacto el aviso live.
+
+Las cuatro migraciones se aplicaron juntas en una instancia Supabase aislada. Las siete pruebas de controlador y la comprobación TypeScript pasaron. La publicación se realiza desde el Mac con acceso autorizado a GitHub. La rama permanece IMPLEMENTED hasta completar la revisión.

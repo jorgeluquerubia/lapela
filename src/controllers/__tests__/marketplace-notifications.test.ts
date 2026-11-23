@@ -45,36 +45,46 @@ describe('Marketplace Controller - Notification Actions (LP-FEAT-021)', () => {
     expect(body.error).toBe('Inicia sesión para continuar.');
   });
 
-  it('marks all unread notifications for authenticated user as read', async () => {
-    mockGetUser.mockResolvedValue({data: {user: {id: 'user-abc', email: 'test@example.com'}}});
-
-    const mockSelect = jest.fn().mockResolvedValue({
-      data: [{id: 'note-1'}, {id: 'note-2'}],
-      error: null,
-    });
-    const mockEqRead = jest.fn().mockReturnValue({select: mockSelect});
-    const mockEqEnvironment = jest.fn().mockReturnValue({eq: mockEqRead});
-    const mockEqUser = jest.fn().mockReturnValue({eq: mockEqEnvironment});
-    const mockUpdate = jest.fn().mockReturnValue({eq: mockEqUser});
-    const mockFrom = jest.fn().mockReturnValue({update: mockUpdate});
-
-    mockAdmin.mockReturnValue({from: mockFrom});
-
-    const request = new Request('http://localhost/api/market/mark-all-notifications-read', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: '{}',
-    });
-
-    const response = await handle(request, ['mark-all-notifications-read']);
-    expect(response.status).toBe(200);
-    const body = await response.json();
-
-    expect(body).toEqual({success: true, markedCount: 2});
-    expect(mockFrom).toHaveBeenCalledWith('lp_notifications');
-    expect(mockUpdate).toHaveBeenCalledWith(expect.objectContaining({read: true}));
-    expect(mockEqUser).toHaveBeenCalledWith('user_id', 'user-abc');
-    expect(mockEqEnvironment).toHaveBeenCalledWith('environment', 'sandbox');
-    expect(mockEqRead).toHaveBeenCalledWith('read', false);
+  const initialPaymentMode = process.env.LAPELA_PAYMENTS_MODE;
+  afterEach(() => {
+    if (initialPaymentMode === undefined) delete process.env.LAPELA_PAYMENTS_MODE;
+    else process.env.LAPELA_PAYMENTS_MODE = initialPaymentMode;
   });
+
+  it.each([['simulated', 'sandbox'], ['live', 'live']])(
+    'marks all unread notifications in %s mode for the authenticated user',
+    async (mode, expectedEnvironment) => {
+      process.env.LAPELA_PAYMENTS_MODE = mode;
+      mockGetUser.mockResolvedValue({data: {user: {id: 'user-abc', email: 'test@example.com'}}});
+
+      const mockSelect = jest.fn().mockResolvedValue({
+        data: [{id: 'note-1'}, {id: 'note-2'}],
+        error: null,
+      });
+      const mockEqRead = jest.fn().mockReturnValue({select: mockSelect});
+      const mockEqEnvironment = jest.fn().mockReturnValue({eq: mockEqRead});
+      const mockEqUser = jest.fn().mockReturnValue({eq: mockEqEnvironment});
+      const mockUpdate = jest.fn().mockReturnValue({eq: mockEqUser});
+      const mockFrom = jest.fn().mockReturnValue({update: mockUpdate});
+
+      mockAdmin.mockReturnValue({from: mockFrom});
+
+      const request = new Request('http://localhost/api/market/mark-all-notifications-read', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: '{}',
+      });
+
+      const response = await handle(request, ['mark-all-notifications-read']);
+      expect(response.status).toBe(200);
+      const body = await response.json();
+
+      expect(body).toEqual({success: true, markedCount: 2});
+      expect(mockFrom).toHaveBeenCalledWith('lp_notifications');
+      expect(mockUpdate).toHaveBeenCalledWith(expect.objectContaining({read: true}));
+      expect(mockEqUser).toHaveBeenCalledWith('user_id', 'user-abc');
+      expect(mockEqEnvironment).toHaveBeenCalledWith('environment', expectedEnvironment);
+      expect(mockEqRead).toHaveBeenCalledWith('read', false);
+    },
+  );
 });
