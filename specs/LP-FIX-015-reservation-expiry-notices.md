@@ -7,7 +7,7 @@ requested_at: 2026-11-22
 requested_by: usuario
 source: conversación y auditoría del PR #86
 owner: codex
-github_issue: pending
+github_issue: https://github.com/jorgeluquerubia/lapela/issues/87
 related_specs: [LP-FEAT-010, LP-OPS-001]
 dependencies: [LP-INFRA-007]
 cross_cutting_concerns: [postgresql, notificaciones, mantenimiento]
@@ -104,3 +104,9 @@ Cada aviso de caducidad describe el estado final del anuncio: disponible cuando 
 |---|---|---|---|
 | 2026-11-22 | `IN_PROGRESS` | Creación y comienzo de implementación; Issue pendiente por error 403 del conector | Codex |
 | 2026-11-22 | `IMPLEMENTED` | Migración y prueba SQL aislada correctas; pendiente enlazar Issue y PR | Codex |
+
+## Validación y publicación del 23 de noviembre de 2026
+
+La prueba SQL pasó en Supabase local con PostgreSQL 17. Verificó venta directa, subasta reabrible, subasta terminada, destinatarios e idempotencia.
+
+Las cuatro migraciones se aplicaron juntas en una instancia Supabase aislada. Las siete pruebas de controlador y la comprobación TypeScript pasaron. La publicación se realiza desde el Mac con acceso autorizado a GitHub. La rama permanece IMPLEMENTED hasta completar la revisión.
