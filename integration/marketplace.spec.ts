@@ -168,6 +168,8 @@ test('publicación, fotos, catálogo y ficha desde una visita móvil', async () 
     await page.keyboard.press('Enter');
     const photoDialog = page.getByRole('dialog', {name: `Foto de ${radio.title}`});
     await expect(photoDialog.getByRole('button', {name: 'Cerrar foto'})).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(photoDialog.getByRole('button', {name: 'Cerrar foto'})).toBeFocused();
     await page.keyboard.press('Escape');
     await expect(photoDialog).toBeHidden();
     await expect(zoom).toBeFocused();

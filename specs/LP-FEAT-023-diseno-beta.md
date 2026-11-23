@@ -35,7 +35,7 @@ La auditoría del piloto pide adelantar productos y acciones, mejorar reflujo y 
 
 - Compilación de producción, TypeScript y registro de especificaciones correctos. Pasaron 92 pruebas de componentes e inicio de sesión.
 - Pasaron 15 recorridos Playwright con pagos simulados, registro, publicación, compras, concurrencia, pujas, avisos y valoraciones. La auditoría de integridad de solo lectura devolvió cero casos en las 16 comprobaciones.
-- Pasaron 103 comprobaciones de interfaz en Chromium, Firefox y WebKit. Se verificaron 9 rutas representativas a 320, 390, 768, 1024 y 1440 px en Chromium y a 390 y 1440 px en los otros dos motores. Se comprobaron el retorno al anuncio, el foco de los diálogos y de la campana, y el orden de fotos al publicar.
+- Pasaron 103 comprobaciones de interfaz en Chromium, Firefox y WebKit. Se verificaron 9 rutas representativas a 320, 390, 768, 1024 y 1440 px en Chromium y a 390 y 1440 px en los otros dos motores. Se comprobaron el retorno al anuncio, el foco de los diálogos y de la campana, y el orden de fotos al publicar. Tab y Mayús+Tab recorren la confirmación sin salir del diálogo en los tres motores.
 - La vuelta desde un artículo restauró el filtro y la posición de desplazamiento de 1.831 px. A 390 px, la primera foto del catálogo quedó a 546 px y el título de la ficha a 637 px.
 - En tres cargas locales de producción a 390 px, la portada registró un LCP entre 0,65 y 0,78 s y un CLS de 0. Son mediciones de laboratorio.
 - Se identificó un aviso preexistente de bloqueo de sesión de Supabase al recargar en Firefox. WebKit registró cancelaciones de peticiones anticipadas durante los cambios de ruta. Los recorridos funcionales se completaron.

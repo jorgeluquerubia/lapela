@@ -1,6 +1,6 @@
 'use client';
 
-import {useEffect, useRef, type ReactNode} from 'react';
+import {useEffect, useRef, type KeyboardEvent, type ReactNode} from 'react';
 
 export default function ActionDialog({labelledBy, onClose, children}: {
   labelledBy: string;
@@ -20,8 +20,26 @@ export default function ActionDialog({labelledBy, onClose, children}: {
     };
   }, []);
 
+  function keepFocusInside(event: KeyboardEvent<HTMLDialogElement>) {
+    if (event.key !== 'Tab') return;
+    event.preventDefault();
+
+    const focusable = Array.from(event.currentTarget.querySelectorAll<HTMLElement>(
+      'a[href], button, input, select, textarea, [tabindex]'
+    )).filter(element => element.tabIndex >= 0 && !element.matches(':disabled') && element.getClientRects().length > 0);
+    if (!focusable.length) return;
+
+    const current = focusable.findIndex(element => element === document.activeElement);
+    const direction = event.shiftKey ? -1 : 1;
+    const next = current < 0
+      ? (event.shiftKey ? focusable.length - 1 : 0)
+      : (current + direction + focusable.length) % focusable.length;
+    focusable[next].focus();
+  }
+
   return (
     <dialog ref={ref} className="action-dialog" aria-labelledby={labelledBy}
+      onKeyDown={keepFocusInside}
       onCancel={event => {event.preventDefault(); onClose();}}>
       {children}
     </dialog>
