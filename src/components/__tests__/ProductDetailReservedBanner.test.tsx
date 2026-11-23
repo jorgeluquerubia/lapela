@@ -12,6 +12,8 @@ jest.mock('@/lib/api', () => ({
   api: jest.fn().mockReturnValue(new Promise(() => {})),
 }));
 
+jest.mock('next/navigation', () => ({useRouter: () => ({push: jest.fn()})}));
+
 jest.mock('next/link', () => {
   return ({ children, href, className }: any) => (
     <a href={href} className={className}>

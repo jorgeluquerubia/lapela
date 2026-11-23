@@ -208,7 +208,7 @@ describe('ProductDetailInteractive Confirmation and Purchase Policy (LP-FEAT-006
       fireEvent.click(screen.getByRole('button', { name: /Revisar puja/i }));
 
       // Confirmation displays equivalence and explicit disclaimer (AC-04)
-      const confirmGroup = screen.getByRole('group', { name: /Confirmar puja/i });
+      const confirmGroup = screen.getByRole('dialog', { name: /Confirmar una puja/i });
       expect(within(confirmGroup).getByText('≈ 12.479 ptas.')).toBeInTheDocument();
       expect(within(confirmGroup).getByText(/Equivalencia histórica · El pago se realiza en euros/i)).toBeInTheDocument();
     });

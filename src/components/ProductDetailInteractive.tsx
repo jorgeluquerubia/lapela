@@ -1,11 +1,12 @@
 'use client';
-import {useState, useEffect} from 'react';
+import {useState, useEffect, useRef} from 'react';
 import Link from 'next/link';
 import {useRouter} from 'next/navigation';
 import {api} from '@/lib/api';
 import {money} from '@/lib/rules';
 import {pesetaEquivalence, PESETA_DISCLAIMER, trackPesetaHelp} from '@/lib/pesetas';
 import {useAuth} from '@/context/AuthContext';
+import ActionDialog from './ActionDialog';
 import ProductQA from './ProductQA';
 import SocialShareModal from './SocialShareModal';
 import {PRODUCT_FALLBACK_IMAGE} from '@/lib/image-processing';
@@ -29,6 +30,10 @@ export default function ProductDetailInteractive({initialItem, slug, demo = fals
   const [selected, setSelected] = useState(0);
   const [confirm, setConfirm] = useState(false);
   const [confirmBuy, setConfirmBuy] = useState(false);
+  const [photoOpen, setPhotoOpen] = useState(false);
+  const [dockVisible, setDockVisible] = useState(false);
+  const purchaseAction = useRef<HTMLDivElement>(null);
+  const loginHref = '/login?next=' + encodeURIComponent('/articulos/' + slug);
   const [notice, setNotice] = useState('');
   const [report, setReport] = useState(false);
   const [reason, setReason] = useState('');
@@ -37,6 +42,26 @@ export default function ProductDetailInteractive({initialItem, slug, demo = fals
   const [favoriteBusy, setFavoriteBusy] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [clock, setClock] = useState(() => Date.now());
+  const sellerAlias: string | undefined = item?.seller?.alias;
+  const [sellerStats,setSellerStats] = useState<{completedSales:number; averageScore:number|null; reviewCount:number} | null>(null);
+
+  useEffect(() => {
+    if (demo || !sellerAlias) return;
+    const controller = new AbortController();
+    setSellerStats(null);
+    async function loadSellerStats(alias:string) {
+      try {
+        const response=await fetch('/api/market/profile/' + encodeURIComponent(alias), {signal: controller.signal});
+        if (!response.ok) return;
+        const {stats}=await response.json();
+        if (!controller.signal.aborted && stats) setSellerStats(stats);
+      } catch {
+        // The public profile link remains available if the summary cannot load.
+      }
+    }
+    void loadSellerStats(sellerAlias);
+    return () => controller.abort();
+  }, [demo, sellerAlias]);
 
   useEffect(() => {
     trackPesetaHelp('peseta_help_view', { source: 'product_detail', item_id: initialItem?.id });
@@ -47,6 +72,14 @@ export default function ProductDetailInteractive({initialItem, slug, demo = fals
     const timer = window.setInterval(() => setClock(Date.now()), 1000);
     return () => window.clearInterval(timer);
   }, [item?.mode, item?.status, item?.ends_at]);
+
+  useEffect(() => {
+    const action = purchaseAction.current;
+    if (!action || !('IntersectionObserver' in window)) return;
+    const observer = new IntersectionObserver(([entry]) => setDockVisible(!entry.isIntersecting));
+    observer.observe(action);
+    return () => observer.disconnect();
+  }, [item?.id, item?.status, user]);
 
   // Fetch updated user-specific state (mine, isHighestBidder, favorites) if user is logged in
   useEffect(() => {
@@ -103,7 +136,7 @@ export default function ProductDetailInteractive({initialItem, slug, demo = fals
       if (kind === 'bid') {
         await api('bid/' + target, {amount: bid});
         const updated = await api('listing/' + target);
-        setItem(updated);
+        setItem((previous: any) => ({...previous,...updated}));
         setBid(String((updated.price_cents + (updated.bid_count ? 100 : 0)) / 100));
         setNotice('Tu puja se ha registrado. Encontrarás el seguimiento en Mi actividad.');
         setConfirm(false);
@@ -157,8 +190,8 @@ export default function ProductDetailInteractive({initialItem, slug, demo = fals
 
   return (
     <div className="detail-layout">
-      <section>
-        <div className="detail-photo">
+      <section className="detail-media" aria-label="Fotos del artículo">
+        <button type="button" className="detail-photo" aria-label="Ampliar foto del artículo" aria-haspopup="dialog" onClick={event => {event.currentTarget.focus(); setPhotoOpen(true);}}>
           <img
             src={item.images?.[selected] || PRODUCT_FALLBACK_IMAGE}
             alt={item.title}
@@ -166,7 +199,7 @@ export default function ProductDetailInteractive({initialItem, slug, demo = fals
               (e.target as HTMLImageElement).src = PRODUCT_FALLBACK_IMAGE;
             }}
           />
-        </div>
+        </button>
         {item.images?.length > 1 && (
           <div className="photo-thumbs">
             {item.images.map((url: string, i: number) => (
@@ -187,6 +220,368 @@ export default function ProductDetailInteractive({initialItem, slug, demo = fals
             ))}
           </div>
         )}
+      </section>
+
+      <aside className="purchase-panel">
+        {item.featuredEdition && (
+          <Link
+            href={`/subastas/ediciones/${item.featuredEdition.slug}`}
+            className="featured-detail-chip"
+            aria-label={`Ver edición ${item.featuredEdition.title} de La Subasta de la Pela`}
+          >
+            ★ La Subasta de la Pela · {item.featuredEdition.title} ↗
+          </Link>
+        )}
+        <div className="detail-panel-tags">
+          <span className={`sale-tag static-tag ${auction ? 'auction' : ''}`}>
+            {auction ? 'Subasta' : 'Precio cerrado'}
+          </span>
+          {item.story && (
+            <span className="sale-tag static-tag story-badge-panel">Con historia</span>
+          )}
+        </div>
+        <h1>{item.title}</h1>
+        {sellerAlias&&<div className="detail-seller">
+          <Link className="profile-link" href={`/usuarios/${sellerAlias}`}>Vendedor · @{sellerAlias}</Link>
+          {sellerStats&&<p className="muted">
+            {sellerStats.completedSales} {sellerStats.completedSales===1?'venta completada':'ventas completadas'}
+            {sellerStats.averageScore!==null&&` · ★ ${sellerStats.averageScore.toLocaleString('es-ES')}/5 (${sellerStats.reviewCount})`}
+          </p>}
+        </div>}
+        <div className="detail-price-box">
+          {auction&&<span className="muted">{item.bid_count?'Puja actual':'Precio de salida'}</span>}
+          <div className="detail-price">{money(item.price_cents)}</div>
+          <div className="peseta-badge-row">
+            <span className="peseta-approx">{pesetaEquivalence(item.price_cents, true)}</span>
+            <button
+              type="button"
+              className="peseta-help-tag"
+              title={PESETA_DISCLAIMER}
+              onClick={() => trackPesetaHelp('peseta_help_click', { source: 'detail_price_tag' })}
+            >
+              {PESETA_DISCLAIMER}
+            </button>
+          </div>
+        </div>
+        <div className="purchase-facts">
+          <span>{item.condition}</span>
+          <span>{item.delivery === 'shipping' ? 'Envío ' + money(item.shipping_cents) : 'Recogida en ' + item.location}</span>
+          {item.delivery === 'shipping' && !auction && <strong>Total {money(item.price_cents + item.shipping_cents)}</strong>}
+        </div>
+        {auction && item.status === 'available' && !auctionPendingClose &&
+          <p className="auction-summary"><strong>Próxima puja desde {money(item.price_cents + (item.bid_count ? 100 : 0))}</strong>
+            {item.isHighestBidder ? <span>Vas ganando</span> : item.hasBid && <span>Han superado tu puja</span>}
+          </p>}
+        {auction&&<div className="auction-timing">
+          <p className="muted">
+            {item.bid_count} {item.bid_count===1?'puja':'pujas'} · {auctionPendingClose||item.status!=='available'
+              ? 'Cerrada'
+              : item.ends_at ? 'Cierra ' + new Date(item.ends_at).toLocaleString('es-ES') : 'Ejemplo de subasta'}
+          </p>
+          {!demo&&item.status==='available'&&!auctionPendingClose&&<p className="muted">Una puja en los últimos 2 minutos amplía el cierre otros 2 minutos.</p>}
+        </div>}
+        {notice && (
+          <div className="notice" role="status">
+            {notice}
+          </div>
+        )}
+        {error && (
+          <p className="error-message" role="alert">
+            {error}
+          </p>
+        )}
+        <div ref={purchaseAction} id="accion-articulo" className="purchase-action">
+        {item.status !== 'available' || auctionPendingClose ? (
+          auctionPendingClose ? (
+            <div className="notice" role="status">
+              Esta subasta ha finalizado y está pendiente de cierre. Ya no admite nuevas pujas.
+            </div>
+          ) : item.mine && item.status === 'reserved' ? (
+            <div className="seller-alert-banner" style={{ background: '#ecfdf5', borderColor: '#a7f3d0', flexDirection: 'column', alignItems: 'stretch' }}>
+              <div>
+                <strong className="text-emerald-950 block mb-1">Artículo reservado · Tienes una venta en curso</strong>
+                <p className="m-0 text-xs text-emerald-900">
+                  Un comprador ha reservado este artículo. Entra a Mi actividad para chatear, acordar la entrega o confirmar el cobro en persona.
+                </p>
+              </div>
+              <Link href="/my-products" className="button primary text-xs py-2 px-3 text-center mt-2">
+                Ir a Mi actividad para chatear →
+              </Link>
+            </div>
+          ) : (
+            <div className="notice">
+              {item.status === 'reserved'
+                ? 'Este artículo está reservado actualmente (48 horas de reserva).'
+                : 'Este artículo ya no está disponible.'}
+            </div>
+          )
+        ) : demo ? (
+          <Link className="button primary w-full" href="/register">
+            Crear mi cuenta
+          </Link>
+        ) : item.mine ? (
+          <div className="notice">
+            Este es tu anuncio.{' '}
+            <Link className="underline" href="/my-products">
+              Gestionar en Mi actividad
+            </Link>
+          </div>
+        ) : !user ? (
+          <Link href={loginHref} className="button primary w-full">
+            Entrar para {auction ? 'pujar' : 'comprar'}
+          </Link>
+        ) : (
+          <>
+            {auction && (
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  (e.nativeEvent as SubmitEvent).submitter?.focus();
+                  setConfirm(true);
+                }}
+              >
+                <div className="flex justify-between items-baseline">
+                  <label htmlFor="bid">Tu puja (€)</label>
+                  {Number(bid) > 0 && (
+                    <span className="peseta-approx text-xs">
+                      {pesetaEquivalence(Number(bid))}
+                    </span>
+                  )}
+                </div>
+                <input
+                  className="field-input"
+                  id="bid"
+                  type="number"
+                  step="0.01"
+                  min={(item.price_cents + (item.bid_count ? 100 : 0)) / 100}
+                  value={bid}
+                  onChange={(e) => setBid(e.target.value)}
+                  required
+                />
+                <button className="button primary w-full" disabled={busy} type="submit">
+                  Revisar puja
+                </button>
+              </form>
+            )}
+            {confirm && (
+              <ActionDialog labelledBy="confirm-bid-title" onClose={() => {if (!busy) setConfirm(false);}}>
+              <div className="confirmation">
+                <strong id="confirm-bid-title">Confirmar una puja de {money(Math.round(Number(bid) * 100))}</strong>
+                <span className="peseta-approx block mt-1 text-xs">
+                  {pesetaEquivalence(Number(bid))}
+                </span>
+                <p className="text-xs text-stone-600 mt-1 mb-2 font-medium">
+                  {PESETA_DISCLAIMER}
+                </p>
+                <p>
+                  Si ganas, tendrás 24 horas para pagar. Las pujas en los últimos 2 minutos amplían
+                  el cierre otros 2 minutos.
+                </p>
+                {error&&<p className="error-message" role="alert">{error}</p>}
+                <button className="button primary" disabled={busy} onClick={() => action('bid')}>
+                  Confirmar puja
+                </button>
+                <button className="button" data-dialog-focus disabled={busy} onClick={() => setConfirm(false)}>
+                  Volver
+                </button>
+              </div>
+              </ActionDialog>
+            )}
+            {confirmBuy && (
+              <ActionDialog labelledBy="confirm-buy-title" onClose={() => {if (!busy) setConfirmBuy(false);}}>
+              <div className="confirmation">
+                <strong id="confirm-buy-title" className="block text-base mb-1">
+                  ¿Confirmar la compra de este artículo?
+                </strong>
+                <p className="mb-1">
+                  Total a abonar:{' '}
+                  <strong>
+                    {money((auction ? item.buy_now_cents : item.price_cents) + item.shipping_cents)}
+                  </strong>
+                  {item.delivery === 'shipping' ? ' (envío incluido)' : ' (recogida en persona)'}.
+                </p>
+                <p className="peseta-approx text-xs mb-1">
+                  {pesetaEquivalence(
+                    (auction ? item.buy_now_cents : item.price_cents) + item.shipping_cents,
+                    true
+                  )}
+                </p>
+                <p className="text-xs text-stone-600 mb-2 font-medium">
+                  {PESETA_DISCLAIMER}
+                </p>
+                <div className="notice text-xs mb-3">
+                  Al confirmar, el artículo quedará <strong>reservado para ti durante 48 horas</strong> para formalizar el pago y acordar la entrega. Recuerda que no abonar una reserva en plazo puede conllevar <strong>penalizaciones en tu cuenta</strong> según nuestra{' '}
+                  <Link href="/politica-de-compras" target="_blank" className="underline font-semibold">
+                    política de compras
+                  </Link>.
+                </div>
+                {error && <p className="error-message" role="alert">{error}</p>}
+                <div className="dialog-actions">
+                  <button
+                    className="button primary flex-1"
+                    disabled={busy}
+                    onClick={() => action('checkout')}
+                  >
+                    {busy ? 'Reservando…' : 'Confirmar y reservar'}
+                  </button>
+                  <button
+                    type="button"
+                    className="button"
+                    disabled={busy}
+                    data-dialog-focus
+                    onClick={() => setConfirmBuy(false)}
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </div>
+              </ActionDialog>
+            )}
+            {(!auction || item.buy_now_cents) && (
+                <div>
+                  <button
+                    className={`button ${auction ? 'secondary' : 'primary'} w-full mt-3`}
+                    disabled={busy}
+                    aria-haspopup="dialog"
+                    onClick={event => {event.currentTarget.focus(); setConfirmBuy(true);}}
+                  >
+                    {busy
+                      ? 'Preparando…'
+                      : `Comprar ahora · ${money(
+                          (auction ? item.buy_now_cents : item.price_cents) + item.shipping_cents
+                        )}`}
+                  </button>
+                  <span className="peseta-approx text-center block mt-1 text-xs">
+                    {pesetaEquivalence(
+                      (auction ? item.buy_now_cents : item.price_cents) + item.shipping_cents,
+                      true
+                    )}
+                  </span>
+                </div>
+            )}
+          </>
+        )}
+        </div>
+        {auction&&<section className="bid-history" aria-label="Historial de pujas">
+          <h2>Últimas pujas</h2>
+          {item.bids?.length?item.bids.map((entry:any)=><div className="bid-row" key={entry.id}>
+            <Link className="profile-link" href={`/usuarios/${entry.bidder.alias}`}>@{entry.bidder.alias}</Link>
+            <div className="bid-price-cell text-right">
+              <strong>{money(entry.amount_cents)}</strong>
+              <span className="peseta-approx block text-xs">{pesetaEquivalence(entry.amount_cents, true)}</span>
+            </div>
+            <small>{new Date(entry.created_at).toLocaleString('es-ES')}</small>
+          </div>):<p className="muted">Todavía no hay pujas.</p>}
+        </section>}
+        {!demo && item.status === 'available' && (
+          <div className="mt-3">
+            <button
+              type="button"
+              className="button secondary w-full flex items-center justify-center gap-2"
+              onClick={() => setShareOpen(true)}
+              aria-haspopup="dialog"
+            >
+              <svg
+                width="17"
+                height="17"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <circle cx="18" cy="5" r="3" />
+                <circle cx="6" cy="12" r="3" />
+                <circle cx="18" cy="19" r="3" />
+                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+              </svg>
+              Compartir anuncio
+            </button>
+          </div>
+        )}
+        {!demo && item.status === 'available' && (
+          <SocialShareModal
+            isOpen={shareOpen}
+            onClose={() => setShareOpen(false)}
+            item={{
+              id: item.id,
+              title: item.title,
+              price_cents: item.price_cents,
+              mode: item.mode,
+              slug: item.slug || slug,
+              images: item.images,
+            }}
+          />
+        )}
+        {item.mine ? (
+          <div className="favorites-seller-badge mb-3 text-xs text-stone-600 flex items-center gap-1.5" role="status">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="#dc2626" stroke="#dc2626" strokeWidth="2" aria-hidden="true">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+            </svg>
+            <span>{favoritesCount === 1 ? '1 persona ha guardado este artículo' : `${favoritesCount} personas han guardado este artículo`}</span>
+          </div>
+        ) : !demo && (
+          <button
+            type="button"
+            className={`button secondary w-full mb-3 favorite-action-btn flex items-center justify-center gap-2 ${isFavorite ? 'favorite-active' : ''}`}
+            onClick={toggleFavorite}
+            disabled={favoriteBusy}
+            aria-label={isFavorite ? 'Eliminar de favoritos' : 'Guardar en favoritos'}
+            aria-pressed={isFavorite}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill={isFavorite ? '#dc2626' : 'none'} stroke={isFavorite ? '#dc2626' : 'currentColor'} strokeWidth="2" aria-hidden="true">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+            </svg>
+            <span>{isFavorite ? 'Guardado en favoritos' : 'Guardar en favoritos'}</span>
+          </button>
+        )}
+        <div className="purchase-promise">
+          <strong>Un trato claro, de principio a fin.</strong>
+          <p>
+            El chat se habilita al reservar el artículo. Úsalo para acordar la forma de pago (en persona o por plataforma) y los detalles de entrega.
+          </p>
+          <div className="flex flex-col gap-1 mt-2 text-sm">
+            <Link href="/como-funciona" className="underline">
+              Ver cómo funciona
+            </Link>
+            <Link href="/politica-de-compras" className="underline">
+              Política de compras y reservas de 48 h
+            </Link>
+          </div>
+        </div>
+        {!demo && user && (
+          <button className="text-link" onClick={() => setReport(!report)}>
+            Informar de este anuncio
+          </button>
+        )}
+        {report && (
+          <form
+            className="mt-4"
+            onSubmit={(e) => {
+              e.preventDefault();
+              action('report');
+            }}
+          >
+            <label htmlFor="report">¿Qué ocurre con el anuncio?</label>
+            <textarea
+              id="report"
+              className="field-input"
+              required
+              minLength={10}
+              maxLength={2000}
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+            />
+            <button className="button" disabled={busy}>
+              Enviar aviso
+            </button>
+          </form>
+        )}
+      </aside>
+      <section className="detail-information">
         <div className="detail-description">
           {item.mine && (item.pendingQuestionsCount || 0) > 0 && (
             <div className="seller-alert-banner" role="status">
@@ -240,341 +635,21 @@ export default function ProductDetailInteractive({initialItem, slug, demo = fals
           demo={demo}
         />
       </section>
+      {dockVisible && !demo && !item.mine && item.status === 'available' && !auctionPendingClose && (
+        <div className="mobile-purchase-dock">
+          <div><small>{auction ? (item.bid_count ? 'Puja actual' : 'Precio de salida') : 'Total'}</small><strong>{money(item.price_cents + (auction ? 0 : (item.shipping_cents || 0)))}</strong></div>
+          {!user ? <Link href={loginHref} className="button primary">Entrar para {auction ? 'pujar' : 'comprar'}</Link>
+            : auction ? <a href="#accion-articulo" className="button primary" onClick={() => requestAnimationFrame(() => document.getElementById('bid')?.focus())}>Pujar</a>
+              : <button type="button" className="button primary" aria-haspopup="dialog" onClick={event => {event.currentTarget.focus(); setConfirmBuy(true);}}>Comprar</button>}
+        </div>
+      )}
+      {photoOpen && <ActionDialog labelledBy="expanded-photo-title" onClose={() => setPhotoOpen(false)}>
+        <h2 id="expanded-photo-title">Foto de {item.title}</h2>
+        <img className="expanded-photo" src={item.images?.[selected] || PRODUCT_FALLBACK_IMAGE} alt={item.title}
+          onError={event => {event.currentTarget.src = PRODUCT_FALLBACK_IMAGE;}} />
+        <button className="button" type="button" data-dialog-focus onClick={() => setPhotoOpen(false)}>Cerrar foto</button>
+      </ActionDialog>}
 
-      <aside className="purchase-panel">
-        {item.featuredEdition && (
-          <Link
-            href={`/subastas/ediciones/${item.featuredEdition.slug}`}
-            className="featured-detail-chip"
-            aria-label={`Ver edición ${item.featuredEdition.title} de La Subasta de la Pela`}
-          >
-            ★ La Subasta de la Pela · {item.featuredEdition.title} ↗
-          </Link>
-        )}
-        <div className="detail-panel-tags">
-          <span className={`sale-tag static-tag ${auction ? 'auction' : ''}`}>
-            {auction ? 'Subasta' : 'Precio cerrado'}
-          </span>
-          {item.story && (
-            <span className="sale-tag static-tag story-badge-panel">Con historia</span>
-          )}
-        </div>
-        <h1>{item.title}</h1>
-        {item.seller?.alias&&<Link className="profile-link detail-seller" href={`/usuarios/${item.seller.alias}`}>Vendido por @{item.seller.alias}</Link>}
-        <div className="detail-price-box">
-          <div className="detail-price">{money(item.price_cents)}</div>
-          <div className="peseta-badge-row">
-            <span className="peseta-approx">{pesetaEquivalence(item.price_cents, true)}</span>
-            <button
-              type="button"
-              className="peseta-help-tag"
-              title={PESETA_DISCLAIMER}
-              onClick={() => trackPesetaHelp('peseta_help_click', { source: 'detail_price_tag' })}
-            >
-              {PESETA_DISCLAIMER}
-            </button>
-          </div>
-        </div>
-        <p className="muted">
-          {auction
-            ? `${item.bid_count} pujas · ${
-                item.ends_at
-                  ? 'Finaliza ' + new Date(item.ends_at).toLocaleString('es-ES')
-                  : 'Ejemplo de subasta'
-              }`
-            : 'Este es el precio. Sin ofertas ni regateos.'}
-        </p>
-        {item.mine ? (
-          <div className="favorites-seller-badge mb-3 text-xs text-stone-600 flex items-center gap-1.5" role="status">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="#dc2626" stroke="#dc2626" strokeWidth="2" aria-hidden="true">
-              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-            </svg>
-            <span>{favoritesCount === 1 ? '1 persona ha guardado este artículo' : `${favoritesCount} personas han guardado este artículo`}</span>
-          </div>
-        ) : !demo && (
-          <button
-            type="button"
-            className={`button secondary w-full mb-3 favorite-action-btn flex items-center justify-center gap-2 ${isFavorite ? 'favorite-active' : ''}`}
-            onClick={toggleFavorite}
-            disabled={favoriteBusy}
-            aria-label={isFavorite ? 'Eliminar de favoritos' : 'Guardar en favoritos'}
-            aria-pressed={isFavorite}
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill={isFavorite ? '#dc2626' : 'none'} stroke={isFavorite ? '#dc2626' : 'currentColor'} strokeWidth="2" aria-hidden="true">
-              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-            </svg>
-            <span>{isFavorite ? 'Guardado en favoritos' : 'Guardar en favoritos'}</span>
-          </button>
-        )}
-        {notice && (
-          <div className="notice" role="status">
-            {notice}
-          </div>
-        )}
-        {error && (
-          <p className="error-message" role="alert">
-            {error}
-          </p>
-        )}
-        {auction&&<section className="bid-history" aria-label="Historial de pujas">
-          <h2>Últimas pujas</h2>
-          {item.bids?.length?item.bids.map((entry:any)=><div className="bid-row" key={entry.id}>
-            <Link className="profile-link" href={`/usuarios/${entry.bidder.alias}`}>@{entry.bidder.alias}</Link>
-            <div className="bid-price-cell text-right">
-              <strong>{money(entry.amount_cents)}</strong>
-              <span className="peseta-approx block text-xs">{pesetaEquivalence(entry.amount_cents, true)}</span>
-            </div>
-            <small>{new Date(entry.created_at).toLocaleString('es-ES')}</small>
-          </div>):<p className="muted">Todavía no hay pujas.</p>}
-        </section>}
-        {item.status !== 'available' || auctionPendingClose ? (
-          auctionPendingClose ? (
-            <div className="notice" role="status">
-              Esta subasta ha finalizado y está pendiente de cierre. Ya no admite nuevas pujas.
-            </div>
-          ) : item.mine && item.status === 'reserved' ? (
-            <div className="seller-alert-banner" style={{ background: '#ecfdf5', borderColor: '#a7f3d0', flexDirection: 'column', alignItems: 'stretch' }}>
-              <div>
-                <strong className="text-emerald-950 block mb-1">Artículo reservado · Tienes una venta en curso</strong>
-                <p className="m-0 text-xs text-emerald-900">
-                  Un comprador ha reservado este artículo. Entra a Mi actividad para chatear, acordar la entrega o confirmar el cobro en persona.
-                </p>
-              </div>
-              <Link href="/my-products" className="button primary text-xs py-2 px-3 text-center mt-2">
-                Ir a Mi actividad para chatear →
-              </Link>
-            </div>
-          ) : (
-            <div className="notice">
-              {item.status === 'reserved'
-                ? 'Este artículo está reservado actualmente (48 horas de reserva).'
-                : 'Este artículo ya no está disponible.'}
-            </div>
-          )
-        ) : demo ? (
-          <Link className="button primary w-full" href="/register">
-            Crear mi cuenta
-          </Link>
-        ) : item.mine ? (
-          <div className="notice">
-            Este es tu anuncio.{' '}
-            <Link className="underline" href="/my-products">
-              Gestionar en Mi actividad
-            </Link>
-          </div>
-        ) : !user ? (
-          <Link href="/login" className="button primary w-full">
-            Entrar para {auction ? 'pujar' : 'comprar'}
-          </Link>
-        ) : (
-          <>
-            {auction && (
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  setConfirm(true);
-                }}
-              >
-                <div className="flex justify-between items-baseline">
-                  <label htmlFor="bid">Tu puja (€)</label>
-                  {Number(bid) > 0 && (
-                    <span className="peseta-approx text-xs">
-                      {pesetaEquivalence(Number(bid))}
-                    </span>
-                  )}
-                </div>
-                <input
-                  className="field-input"
-                  id="bid"
-                  type="number"
-                  step="0.01"
-                  min={(item.price_cents + (item.bid_count ? 100 : 0)) / 100}
-                  value={bid}
-                  onChange={(e) => setBid(e.target.value)}
-                  required
-                />
-                <button className="button primary w-full" disabled={busy} type="submit">
-                  Revisar puja
-                </button>
-              </form>
-            )}
-            {confirm && (
-              <div className="confirmation" role="group" aria-label="Confirmar puja">
-                <strong>Confirmar una puja de {money(Math.round(Number(bid) * 100))}</strong>
-                <span className="peseta-approx block mt-1 text-xs">
-                  {pesetaEquivalence(Number(bid))}
-                </span>
-                <p className="text-xs text-stone-600 mt-1 mb-2 font-medium">
-                  {PESETA_DISCLAIMER}
-                </p>
-                <p>
-                  Si ganas, tendrás 24 horas para pagar. Las pujas en los últimos 2 minutos amplían
-                  el cierre otros 2 minutos.
-                </p>
-                <button className="button primary" disabled={busy} onClick={() => action('bid')}>
-                  Confirmar puja
-                </button>
-                <button className="button" onClick={() => setConfirm(false)}>
-                  Volver
-                </button>
-              </div>
-            )}
-            {confirmBuy ? (
-              <div className="confirmation mt-3" role="dialog" aria-labelledby="confirm-buy-title">
-                <strong id="confirm-buy-title" className="block text-base mb-1">
-                  ¿Confirmar la compra de este artículo?
-                </strong>
-                <p className="mb-1">
-                  Total a abonar:{' '}
-                  <strong>
-                    {money((auction ? item.buy_now_cents : item.price_cents) + item.shipping_cents)}
-                  </strong>
-                  {item.shipping_cents > 0 ? ' (envío incluido)' : ' (recogida en persona)'}.
-                </p>
-                <p className="peseta-approx text-xs mb-1">
-                  {pesetaEquivalence(
-                    (auction ? item.buy_now_cents : item.price_cents) + item.shipping_cents,
-                    true
-                  )}
-                </p>
-                <p className="text-xs text-stone-600 mb-2 font-medium">
-                  {PESETA_DISCLAIMER}
-                </p>
-                <div className="notice text-xs mb-3">
-                  Al confirmar, el artículo quedará <strong>reservado para ti durante 48 horas</strong> para formalizar el pago y acordar la entrega. Recuerda que no abonar una reserva en plazo puede conllevar <strong>penalizaciones en tu cuenta</strong> según nuestra{' '}
-                  <Link href="/politica-de-compras" target="_blank" className="underline font-semibold">
-                    política de compras
-                  </Link>.
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    className="button primary flex-1"
-                    disabled={busy}
-                    onClick={() => action('checkout')}
-                  >
-                    {busy ? 'Reservando…' : 'Confirmar y reservar'}
-                  </button>
-                  <button
-                    type="button"
-                    className="button"
-                    disabled={busy}
-                    onClick={() => setConfirmBuy(false)}
-                  >
-                    Cancelar
-                  </button>
-                </div>
-              </div>
-            ) : (
-              (!auction || item.buy_now_cents) && (
-                <div>
-                  <button
-                    className={`button ${auction ? 'secondary' : 'primary'} w-full mt-3`}
-                    disabled={busy}
-                    onClick={() => setConfirmBuy(true)}
-                  >
-                    {busy
-                      ? 'Preparando…'
-                      : `Comprar ahora · ${money(
-                          (auction ? item.buy_now_cents : item.price_cents) + item.shipping_cents
-                        )}`}
-                  </button>
-                  <span className="peseta-approx text-center block mt-1 text-xs">
-                    {pesetaEquivalence(
-                      (auction ? item.buy_now_cents : item.price_cents) + item.shipping_cents,
-                      true
-                    )}
-                  </span>
-                </div>
-              )
-            )}
-          </>
-        )}
-        {!demo && item.status === 'available' && (
-          <div className="mt-3">
-            <button
-              type="button"
-              className="button secondary w-full flex items-center justify-center gap-2"
-              onClick={() => setShareOpen(true)}
-              aria-haspopup="dialog"
-            >
-              <svg
-                width="17"
-                height="17"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <circle cx="18" cy="5" r="3" />
-                <circle cx="6" cy="12" r="3" />
-                <circle cx="18" cy="19" r="3" />
-                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
-                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
-              </svg>
-              Compartir anuncio
-            </button>
-          </div>
-        )}
-        {!demo && item.status === 'available' && (
-          <SocialShareModal
-            isOpen={shareOpen}
-            onClose={() => setShareOpen(false)}
-            item={{
-              id: item.id,
-              title: item.title,
-              price_cents: item.price_cents,
-              mode: item.mode,
-              slug: item.slug || slug,
-              images: item.images,
-            }}
-          />
-        )}
-        <div className="purchase-promise">
-          <strong>Un trato claro, de principio a fin.</strong>
-          <p>
-            El chat se habilita al reservar el artículo. Úsalo para acordar la forma de pago (en persona o por plataforma) y los detalles de entrega.
-          </p>
-          <div className="flex flex-col gap-1 mt-2 text-sm">
-            <Link href="/como-funciona" className="underline">
-              Ver cómo funciona
-            </Link>
-            <Link href="/politica-de-compras" className="underline">
-              Política de compras y reservas de 48 h
-            </Link>
-          </div>
-        </div>
-        {!demo && user && (
-          <button className="text-link" onClick={() => setReport(!report)}>
-            Informar de este anuncio
-          </button>
-        )}
-        {report && (
-          <form
-            className="mt-4"
-            onSubmit={(e) => {
-              e.preventDefault();
-              action('report');
-            }}
-          >
-            <label htmlFor="report">¿Qué ocurre con el anuncio?</label>
-            <textarea
-              id="report"
-              className="field-input"
-              required
-              minLength={10}
-              maxLength={2000}
-              value={reason}
-              onChange={(e) => setReason(e.target.value)}
-            />
-            <button className="button" disabled={busy}>
-              Enviar aviso
-            </button>
-          </form>
-        )}
-      </aside>
     </div>
   );
 }

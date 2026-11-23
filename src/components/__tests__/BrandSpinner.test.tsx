@@ -9,7 +9,7 @@ describe('BrandSpinner component (LP-FEAT-008)', () => {
     expect(spinner).toHaveAttribute('aria-label', 'Cargando…');
     expect(screen.getByText('Cargando…')).toHaveClass('sr-only');
     expect(screen.getByText('lp')).toBeInTheDocument();
-    expect(screen.getByText('↗')).toBeInTheDocument();
+    expect(screen.getByText('1 P')).toBeInTheDocument();
   });
 
   it('applies custom label and size class', () => {

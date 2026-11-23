@@ -75,6 +75,8 @@ const mockEdition: AuctionEdition = {
 };
 
 describe('FeaturedAuctionSection (AC-02, RNF-03, RF-02)', () => {
+  beforeEach(() => jest.useFakeTimers({now: new Date('2026-09-15T12:00:00Z')}));
+  afterEach(() => jest.useRealTimers());
   it('renderiza la edición activa con título, distintivos, cuenta atrás y artículos', () => {
     render(<FeaturedAuctionSection edition={mockEdition} />);
 

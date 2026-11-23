@@ -28,6 +28,7 @@ function ActivityContent() {
   const searchParams = useSearchParams();
   const [data, setData] = useState<any>(null);
   const [tab, setTab] = useState('purchases');
+  const [period, setPeriod] = useState('all');
   const [error, setError] = useState('');
   const [withdraw, setWithdraw] = useState('');
   const [busy, setBusy] = useState(false);
@@ -102,6 +103,11 @@ function ActivityContent() {
     );
   }
 
+  const isPending = (o: {status:string}) => !['completed','cancelled','canceled','refunded'].includes(o.status);
+  const isOrderTab = tab === 'purchases' || tab === 'sales';
+  const pendingOrders = (data?.orders || []).filter(isPending);
+  const paymentsDue = pendingOrders.filter((o:any)=>o.buyer_id===user.id&&o.status==='pending_payment').length;
+  const deliveriesDue = pendingOrders.filter((o:any)=>o.seller_id===user.id&&o.status==='paid').length;
   const rows = !data
     ? []
     : tab === 'listings'
@@ -111,7 +117,8 @@ function ActivityContent() {
     : tab === 'questions'
     ? []
     : data.orders.filter((o: any) =>
-        tab === 'purchases' ? o.buyer_id === user.id : o.seller_id === user.id
+        (tab === 'purchases' ? o.buyer_id === user.id : o.seller_id === user.id)
+        && (period === 'all' || isPending(o) === (period === 'pending'))
       );
 
   const pendingQuestionsCount = data?.pendingQuestionsCount || 0;
@@ -144,7 +151,6 @@ function ActivityContent() {
     <>
       <div className="catalog-head">
         <div>
-          <span className="eyebrow">TU ESPACIO</span>
           <h1>Mi actividad</h1>
         </div>
         <Link className="button primary" href="/publish-ad">
@@ -171,7 +177,18 @@ function ActivityContent() {
         </div>
       )}
 
-      <div className="mode-tabs activity-tabs">
+      {data&&<section className="activity-overview" aria-labelledby="activity-overview-title">
+        <h2 id="activity-overview-title">Por hacer</h2>
+        <div>
+          <button type="button" className="button" onClick={()=>{setTab('purchases');setPeriod('pending');}}>Compras en curso · {pendingOrders.filter((o:any)=>o.buyer_id===user.id).length}</button>
+          <button type="button" className="button" onClick={()=>{setTab('sales');setPeriod('pending');}}>Ventas en curso · {pendingOrders.filter((o:any)=>o.seller_id===user.id).length}</button>
+          {paymentsDue>0&&<button type="button" className="button" onClick={()=>{setTab('purchases');setPeriod('pending');}}>Pagos pendientes · {paymentsDue}</button>}
+          {deliveriesDue>0&&<button type="button" className="button" onClick={()=>{setTab('sales');setPeriod('pending');}}>Entregas pendientes · {deliveriesDue}</button>}
+          {bidsUnreadCount>0&&<button type="button" className="button" onClick={()=>setTab('bids')}>Pujas superadas · {bidsUnreadCount}</button>}
+        </div>
+      </section>}
+
+      <div className="mode-tabs activity-tabs" aria-label="Secciones de actividad">
         {[
           ['purchases', `Compras${purchasesUnreadCount > 0 ? ` (${purchasesUnreadCount})` : ''}`],
           ['sales', `Ventas${salesUnreadCount > 0 ? ` (${salesUnreadCount})` : ''}`],
@@ -182,15 +199,21 @@ function ActivityContent() {
         ].map(([v, t]) => (
           <button
             key={v}
+            aria-pressed={tab === v}
             className={tab === v ? 'active' : ''}
-            onClick={() => setTab(v)}
+            onClick={() => {setTab(v);setPeriod('all');}}
           >
             {t}
           </button>
         ))}
       </div>
 
-      {error && <p className="error-message">{error}</p>}
+      {isOrderTab&&data&&<div className="activity-period" aria-label="Estado de pedidos">
+        {[['all','Todos'],['pending','En curso'],['history','Historial']].map(([value,label])=>(
+          <button type="button" key={value} aria-pressed={period===value} onClick={()=>setPeriod(value)}>{label}</button>
+        ))}
+      </div>}
+      {error && <p className="error-message" role="alert">{error}</p>}
 
       {!data && !error ? (
         <p>Cargando actividad…</p>
@@ -403,7 +426,7 @@ function ActivityContent() {
 
             return (
               <article key={r.id} className="activity-row">
-                <img src={l.images[0]} alt={l.title} />
+                <img src={l.images?.[0]} alt={l.title} loading="lazy"/>
                 <div>
                   <h3>
                     <Link
@@ -431,7 +454,7 @@ function ActivityContent() {
                   {counterpart?.alias&&<Link className="profile-link" href={`/usuarios/${counterpart.alias}`}>{tab==='purchases'?'Vendido por':tab==='sales'?'Comprado por':'Subasta de'} @{counterpart.alias}</Link>}
                   {firstNote && (
                     <div>
-                      <Link className={chipClass} role="status" href={'/articulos/' + slug} aria-label={`${firstNote.title}: ver artículo ${l.title}`}>
+                      <Link className={chipClass} role="status" href={firstNote.order_id?'/orders/'+firstNote.order_id:'/articulos/'+slug}>
                         <span className="notification-dot" />
                         {firstNote.title}
                         {itemNotes.length > 1 ? ` (+${itemNotes.length - 1})` : ''}

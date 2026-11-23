@@ -30,19 +30,15 @@ const mockedUseAuth = useAuth as jest.Mock;
 const mockedSignIn = supabase.auth.signInWithPassword as jest.Mock;
 
 describe('Login Page', () => {
-  let mockPush: jest.Mock;
-  let mockRefresh: jest.Mock;
+  let mockReplace: jest.Mock;
 
   beforeEach(() => {
     jest.clearAllMocks();
     
     // Setup mock router
-    mockPush = jest.fn();
-    mockRefresh = jest.fn();
-    mockedUseRouter.mockReturnValue({
-      push: mockPush,
-      refresh: mockRefresh,
-    });
+    mockReplace = jest.fn();
+    mockedUseRouter.mockReturnValue({replace: mockReplace});
+    window.history.replaceState(null, '', '/login');
     
     // Setup default auth state (not authenticated)
     mockedUseAuth.mockReturnValue({
@@ -79,7 +75,7 @@ describe('Login Page', () => {
   });
 
   it('handles successful login', async () => {
-    render(<Login />);
+    const {rerender} = render(<Login />);
 
     const emailInput = screen.getByLabelText(/email/i);
     const passwordInput = screen.getByLabelText(/contraseña/i);
@@ -100,11 +96,10 @@ describe('Login Page', () => {
       });
     });
 
-    // Check that user is redirected to home page
-    await waitFor(() => {
-      expect(mockPush).toHaveBeenCalledWith('/');
-      expect(mockRefresh).toHaveBeenCalled();
-    });
+    mockedUseAuth.mockReturnValue({session: {user: {id: '123'}}, loading: false});
+    rerender(<Login />);
+    expect(mockReplace).toHaveBeenCalledWith('/');
+    expect(mockReplace).toHaveBeenCalledTimes(1);
   });
 
   it('displays error message when login fails', async () => {
@@ -142,7 +137,7 @@ describe('Login Page', () => {
     });
     mockedSignIn.mockReturnValue(signInPromise);
 
-    render(<Login />);
+    const {rerender} = render(<Login />);
 
     const emailInput = screen.getByLabelText(/email/i);
     const passwordInput = screen.getByLabelText(/contraseña/i);
@@ -167,10 +162,9 @@ describe('Login Page', () => {
     // Resolve the promise to end loading state
     resolveSignIn!({ error: null });
 
-    // Wait for redirect instead of button state change, since successful login redirects
-    await waitFor(() => {
-      expect(mockPush).toHaveBeenCalledWith('/');
-    });
+    mockedUseAuth.mockReturnValue({session: {user: {id: '123'}}, loading: false});
+    rerender(<Login />);
+    expect(mockReplace).toHaveBeenCalledWith('/');
   });
 
   it('redirects to home page if user is already authenticated', () => {
@@ -181,7 +175,20 @@ describe('Login Page', () => {
 
     render(<Login />);
 
-    expect(mockPush).toHaveBeenCalledWith('/');
+    expect(mockReplace).toHaveBeenCalledWith('/');
+  });
+
+  it.each([
+    ['/articulos/camara?from=search', '/articulos/camara?from=search'],
+    ['//example.com/redirect', '/'],
+    ['/\t/example.com/redirect', '/'],
+  ])('validates the destination %s after login', (requested, expected) => {
+    window.history.replaceState(null, '', '/login?next=' + encodeURIComponent(requested));
+    mockedUseAuth.mockReturnValue({session: {user: {id: '123'}}, loading: false});
+
+    render(<Login />);
+
+    expect(mockReplace).toHaveBeenCalledWith(expected);
   });
 
   it('shows loading message while auth is loading', () => {

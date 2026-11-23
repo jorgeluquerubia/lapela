@@ -21,6 +21,8 @@ export interface Product {
   current_bid?: number;
   bid_count?: number;
   category?: string;
+  delivery?: 'pickup' | 'shipping';
+  condition?: string;
   auction_ends_at?: string; // ISO 8601 string
   slug?: string;
   story?: string | null;

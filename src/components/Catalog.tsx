@@ -1,13 +1,13 @@
 'use client';
-import {useEffect,useState} from 'react';
-import {useSearchParams} from 'next/navigation';
+import {useEffect,useState,type MouseEvent} from 'react';
+import {usePathname,useSearchParams} from 'next/navigation';
 import Link from 'next/link';
 import {Product} from '@/types';
 import ProductCard from './ProductCard';
 import BrandSpinner from './BrandSpinner';
 import FeaturedAuctionSection from './FeaturedAuctionSection';
 import {demoProducts} from '@/lib/demo-products';
-import {categoryToSlug, slugify} from '@/lib/slugs';
+import ActionDialog from './ActionDialog';
 
 interface CatalogProps {
   initialCategory?: string;
@@ -16,28 +16,40 @@ interface CatalogProps {
 
 export default function Catalog({initialCategory, initialMode}: CatalogProps = {}){
   const params=useSearchParams();
+  const pathname=usePathname();
   const q=params.get('q')||'';
-  const [category,setCategory]=useState(initialCategory||params.get('category')||'Todas');
-  const [mode,setMode]=useState(initialMode||params.get('mode')||'all');
-  const [min,setMin]=useState('');
-  const [max,setMax]=useState('');
-  const [location,setLocation]=useState('');
-  const [sort,setSort]=useState(q?'relevance':'recent');
+  const category=params.get('category')||initialCategory||'Todas';
+  const mode=params.get('mode')||initialMode||'all';
+  const min=params.get('minPrice')||'';
+  const max=params.get('maxPrice')||'';
+  const location=params.get('location')||'';
+  const defaultSort=q?'relevance':initialMode==='auction'?'ending':'recent';
+  const sort=params.get('sort')||defaultSort;
+  const page=Math.max(1,Math.min(10000,Number.parseInt(params.get('page')||'1',10)||1));
+  const examples=params.get('examples')==='1';
   const [products,setProducts]=useState<Product[]>([]);
   const [count,setCount]=useState(0);
   const [loading,setLoading]=useState(true);
   const [error,setError]=useState('');
-  const [examples,setExamples]=useState(params.get('examples')==='1');
   const [filters,setFilters]=useState(false);
-  const [page,setPage]=useState(1);
   const [retry,setRetry]=useState(0);
 
-  useEffect(()=>{
-    setCategory(initialCategory||params.get('category')||'Todas');
-    setMode(initialMode||params.get('mode')||'all');
-    setSort(q?'relevance':'recent');
-    setPage(1);
-  },[params, initialCategory, initialMode, q]);
+  function update(changes:Record<string,string>, replace=false) {
+    const next=new URLSearchParams(window.location.search);
+    if (!('page' in changes)) next.delete('page');
+    for (const [name,value] of Object.entries(changes)) {
+      if(value) next.set(name,value);
+      else next.delete(name);
+    }
+    const query=next.toString();
+    const href=pathname+(query?'?'+query:'');
+    if(replace) window.history.replaceState(null,'',href);
+    else window.history.pushState(null,'',href);
+  }
+
+  function clearFilters() {
+    update({category:'',mode:'',minPrice:'',maxPrice:'',location:'',sort:''});
+  }
 
   useEffect(()=>{
     const controller=new AbortController();
@@ -75,109 +87,117 @@ export default function Catalog({initialCategory, initialMode}: CatalogProps = {
     };
   },[q,category,mode,min,max,location,sort,page,examples,retry]);
 
+  useEffect(()=>{
+    if(loading||!products.length)return;
+    const position=window.history.state?.lapelaCatalogScroll;
+    if(typeof position!=='number')return;
+    const frame=window.requestAnimationFrame(()=>{
+      window.scrollTo(0,position);
+      const state={...window.history.state};
+      delete state.lapelaCatalogScroll;
+      window.history.replaceState(state,'');
+    });
+    return ()=>window.cancelAnimationFrame(frame);
+  },[loading,products.length]);
+
+  function rememberScroll(event:MouseEvent<HTMLElement>) {
+    if(event.defaultPrevented||event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
+    if(!(event.target instanceof Element)||!event.target.closest('a[href^="/articulos/"]'))return;
+    window.history.replaceState({...window.history.state,lapelaCatalogScroll:window.scrollY},'');
+  }
+
   const categories=['Todas','Tecnología','Hogar','Moda','Deporte','Coleccionismo','Otros'];
+  const home=pathname==='/'&&!q&&!initialCategory&&!initialMode;
+  const chips=[
+    {name:'category',label:category!== (initialCategory||'Todas')?category:''},
+    {name:'mode',label:mode!==(initialMode||'all')?(mode==='sale'?'Compra directa':mode==='auction'?'Subastas':'Todo'):''},
+    {name:'minPrice',label:min?`Desde ${min} €`:''},
+    {name:'maxPrice',label:max?`Hasta ${max} €`:''},
+    {name:'location',label:location},
+  ].filter(chip=>chip.label);
+  const totalLabel=`${count} ${count===1?'artículo':'artículos'}`;
+
+  function filterFields() {
+    return <>
+      <label>Categoría
+        <select value={category} onChange={e=>update({category:e.target.value===(initialCategory||'Todas')?'':e.target.value})}>
+          {categories.map(c=><option key={c} value={c}>{c==='Todas'?'Todas las categorías':c}</option>)}
+        </select>
+      </label>
+      <fieldset>
+        <legend>Precio</legend>
+        <div className="filter-prices">
+          <label>Desde <input aria-label="Precio mínimo" placeholder="0 €" type="number" min="0" value={min} onChange={e=>update({minPrice:e.target.value},true)}/></label>
+          <label>Hasta <input aria-label="Precio máximo" placeholder="Sin límite" type="number" min="0" value={max} onChange={e=>update({maxPrice:e.target.value},true)}/></label>
+        </div>
+      </fieldset>
+      <label>Ubicación<input className="location" placeholder="Ciudad" value={location} onChange={e=>update({location:e.target.value},true)}/></label>
+    </>;
+  }
+
+  function changePage(next:number) {
+    update({page:next===1?'':String(next)});
+    document.getElementById('catalog-results')?.scrollIntoView({block:'start'});
+  }
 
   return <>
-    <section className="market-intro">
+    {home&&<section className="market-intro">
       <div className="market-intro-copy">
-        <span className="intro-eyebrow">EL MERCADO DE LAS COSAS BUENAS</span>
         <h1>Segunda mano.<br/><em>Sin segundas negociaciones.</em></h1>
-        <p>Encuentra lo que buscas. Compra a precio cerrado o puja por ello.</p>
+        <p>Compra a precio cerrado o puja por lo que te gusta.</p>
       </div>
       <div className="market-intro-coin" aria-hidden="true">
         <div className="intro-coin-face"><span>1</span><strong>PESETA</strong><small>LA PELA</small></div>
-        <span className="intro-coin-caption">cosas con historia</span>
       </div>
-      <div className="intro-note">
-        <strong>Tu tiempo también vale.</strong>
-        El chat se abre después de comprar. Solo queda acordar la entrega.
-      </div>
-    </section>
-
-    {!q && page === 1 && (category === 'Todas' || mode === 'auction') && (
-      <FeaturedAuctionSection />
-    )}
+    </section>}
 
     <div className="catalog-head">
-      <div>
-        <h2>{q?`Resultados para “${q}”`:'Tu próximo gran hallazgo'}</h2>
-        <span className="muted">Cosas con mucho por delante.</span>
-      </div>
-      <div className="mode-tabs" aria-label="Tipo de venta">
+      {home ? <h2>Explorar artículos</h2> : <h1>{q?`Resultados para “${q}”`:initialMode==='auction'?'Subastas':initialCategory||'Buscar artículos'}</h1>}
+      {!initialMode&&<div className="mode-tabs" aria-label="Tipo de venta">
         {[['all','Todo'],['sale','Compra directa'],['auction','Subastas']].map(([v,label])=>(
-          <button key={v} aria-pressed={mode===v} className={mode===v?'active':''} onClick={()=>{setMode(v);setPage(1)}}>{label}</button>
+          <button key={v} aria-pressed={mode===v} className={mode===v?'active':''} onClick={()=>update({mode:v==='all'?'':v,...(v!=='auction'&&sort==='ending'?{sort:''}:{})})}>{label}</button>
         ))}
-      </div>
+      </div>}
     </div>
 
-    {examples&&<div className="notice">Catálogo de ejemplo · Fotografías ilustrativas, sin artículos a la venta ni operaciones reales. <button onClick={()=>setExamples(false)} className="underline">Volver al catálogo</button></div>}
+    {examples&&<div className="notice">Catálogo de ejemplo · Fotografías ilustrativas. <button onClick={()=>update({examples:''})} className="underline">Volver al catálogo</button></div>}
 
     <div className="catalog-layout">
-      <aside className={`filter-panel ${filters?'open':''}`} aria-label="Filtros">
-        <h3>Categorías</h3>
-        {categories.map(c=>{
-          const targetHref = c === 'Todas' ? '/' : `/categoria/${categoryToSlug[c] || slugify(c)}`;
-          const isActive = category === c;
-          return (
-            <Link
-              key={c}
-              href={targetHref}
-              className={`category-button ${isActive ? 'active' : ''}`}
-              aria-current={isActive ? 'page' : undefined}
-              onClick={() => {
-                setCategory(c);
-                setPage(1);
-              }}
-            >
-              {c === 'Todas' ? 'Todos los artículos' : c}
-            </Link>
-          );
-        })}
-
-        <h3>Precio</h3>
-        <div className="filter-prices">
-          <input aria-label="Precio mínimo" placeholder="Desde €" type="number" min="0" value={min} onChange={e=>{setMin(e.target.value);setPage(1)}}/>
-          <input aria-label="Precio máximo" placeholder="Hasta €" type="number" min="0" value={max} onChange={e=>{setMax(e.target.value);setPage(1)}}/>
-        </div>
-
-        <h3>Ubicación</h3>
-        <input className="location" aria-label="Ubicación" placeholder="Ciudad" value={location} onChange={e=>{setLocation(e.target.value);setPage(1)}}/>
-
-        <div className="filter-note">
-          <strong>Un trato claro.</strong>
-          <p>Sin “¿me lo dejas por menos?”. Elige, compra y sigue con tu día.</p>
-          <Link href="/como-funciona" className="underline">Cómo funciona ↗</Link>
-        </div>
+      <aside className="filter-panel catalog-filters" aria-label="Filtros del catálogo">
+        {filterFields()}
       </aside>
 
-      <section aria-label="Productos">
+      <section aria-label="Productos" id="catalog-results" onClickCapture={rememberScroll}>
         <div className="catalog-toolbar">
-          <div className="flex items-center gap-3">
-            {loading ? (
-              <div className="catalog-updating-banner" role="status">
-                <BrandSpinner size="sm" label="Actualizando catálogo" />
-                <span>Buscando artículos…</span>
-              </div>
-            ) : (
-              <span className="muted">{`${count} artículos${category!=='Todas'?' en '+category:''}`}</span>
-            )}
-          </div>
-          <button className="button mobile-filters" aria-expanded={filters} onClick={()=>setFilters(!filters)}>Filtros</button>
-          <select aria-label="Ordenar productos" value={sort} onChange={e=>{setSort(e.target.value);setPage(1)}}>
+          <span role="status" className="muted">{loading?'Buscando…':totalLabel}</span>
+          <button className="button mobile-filters" aria-haspopup="dialog" onClick={event=>{event.currentTarget.focus();setFilters(true);}}>Filtros{chips.length?` (${chips.length})`:''}</button>
+          <select aria-label="Ordenar productos" value={sort} onChange={e=>update({sort:e.target.value===defaultSort?'':e.target.value,...(e.target.value==='ending'&&mode!=='auction'?{mode:'auction'}:{})})}>
             {q&&<option value="relevance">Más relevantes</option>}
             <option value="recent">Más recientes</option>
-            <option value="price-asc">Precio: menor a mayor</option>
-            <option value="price-desc">Precio: mayor a menor</option>
-            <option value="ending">Subastas que terminan</option>
+            <option value="price-asc">Menor precio</option>
+            <option value="price-desc">Mayor precio</option>
+            <option value="ending">Próximos cierres</option>
           </select>
         </div>
+        {chips.length>0&&<div className="filter-chips" aria-label="Filtros activos">
+          {chips.map(chip=><button type="button" key={chip.name} aria-label={`Quitar filtro ${chip.label}`} onClick={()=>update({[chip.name]:''})}>{chip.label} <span aria-hidden="true">×</span></button>)}
+          <button type="button" className="underline" onClick={clearFilters}>Limpiar filtros</button>
+        </div>}
+        {filters&&<ActionDialog labelledBy="catalog-filter-title" onClose={()=>setFilters(false)}>
+          <h2 id="catalog-filter-title">Filtros</h2>
+          <div className="catalog-filters">{filterFields()}</div>
+          <div className="dialog-actions">
+            <button type="button" className="button" onClick={clearFilters}>Limpiar filtros</button>
+            <button type="button" className="button primary" data-dialog-focus onClick={()=>setFilters(false)}>{loading?'Ver resultados':`Ver ${totalLabel}`}</button>
+          </div>
+        </ActionDialog>}
 
         {error ? (
           <div className="empty-state" role="status">
             <h3>El catálogo no está disponible</h3>
             <p>{error}</p>
-            <button className="button primary" onClick={()=>setExamples(true)}>Explorar ejemplos</button>
-            <button className="button" onClick={()=>{setExamples(false);setRetry(r=>r+1)}}>Reintentar</button>
+            <button className="button primary" onClick={()=>update({examples:'1'})}>Explorar ejemplos</button>
+            <button className="button" onClick={()=>{update({examples:''});setRetry(r=>r+1)}}>Reintentar</button>
           </div>
         ) : (
           <>
@@ -195,22 +215,23 @@ export default function Catalog({initialCategory, initialMode}: CatalogProps = {
             {!loading&&!products.length&&(
               <div className="empty-state">
                 <h3>Aún no hay artículos aquí</h3>
-                <p>Prueba otra categoría o publica el primer anuncio.</p>
+                <p>{q||chips.length?'Prueba otros términos o ajusta los filtros.':'Prueba otra categoría o publica el primer anuncio.'}</p>
                 <Link href="/publish-ad" className="button primary">Publicar anuncio</Link>
-                <button className="button" onClick={()=>{setExamples(true);setCategory('Todas');setMin('');setMax('');setLocation('')}}>Explorar ejemplos</button>
+                <button className="button" onClick={()=>{update({examples:'1',category:'Todas',mode:'all',minPrice:'',maxPrice:'',location:''})}}>Explorar ejemplos</button>
               </div>
             )}
 
             {!examples&&count>12&&(
               <div className="catalog-toolbar mt-8">
-                <button className="button" disabled={page===1} onClick={()=>setPage(page-1)}>Anterior</button>
+                <button className="button" disabled={page===1} onClick={()=>changePage(page-1)}>Anterior</button>
                 <span>Página {page} de {Math.ceil(count/12)}</span>
-                <button className="button" disabled={page*12>=count} onClick={()=>setPage(page+1)}>Siguiente</button>
+                <button className="button" disabled={page*12>=count} onClick={()=>changePage(page+1)}>Siguiente</button>
               </div>
             )}
           </>
         )}
       </section>
     </div>
+    {!q&&!chips.length&&page===1&&(home||initialMode==='auction')&&<FeaturedAuctionSection/>}
   </>;
 }

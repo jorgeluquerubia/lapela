@@ -37,10 +37,10 @@ La propuesta combina la sencillez de uso de un marketplace móvil con dos mecani
 - Redirección 301 de compatibilidad desde rutas históricas `/ad-detail/[slug]`.
 - Optimización SEO integral: SSR con `generateMetadata`, Open Graph, Twitter Cards, Schema.org JSON-LD (`Product`, `BreadcrumbList`, `WebSite`), `sitemap.xml` dinámico y `robots.txt`.
 - Búsqueda relevante por título, etiquetas controladas, categoría y descripción, con alias frecuentes, tolerancia conservadora a erratas y sugerencias mientras se escribe.
-- Filtros por categoría, modalidad, rango de precio y ubicación.
+- Filtros por categoría, modalidad, rango de precio y ubicación. El catálogo guarda los filtros, el orden y la página en la URL. En móvil, el panel de filtros muestra el recuento de resultados.
 - Orden por fecha, precio y próxima finalización de subasta.
 - Catálogo de ejemplo como alternativa cuando no hay conexión o resultados.
-- Ficha de artículo con fotografías, estado, ubicación, entrega, precio y reglas de compra.
+- Ficha de artículo con galería ampliable, vendedor, entrega y precio antes de la descripción extensa. La acción de compra o puja tiene acceso fijo en móvil cuando el control de la ficha queda fuera de la vista.
 - Bloque semántico 'La historia de este objeto' en la ficha de producto y distintivo 'Con historia' tanto en catálogo como en ficha.
 - Rutas semánticas para categorías (`/categoria/:slug`), subastas (`/subastas`) y artículos (`/articulos/:slug-con-id`).
 - Metadatos canónicos y sociales, Schema.org, `robots.txt` y sitemap dinámico para indexación.
@@ -63,7 +63,7 @@ La propuesta combina la sencillez de uso de un marketplace móvil con dos mecani
 ### Publicación y venta
 
 - Publicación de un artículo como precio cerrado o subasta.
-- Entre una y seis imágenes JPG, PNG o WebP, de hasta 5 MB por archivo.
+- Entre una y seis imágenes JPG, PNG o WebP, de hasta 5 MB por archivo. El vendedor puede ordenar las fotos y elegir la principal.
 - Las imágenes nuevas se normalizan al subirlas, conservando proporción y centrado dentro de un formato 4:3 para su presentación en los anuncios.
 - Categoría, estado, ubicación, descripción, modalidad de entrega y gastos de envío.
 - Campo opcional 'Historia de este objeto' (hasta 1.000 caracteres) separado de la descripción objetiva, con preguntas guía y contador, que puede retirarse sin eliminar el anuncio.

@@ -29,6 +29,7 @@ describe('Header notifications',()=>{
     expect(screen.getByRole('link',{name:'Abrir chat'})).toHaveAttribute('href','/orders/order-1');
     fireEvent.keyDown(window,{key:'Escape'});
     expect(screen.queryByText('¿Sigue disponible?')).not.toBeInTheDocument();
+    await waitFor(()=>expect(bell).toHaveFocus());
   });
 
   it('keeps the unread notification visible when article metadata is unavailable',async()=>{

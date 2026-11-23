@@ -161,6 +161,30 @@ test('publicación, fotos, catálogo y ficha desde una visita móvil', async () 
     const image = page.getByRole('img', {name: radio.title, exact: true}).first();
     await expect(image).toBeVisible();
     await expect.poll(() => image.evaluate(img => (img as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);
+    await page.setViewportSize({width: 320, height: 844});
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(320);
+    const zoom = page.getByRole('button', {name: 'Ampliar foto del artículo'});
+    await zoom.focus();
+    await page.keyboard.press('Enter');
+    const photoDialog = page.getByRole('dialog', {name: `Foto de ${radio.title}`});
+    await expect(photoDialog.getByRole('button', {name: 'Cerrar foto'})).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(photoDialog.getByRole('button', {name: 'Cerrar foto'})).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(photoDialog).toBeHidden();
+    await expect(zoom).toBeFocused();
+    await expect(page.locator('.purchase-action').getByRole('link', {name: 'Entrar para comprar'}))
+      .toHaveAttribute('href', '/login?next=' + encodeURIComponent('/articulos/' + found.slug));
+    await page.goto('/search?q=' + encodeURIComponent(radio.title));
+    const filters = page.getByRole('button', {name: 'Filtros', exact: true});
+    await filters.click();
+    const filterDialog = page.getByRole('dialog', {name: 'Filtros'});
+    await filterDialog.getByRole('spinbutton', {name: 'Precio mínimo'}).fill('5');
+    await expect(page).toHaveURL(/minPrice=5/);
+    await filterDialog.getByRole('button', {name: /Ver \d+ artículos?/}).click();
+    await page.reload();
+    await expect(page.getByRole('button', {name: 'Quitar filtro Desde 5 €'})).toBeVisible();
+
   } finally { await page.close(); }
 });
 

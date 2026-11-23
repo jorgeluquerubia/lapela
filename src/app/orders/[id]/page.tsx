@@ -66,6 +66,17 @@ export default function Order(){
     refunded:'Reembolsado'
   };
 
+  const deliveryStep=o.listing.delivery==='pickup'?'Recogida':'Entrega';
+  const steps=['Pendiente de pago','Pagado',deliveryStep,'Completado'];
+  const currentStep=['pending_payment','paid','shipped','completed'].indexOf(o.status);
+  const nextAction=o.status==='pending_payment'
+    ? buyer?'Completa el pago para continuar.':'El pedido está pendiente de pago.'
+    : o.status==='paid'
+      ? o.listing.delivery==='pickup'?'Acordad la recogida en el chat del pedido.':buyer?'El vendedor debe registrar el envío.':'Prepara el envío y añade el seguimiento.'
+      : o.status==='shipped'
+        ? buyer?'Confirma la recepción cuando tengas el artículo.':'El comprador debe confirmar la recepción.'
+        : o.status==='completed'&&data.canReview?'Ya puedes dejar una valoración.':'';
+
   return (
     <>
       <div className="breadcrumbs">
@@ -73,7 +84,13 @@ export default function Order(){
         <span>/</span>
         <span>Pedido {id.slice(0,8)}</span>
       </div>
-      <h1>{labels[o.status]||o.status}</h1>
+      <h1>{o.listing.title}</h1>
+      {currentStep>=0
+        ? <ol className="order-progress" aria-label="Progreso del pedido">{steps.map((step,index)=>(
+            <li key={step} aria-current={index===currentStep?'step':undefined}>{index+1}. {step}</li>
+          ))}</ol>
+        : <p className="notice">{labels[o.status]||o.status}</p>}
+      {nextAction&&<p className="order-next-action">{nextAction}</p>}
       {(o.seller?.alias || o.buyer?.alias) && (
         <p className="order-counterparts">
           {o.seller?.alias && <span>Vendedor: <Link className="profile-link" href={`/usuarios/${o.seller.alias}`}>@{o.seller.alias}</Link></span>}
@@ -93,7 +110,7 @@ export default function Order(){
       <div className="order-layout">
         <section className="order-summary">
           <img src={o.listing.images[0]} alt={o.listing.title}/>
-          <h2>{o.listing.title}</h2>
+          <h2>Resumen del pedido</h2>
           <div className="order-price-box mb-2">
             <p className="detail-price m-0">{money(o.amount_cents)}</p>
             <span className="peseta-approx block text-sm">

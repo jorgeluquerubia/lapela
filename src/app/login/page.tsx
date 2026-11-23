@@ -20,9 +20,20 @@ export default function Login() {
   const { session, loading: authLoading } = useAuth();
 
   useEffect(() => {
-    if (!authLoading && session) {
-      router.push('/');
+    if (authLoading || !session) return;
+    const path = new URLSearchParams(window.location.search).get('next');
+    let target = '/';
+    if (path?.startsWith('/')) {
+      try {
+        const next = new URL(path, window.location.origin);
+        if (next.origin === window.location.origin && !next.pathname.startsWith('//')) {
+          target = next.pathname + next.search + next.hash;
+        }
+      } catch {
+        // Invalid return paths fall back to the catalogue.
+      }
     }
+    router.replace(target);
   }, [session, authLoading, router]);
 
   const handleSignIn = async (e: React.FormEvent) => {
@@ -41,9 +52,6 @@ export default function Login() {
       setError(error.message);
       setShowResend(/email not confirmed|email no confirmado|confirm your email|confirma tu correo/i.test(error.message));
       setLoading(false);
-    } else {
-      router.push('/');
-      router.refresh();
     }
   };
 
