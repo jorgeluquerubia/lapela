@@ -47,3 +47,18 @@ La migración nueva usa tablas `lp_*` para separar el modelo renovado del esquem
 En modo `simulated`, comprar reserva el artículo y permite confirmar un pago simulado desde el pedido. En modo real, el checkout se crea en Stripe y solo el webhook firmado puede marcar el pedido como pagado.
 
 Antes de abrir cobros reales hay que configurar Stripe Connect, el webhook, las condiciones del servicio, privacidad, soporte e incidencias. El cambio de modo de prueba a real es deliberado y queda protegido por configuración del entorno.
+
+### Probar Stripe Connect en sandbox
+
+1. Usa una base Supabase de pruebas con las migraciones aplicadas y un sandbox de Stripe con Connect habilitado para la plataforma. Configura `LAPELA_PAYMENTS_MODE=stripe_test`, `APP_URL` con la URL del entorno y `STRIPE_SECRET_KEY` con la clave de prueba del sandbox. Para una integración local, reutiliza la configuración de Supabase local de las pruebas del MVP.
+2. Autentica la CLI de Stripe en ese sandbox y reenvía al entorno los eventos de Checkout. Si ejecutas la CLI en otro equipo, apunta a un túnel hacia el puerto local de Next.js.
+
+   ```bash
+   stripe listen --events checkout.session.completed,checkout.session.async_payment_succeeded \
+     --forward-to http://127.0.0.1:3082/api/stripe/webhook
+   ```
+
+3. Guarda el secreto de firma que muestra la CLI como `STRIPE_WEBHOOK_SECRET` y arranca o reinicia la aplicación en el puerto 3082. En `Mi cuenta`, inicia el alta Connect con un vendedor de prueba y completa los datos de prueba en Stripe. Publica un anuncio y paga desde otra cuenta con la tarjeta de prueba `4242 4242 4242 4242`, una fecha futura y un CVC de prueba.
+4. Verifica que el webhook devuelve HTTP 200 y que el pedido queda pagado. Repite el envío del evento para comprobar que se conserva el resultado. Para probar sin Stripe, usa el modo `simulated`.
+
+Consulta las guías oficiales de [Stripe Sandboxes](https://docs.stripe.com/sandboxes), [datos de prueba de Connect](https://docs.stripe.com/connect/testing) y [tarjetas de prueba](https://docs.stripe.com/testing).

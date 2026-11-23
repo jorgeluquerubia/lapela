@@ -182,9 +182,15 @@ El proyecto Supabase se llama `lapela-app`. Su referencia es `buzmbigpgsrzjrkzid
 - La configuración de redirect de Supabase permite los puertos 3000 y 3011.
 - El build de desarrollo se guarda en `.next-dev`; producción usa `.next`.
 
+### Stripe Connect en sandbox
+
+- `LAPELA_PAYMENTS_MODE=stripe_test` habilita Connect y Checkout de prueba contra el catálogo `sandbox`.
+- Las cuentas Connect se guardan por usuario y entorno. Los eventos firmados de Stripe solo pueden confirmar pedidos de su modo y del entorno correspondiente.
+- La prueba se ejecuta con una base de Supabase aislada y una clave Stripe de prueba. La configuración se describe en el [README](README.md#probar-stripe-connect-en-sandbox).
+
 ### Modo real futuro
 
-- Cualquier valor distinto de `simulated` hace que el controlador trate el entorno como `live`.
+- Los modos `simulated` y `stripe_test` usan anuncios de prueba. El flujo con claves activas opera sobre anuncios `live`.
 - Stripe requiere clave secreta, webhook, cuentas Connect activas y `LAPELA_LIVE_PAYMENTS=true` si la clave es live.
 - El cambio no debe hacerse hasta completar la spec correspondiente y los requisitos legales y operativos.
 
@@ -197,7 +203,7 @@ No existe actualmente un staging independiente documentado.
 | `NEXT_PUBLIC_SUPABASE_URL` | Pública | URL del proyecto Supabase |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Pública | Clave anónima para Auth y cliente público |
 | `SUPABASE_SERVICE_ROLE_KEY` | Secreta, solo servidor | Acceso administrativo desde modelos y controladores |
-| `LAPELA_PAYMENTS_MODE` | Servidor | `simulated` mantiene la beta en sandbox |
+| `LAPELA_PAYMENTS_MODE` | Servidor | `simulated` usa el simulador interno y `stripe_test` usa Stripe sandbox. Ambos consultan anuncios de prueba. |
 | `APP_URL` | Servidor | Origen canónico para redirects de Stripe y validación de origen |
 | `STRIPE_SECRET_KEY` | Secreta, solo servidor | API de Stripe; no requerida en modo simulado |
 | `STRIPE_WEBHOOK_SECRET` | Secreta, solo servidor | Verificación de firmas del webhook Stripe |
@@ -218,7 +224,7 @@ Las claves secretas no deben usar el prefijo `NEXT_PUBLIC_`, aparecer en specs, 
 - `lp_reviews`: valoraciones entre las partes de un pedido completado.
 - `lp_questions`: preguntas y respuestas públicas del producto y estado de notificación.
 - `lp_notifications`: registro y persistencia de lectura de novedades por usuario y artículo/pedido (ventas, chat, pujas recibidas y superadas, cierre de subasta, pagos, expiraciones y cambios de estado).
-- `lp_accounts`: cuenta Stripe Connect del vendedor.
+- `lp_accounts`: cuenta Stripe Connect activa. `lp_stripe_sandbox_accounts` guarda las cuentas de prueba.
 - `lp_reports`: denuncias de anuncios o pedidos.
 - `lp_payment_events`: idempotencia de eventos Stripe.
 
