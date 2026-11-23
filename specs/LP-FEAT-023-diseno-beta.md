@@ -40,4 +40,10 @@ La auditoría del piloto pide adelantar productos y acciones, mejorar reflujo y 
 - En tres cargas locales de producción a 390 px, la portada registró un LCP entre 0,65 y 0,78 s y un CLS de 0. Son mediciones de laboratorio.
 - Se identificó un aviso preexistente de bloqueo de sesión de Supabase al recargar en Firefox. WebKit registró cancelaciones de peticiones anticipadas durante los cambios de ruta. Los recorridos funcionales se completaron.
 
-El [PR #97](https://github.com/jorgeluquerubia/lapela/pull/97) se apoya en el PR #95 para revisar el rediseño sobre el piloto integrado. Quedan pendientes la validación con personas invitadas, la revisión en dispositivos físicos y la integración en `main`.
+## Publicación del 23 de noviembre de 2026
+
+El [PR #95](https://github.com/jorgeluquerubia/lapela/pull/95) quedó integrado en `main`. El [PR #97](https://github.com/jorgeluquerubia/lapela/pull/97) publica el rediseño mediante la integración Git de Vercel.
+
+El catálogo de producción ya devolvía 503 antes de la publicación. Supabase confirmó que `lapela-app` está inactivo y rechazó la reactivación por las restricciones de la organización. Cuando se reactive, hay que cotejar el historial de migraciones y aplicar las pendientes del PR #95 antes de probar el catálogo y las operaciones de la beta en producción.
+
+Quedan pendientes la validación con personas invitadas y la revisión en dispositivos físicos.
