@@ -7,7 +7,7 @@ requested_at: 2026-11-22
 requested_by: usuario
 source: conversación
 owner: producto
-github_issue: pending
+github_issue: https://github.com/jorgeluquerubia/lapela/issues/89
 related_specs: [LP-FEAT-018, LP-FIX-006]
 dependencies: [LP-FEAT-018]
 cross_cutting_concerns: [notificaciones, privacidad, concurrencia, base de datos]
@@ -115,3 +115,9 @@ Cada nuevo favorito persiste de forma independiente. Para cada vendedor y anunci
 |---|---|---|
 | 2026-11-22 | `IN_PROGRESS` | Ficha creada tras reservar worktree y revisar el hallazgo de auditoría | Codex |
 | 2026-11-22 | `IMPLEMENTED` | Migración y regresión concurrente validadas en PostgreSQL temporal; issue y PR pendientes por falta de autenticación GitHub | Codex |
+
+## Validación y publicación del 23 de noviembre de 2026
+
+La prueba SQL de concurrencia pasó en Supabase local con PostgreSQL 17, usando supabase_admin para las conexiones dblink. Confirmó dos favoritos, un aviso, reintentos, ventana móvil y privacidad.
+
+Las cuatro migraciones se aplicaron juntas en una instancia Supabase aislada. Las siete pruebas de controlador y la comprobación TypeScript pasaron. La publicación se realiza desde el Mac con acceso autorizado a GitHub. La rama permanece IMPLEMENTED hasta completar la revisión.
