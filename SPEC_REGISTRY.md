@@ -90,6 +90,7 @@ Prioridades: `P0` bloquea una operación esencial o implica un riesgo grave; `P1
 | `LP-FIX-013` | `FIX` | Exclusión mutua entre Checkout y cobro en persona | `IMPLEMENTED` | `P0` | 2026-11-22 | [Abrir ficha](specs/LP-FIX-013-checkout-cobro-en-persona.md) |
 | `LP-FIX-014` | `FIX` | Carrera en avisos de favoritos al vendedor | `IMPLEMENTED` | `P1` | 2026-11-22 | [Abrir ficha](specs/LP-FIX-014-favorite-notification-race.md) |
 | `LP-FIX-015` | `FIX` | Corregir avisos al caducar reservas | `IMPLEMENTED` | `P1` | 2026-11-22 | [Abrir ficha](specs/LP-FIX-015-reservation-expiry-notices.md) |
+| `LP-FIX-016` | `FIX` | Aislamiento de entorno en actividad y notificaciones | `IMPLEMENTED` | `P1` | 2026-11-22 | [Abrir ficha](specs/LP-FIX-016-activity-notifications-environment.md) |
 
 <!-- LP-FEAT-019 en IMPLEMENTED el 2026-09-13: subsanadas observaciones de QA, verificación final en edición cerrada pendiente de QA real en entorno desplegado -->
 
