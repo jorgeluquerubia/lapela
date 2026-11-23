@@ -1,6 +1,6 @@
 'use client';
 
-import {useState} from 'react';
+import {useEffect,useRef,useState} from 'react';
 import {useRouter} from 'next/navigation';
 import Link from 'next/link';
 import {useAuth} from '@/context/AuthContext';
@@ -22,9 +22,22 @@ export default function Publish(){
   const [uploading,setUploading]=useState(false);
   const [busy,setBusy]=useState(false);
   const [error,setError]=useState('');
+  const errorRef=useRef<HTMLParagraphElement>(null);
+
+  useEffect(()=>{if(error)errorRef.current?.focus();},[error]);
+
+  function movePhoto(from:number,to:number){
+    setImages(previous=>{
+      const ordered=[...previous];
+      const [photo]=ordered.splice(from,1);
+      if (!photo) return previous;
+      ordered.splice(to,0,photo);
+      return ordered;
+    });
+  }
 
   async function upload(files:FileList|null){
-    if(!files)return;
+    if(!files?.length||uploading)return;
     setError('');
     setUploading(true);
     try{
@@ -43,6 +56,7 @@ export default function Publish(){
 
   async function submit(e:React.FormEvent<HTMLFormElement>){
     e.preventDefault();
+    if(busy||uploading||!images.length)return;
     setBusy(true);
     setError('');
     const data=Object.fromEntries(new FormData(e.currentTarget));
@@ -64,8 +78,21 @@ export default function Publish(){
     <div><span className="eyebrow">VENDER EN LA PELA</span><h1>Tu artículo.<br/>Tus condiciones.</h1><p className="muted">Un buen anuncio resuelve las dudas antes de comprar.</p><div className="filter-note"><strong>Sin regateos, también en el anuncio.</strong><p>No incluyas teléfonos, redes sociales ni enlaces. Describe el estado y los defectos con claridad.</p></div></div>
     <form className="editor-form" onSubmit={submit}>
       <h2>1. Enséñalo como es</h2>
-      <label className="upload-area">{uploading?'Subiendo fotos…':'＋ Añadir fotos'}<span>Hasta 6 fotos · Se ajustan automáticamente para verse completas y centradas · 5 MB por foto</span><input aria-label="Fotos del artículo" type="file" multiple accept="image/jpeg,image/png,image/webp" disabled={uploading||images.length>=6} onChange={e=>upload(e.target.files)}/></label>
-      <div className="photo-thumbs">{images.map((url,i)=><div key={url}><img src={url} alt={`Foto ${i+1}`}/><button type="button" onClick={()=>setImages(images.filter(x=>x!==url))}>Quitar {i+1}</button></div>)}</div>
+      {error&&<p ref={errorRef} tabIndex={-1} className="error-message" role="alert">{error}</p>}
+      <label className="upload-area" aria-disabled={uploading||images.length>=6}>
+        <span className="button">Añadir fotos</span>
+        <span id="upload-help">Hasta 6 fotos, 5 MB por foto. JPG, PNG o WebP.</span>
+        <input className="sr-only" aria-label="Fotos del artículo" aria-describedby="upload-help" type="file" multiple accept="image/jpeg,image/png,image/webp" disabled={uploading||images.length>=6} onChange={e=>{void upload(e.target.files);e.target.value='';}}/>
+      </label>
+      <p className="muted upload-status" role="status">{uploading?'Subiendo fotos…':`${images.length} de 6 fotos`}</p>
+      <ol className="publish-photos">
+        {images.map((url,i)=><li key={url}>
+          <img src={url} alt={`Foto ${i+1}`}/>
+          {i===0?<strong>Foto principal</strong>:<button type="button" aria-label={`Hacer principal la foto ${i+1}`} onClick={()=>movePhoto(i,0)}>Hacer principal</button>}
+          {i>1&&<button type="button" aria-label={`Adelantar la foto ${i+1}`} onClick={()=>movePhoto(i,i-1)}>Adelantar</button>}
+          <button type="button" aria-label={`Quitar foto ${i+1}`} onClick={()=>setImages(previous=>previous.filter(x=>x!==url))}>Quitar</button>
+        </li>)}
+      </ol>
       <label>Título<input name="title" placeholder="Por ejemplo: cámara réflex con objetivo 18–55 mm" minLength={5} maxLength={100} required/></label>
       <div className="form-pair"><label>Categoría<select name="category" value={category} onChange={event=>{setCategory(event.target.value);setTags([])}}>{categories.map(c=><option key={c}>{c}</option>)}</select></label><label>Estado<select name="condition">{conditions.map(c=><option key={c}>{c}</option>)}</select></label></div>
       <fieldset className="tag-picker">
@@ -103,7 +130,6 @@ export default function Publish(){
       <div className="form-pair"><label>Ciudad<input name="location" minLength={2} maxLength={80} required placeholder="Madrid"/></label><label>Entrega<select value={delivery} onChange={e=>setDelivery(e.target.value)}><option value="pickup">Recogida en persona</option><option value="shipping">Envío organizado por mí</option></select></label></div>
       {delivery==='shipping'&&<label>Gastos de envío (€)<input name="shipping" type="number" min="0" max="100" step="0.01" defaultValue="0" required/></label>}
       <label className="check-row"><input type="checkbox" required/> Confirmo que las fotos son del artículo y que he descrito sus defectos.</label>
-      {error&&<p className="error-message" role="alert">{error}</p>}
       <button className="button primary w-full" disabled={busy||uploading||!images.length}>{busy?'Publicando…':'Publicar artículo'}</button>
       <p className="muted">Para recibir pagos, completa la activación de cobros en Mi cuenta.</p>
     </form>

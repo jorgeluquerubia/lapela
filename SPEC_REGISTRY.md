@@ -87,6 +87,7 @@ Prioridades: `P0` bloquea una operación esencial o implica un riesgo grave; `P1
 | `LP-FIX-011` | `FIX` | Corrección de solapamiento del panel de notificaciones y carga robusta de imágenes | `VERIFIED` | `P1` | 2026-09-13 | [Abrir ficha](specs/LP-FIX-011-panel-notificaciones-imagenes.md) |
 | `LP-FEAT-021` | `FEATURE` | Marcar todas las notificaciones como vistas desde el panel | `VERIFIED` | `P2` | 2026-09-13 | [Abrir ficha](specs/LP-FEAT-021-marcar-todas-notificaciones-vistas.md) |
 | `LP-FEAT-022` | `FEATURE` | Probar pagos con Stripe Connect en sandbox | `IMPLEMENTED` | `P1` | 2026-11-22 | [Abrir ficha](specs/LP-FEAT-022-stripe-connect-sandbox.md) |
+| `LP-FEAT-023` | `FEATURE` | Diseño y recorridos de la beta | `IMPLEMENTED` | `P1` | 2026-11-23 | [Abrir ficha](specs/LP-FEAT-023-diseno-beta.md) |
 | `LP-FIX-013` | `FIX` | Exclusión mutua entre Checkout y cobro en persona | `IMPLEMENTED` | `P0` | 2026-11-22 | [Abrir ficha](specs/LP-FIX-013-checkout-cobro-en-persona.md) |
 | `LP-FIX-014` | `FIX` | Carrera en avisos de favoritos al vendedor | `IMPLEMENTED` | `P1` | 2026-11-22 | [Abrir ficha](specs/LP-FIX-014-favorite-notification-race.md) |
 | `LP-FIX-015` | `FIX` | Corregir avisos al caducar reservas | `IMPLEMENTED` | `P1` | 2026-11-22 | [Abrir ficha](specs/LP-FIX-015-reservation-expiry-notices.md) |

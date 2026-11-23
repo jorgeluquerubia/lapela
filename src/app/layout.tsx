@@ -1,4 +1,5 @@
 import './globals.css';
+import './beta-design.css';
 import type {Metadata} from 'next';
 import {AuthProvider} from '@/context/AuthContext';
 import Header from '@/components/Header';

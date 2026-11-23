@@ -14,3 +14,10 @@ if (typeof global.Request === 'undefined' && typeof globalThis.Request !== 'unde
 if (typeof global.Headers === 'undefined' && typeof globalThis.Headers !== 'undefined') {
   global.Headers = globalThis.Headers;
 }
+
+
+// jsdom exposes the element but delegates native modal behavior to browser tests.
+if (typeof HTMLDialogElement !== 'undefined' && !HTMLDialogElement.prototype.showModal) {
+  HTMLDialogElement.prototype.showModal = function () { this.open = true; };
+  HTMLDialogElement.prototype.close = function () { this.open = false; };
+}

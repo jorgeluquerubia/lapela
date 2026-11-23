@@ -20,7 +20,8 @@ export default function ProductCard({product:p}:{product:Product}){
   const [favoriteBusy, setFavoriteBusy] = useState(false);
   const [favoriteNotice, setFavoriteNotice] = useState('');
   const auction=p.type==='auction';
-  const time=p.auction_ends_at?Math.max(0,Math.ceil((Date.parse(p.auction_ends_at)-Date.now())/3600000)):null;
+  const minutes=p.auction_ends_at?Math.ceil((Date.parse(p.auction_ends_at)-Date.now())/60000):null;
+  const ending=minutes===null?null:minutes<=0?'Finalizada':minutes<60?`Quedan ${minutes} min`:minutes>=1440?`Quedan ${Math.ceil(minutes/1440)} d`:`Quedan ${Math.ceil(minutes/60)} h`;
   const href=`/articulos/${p.slug||productSlug(p.id,p.name)}`;
   const isDemo = p.id.startsWith('demo-') || p.id.startsWith('ejemplo-');
   const isMine = Boolean((p as any).isMine || (p as any).mine || (user && ((p as any).seller_id === user.id || p.user_id === user.id)));
@@ -117,19 +118,19 @@ export default function ProductCard({product:p}:{product:Product}){
     <div className="product-info">
       <div className="price-row">
         <div className="price-stack">
-          <strong>{new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR',maximumFractionDigits:2}).format(p.current_bid||p.price)}</strong>
+          <strong>{new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR',maximumFractionDigits:2}).format(p.current_bid??p.price)}</strong>
           <span className="peseta-approx" title="Equivalencia histórica · El pago se realiza en euros">
-            {pesetaEquivalence(p.current_bid || p.price)}
+            {pesetaEquivalence(p.current_bid ?? p.price)}
           </span>
         </div>
-        <span>{auction?`${p.bid_count||0} pujas`:'Sin regateos'}</span>
+        <span>{auction?`${p.bid_count||0} ${p.bid_count===1?'puja':'pujas'}`:null}</span>
       </div>
       <Link href={href}><h3>{p.name}</h3></Link>
       <div className="product-meta">
         <span>{p.location||'España'}</span>
-        <span>{auction&&time!==null?(time===0?'Finalizada':`Quedan ${time} h`):'Segunda mano'}</span>
+        <span>{auction&&ending?ending:p.delivery==='shipping'?'Envío':p.delivery==='pickup'?'Recogida':p.condition}</span>
       </div>
-      {p.sellerProfile?.alias&&<Link className="profile-link product-seller" href={`/usuarios/${p.sellerProfile.alias}`}>Vendido por @{p.sellerProfile.alias}</Link>}
+      {p.sellerProfile?.alias&&<Link className="profile-link product-seller" href={`/usuarios/${p.sellerProfile.alias}`}>Vendedor · @{p.sellerProfile.alias}</Link>}
     </div>
   </article>;
 }

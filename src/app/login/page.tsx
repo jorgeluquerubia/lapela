@@ -17,11 +17,26 @@ export default function Login() {
   const [forgotLoading, setForgotLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  function afterLogin() {
+    const path = new URLSearchParams(window.location.search).get('next');
+    let target = '/';
+    if (path?.startsWith('/')) {
+      try {
+        const next = new URL(path, window.location.origin);
+        if (next.origin === window.location.origin && !next.pathname.startsWith('//')) {
+          target = next.pathname + next.search + next.hash;
+        }
+      } catch {
+        // Invalid return paths fall back to the catalogue.
+      }
+    }
+    router.push(target);
+  }
   const { session, loading: authLoading } = useAuth();
 
   useEffect(() => {
     if (!authLoading && session) {
-      router.push('/');
+      afterLogin();
     }
   }, [session, authLoading, router]);
 
@@ -42,7 +57,7 @@ export default function Login() {
       setShowResend(/email not confirmed|email no confirmado|confirm your email|confirma tu correo/i.test(error.message));
       setLoading(false);
     } else {
-      router.push('/');
+      afterLogin();
       router.refresh();
     }
   };
