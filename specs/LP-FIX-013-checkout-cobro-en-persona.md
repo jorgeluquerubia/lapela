@@ -28,3 +28,10 @@ Corrige la carrera entre Checkout, cobro presencial y webhook. Una sesión Strip
 La revisión añadió autorización del vendedor antes de consultar Stripe, comparación de sesión y transición atómica en PostgreSQL. Checkout verifica que pudo asociar su sesión al pedido antes de devolver la URL y expira la sesión si el cobro presencial ganó la carrera. Cuatro regresiones de controlador y una prueba SQL pasaron.
 
 Las cuatro migraciones se aplicaron juntas en una instancia Supabase aislada. Las siete pruebas de controlador y la comprobación TypeScript pasaron. La publicación se realiza desde el Mac con acceso autorizado a GitHub. La rama permanece IMPLEMENTED hasta completar la revisión.
+
+
+## Verificación en producción del 24 de noviembre de 2026
+
+Supabase reactivó `lapela-app`. Se aplicaron las cinco migraciones del PR #95 en una transacción y se conservaron sus versiones del repositorio en el historial remoto. Las regresiones transaccionales con rollback verificaron la exclusión entre Checkout y cobro presencial, el aislamiento de avisos y la caducidad. La auditoría de los datos existentes obtuvo cero casos en sus 16 comprobaciones.
+
+Se alineó la suite SQL general con el contrato idempotente. Un reintento conserva el pedido completado y sigue habiendo un único aviso al comprador.
