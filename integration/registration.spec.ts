@@ -10,7 +10,7 @@ function localOrigin(value: string | undefined) {
   return url.origin;
 }
 
-test('registro público, confirmación por correo e inicio de sesión', async ({browser, request}) => {
+test('registro, confirmación y recuperación de contraseña por correo', async ({browser, request}) => {
   test.skip(!process.env.LAPELA_INTEGRATION_MAIL_URL, 'Sin buzón local configurado.');
   const app = localOrigin(process.env.LAPELA_INTEGRATION_URL);
   const database = localOrigin(process.env.NEXT_PUBLIC_SUPABASE_URL);
@@ -50,5 +50,43 @@ test('registro público, confirmación por correo e inicio de sesión', async ({
     await page.getByLabel('Contraseña', {exact: true}).fill(password);
     await page.getByRole('button', {name: 'Entrar', exact: true}).click();
     await expect(page.getByRole('link', {name: 'Mi cuenta', exact: true})).toBeVisible();
+
+    const recoveryContext = await browser.newContext({baseURL: app});
+    try {
+      const recovery = await recoveryContext.newPage();
+      await recovery.goto('/login');
+      await recovery.getByRole('button', {name:'¿Has olvidado tu contraseña?'}).click();
+      await recovery.getByLabel('Email', {exact:true}).fill(email);
+      await recovery.getByRole('button', {name:'Enviar enlace de recuperación'}).click();
+      await expect(recovery.getByRole('status')).toContainText('enlace para cambiar la contraseña');
+      let recoveryMessage: string | undefined;
+      await expect.poll(async ()=>{
+        const response=await request.get(mail+'/api/v1/messages');
+        if(!response.ok())return false;
+        const {messages}=await response.json() as {messages:{ID:string;To:{Address:string}[]}[]};
+        recoveryMessage=messages.find(item=>item.ID!==messageId&&item.To.some(to=>to.Address===email))?.ID;
+        return Boolean(recoveryMessage);
+      }).toBe(true);
+      const recoveryMail=await request.get(`${mail}/api/v1/message/${recoveryMessage}`);
+      const recoveryHtml=(await recoveryMail.json() as {HTML:string}).HTML;
+      const recoveryLink=recoveryHtml.match(/href="([^"\s]*\/auth\/v1\/verify[^"\s]*)"/)?.[1];
+      if(!recoveryLink)throw new Error('Falta el enlace de recuperación.');
+      const recoveryUrl=new URL(recoveryLink.replaceAll('&amp;','&'));
+      expect(recoveryUrl.origin).toBe(database);
+      expect(recoveryUrl.searchParams.get('type')).toBe('recovery');
+      expect(recoveryUrl.searchParams.get('redirect_to')).toBe(app+'/reset-password');
+      await recovery.goto(recoveryUrl.href);
+      await expect(recovery).toHaveURL(/\/reset-password/);
+      const changedPassword=`LaPela-${randomUUID()}!`;
+      await recovery.getByLabel('Nueva contraseña',{exact:true}).fill(changedPassword);
+      await recovery.getByLabel('Repite la contraseña',{exact:true}).fill(changedPassword);
+      await recovery.getByRole('button',{name:'Guardar contraseña'}).click();
+      await expect(recovery.getByRole('status')).toContainText('Contraseña actualizada');
+      await recovery.getByRole('link',{name:'Ir a iniciar sesión'}).click();
+      await recovery.getByLabel('Email',{exact:true}).fill(email);
+      await recovery.getByLabel('Contraseña',{exact:true}).fill(changedPassword);
+      await recovery.getByRole('button',{name:'Entrar',exact:true}).click();
+      await expect(recovery.getByRole('link',{name:'Mi cuenta',exact:true})).toBeVisible();
+    } finally { await recoveryContext.close(); }
   } finally { await context.close(); }
 });

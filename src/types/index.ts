@@ -1,4 +1,5 @@
 export interface Product {
+  demoAuction?: string;
   id: string;
   name: string;
   price: number;

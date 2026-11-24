@@ -44,36 +44,36 @@ describe('ProductDetailInteractive Confirmation and Purchase Policy (LP-FEAT-006
     mine: false,
   };
 
-  it('shows confirmation dialog with 48h reservation warning and policy link when clicking Comprar ahora', () => {
+  it('shows confirmation dialog with 48h reservation warning and policy link when clicking Reservar por', () => {
     render(<ProductDetailInteractive initialItem={sampleItem} slug="bicicleta-sevilla" />);
 
-    const buyButton = screen.getByRole('button', { name: /Comprar ahora/i });
+    const buyButton = screen.getByRole('button', { name: /Reservar por/i });
     expect(buyButton).toBeInTheDocument();
 
     fireEvent.click(buyButton);
 
     // Dialog appears
-    const dialog = screen.getByRole('dialog', { name: /¿Confirmar la compra de este artículo\?/i });
+    const dialog = screen.getByRole('dialog', { name: /¿Confirmar la reserva\?/i });
     expect(dialog).toBeInTheDocument();
-    expect(within(dialog).getByText(/reservado para ti durante 48 horas/i)).toBeInTheDocument();
-    expect(within(dialog).getByText(/penalizaciones en tu cuenta/i)).toBeInTheDocument();
+    expect(within(dialog).getByText(/48 horas para pagar/i)).toBeInTheDocument();
+    expect(within(dialog).getByText(/Si no pagas a tiempo/i)).toBeInTheDocument();
     expect(within(dialog).getByRole('link', { name: /política de compras/i })).toHaveAttribute('href', '/politica-de-compras');
 
     // Confirm and Cancel buttons exist
-    expect(within(dialog).getByRole('button', { name: /Confirmar y reservar/i })).toBeInTheDocument();
+    expect(within(dialog).getByRole('button', { name: /Confirmar reserva/i })).toBeInTheDocument();
     expect(within(dialog).getByRole('button', { name: /Cancelar/i })).toBeInTheDocument();
   });
 
   it('cancels confirmation dialog when clicking Cancelar', () => {
     render(<ProductDetailInteractive initialItem={sampleItem} slug="bicicleta-sevilla" />);
 
-    fireEvent.click(screen.getByRole('button', { name: /Comprar ahora/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Reservar por/i }));
     expect(screen.getByRole('dialog')).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: /Cancelar/i }));
 
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Comprar ahora/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Reservar por/i })).toBeInTheDocument();
   });
 
   it('blocks bidding when the auction end time passed before the persisted status changes', () => {
@@ -164,15 +164,14 @@ describe('ProductDetailInteractive Confirmation and Purchase Policy (LP-FEAT-006
       expect(screen.getByText(/Equivalencia histórica · El pago se realiza en euros/i)).toBeInTheDocument();
     });
 
-    it('shows peseta equivalence and payment reminder in buy confirmation dialog (AC-04)', () => {
+    it('shows price and shipping separately in the reservation dialog', () => {
       render(<ProductDetailInteractive initialItem={sampleItem} slug="bicicleta-sevilla" />);
 
-      fireEvent.click(screen.getByRole('button', { name: /Comprar ahora/i }));
+      fireEvent.click(screen.getByRole('button', { name: /Reservar por/i }));
 
       const dialog = screen.getByRole('dialog');
-      // 150.00 € + 10.00 € shipping = 160.00 € -> 160 * 166.386 = 26621.76 -> ≈ 26.622 ptas.
-      expect(within(dialog).getByText('≈ 26.622 ptas.')).toBeInTheDocument();
-      expect(within(dialog).getByText(/Equivalencia histórica · El pago se realiza en euros/i)).toBeInTheDocument();
+      expect(within(dialog).getByText(/Artículo .*150.*Envío .*10/i)).toBeInTheDocument();
+      expect(within(dialog).getByText(/160,00/)).toBeInTheDocument();
     });
 
     it('recalculates peseta equivalence dynamically when bidding in auctions (AC-02 & AC-04)', () => {

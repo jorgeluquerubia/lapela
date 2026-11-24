@@ -39,7 +39,8 @@ La propuesta combina la sencillez de uso de un marketplace móvil con dos mecani
 - Búsqueda relevante por título, etiquetas controladas, categoría y descripción, con alias frecuentes, tolerancia conservadora a erratas y sugerencias mientras se escribe.
 - Filtros por categoría, modalidad, rango de precio y ubicación. El catálogo guarda los filtros, el orden y la página en la URL. En móvil, el panel de filtros muestra el recuento de resultados.
 - Orden por fecha, precio y próxima finalización de subasta.
-- Catálogo de ejemplo como alternativa cuando no hay conexión o resultados.
+- Catálogo de ejemplo accesible desde portada y subastas, con anuncios ficticios identificados y fichas sin transacciones.
+- Búsquedas guardadas por filtros de catálogo. Los avisos de publicaciones nuevas aparecen en Novedades y se aíslan por entorno.
 - Ficha de artículo con galería ampliable, vendedor, entrega y precio antes de la descripción extensa. La acción de compra o puja tiene acceso fijo en móvil cuando el control de la ficha queda fuera de la vista.
 - Bloque semántico 'La historia de este objeto' en la ficha de producto y distintivo 'Con historia' tanto en catálogo como en ficha.
 - Rutas semánticas para categorías (`/categoria/:slug`), subastas (`/subastas`) y artículos (`/articulos/:slug-con-id`).
@@ -62,7 +63,7 @@ La propuesta combina la sencillez de uso de un marketplace móvil con dos mecani
 
 ### Publicación y venta
 
-- Publicación de un artículo como precio cerrado o subasta.
+- Publicación de un artículo como precio cerrado o subasta. Borrador local por cuenta para título, descripción, categoría, modalidad y precio.
 - Entre una y seis imágenes JPG, PNG o WebP, de hasta 5 MB por archivo. El vendedor puede ordenar las fotos y elegir la principal.
 - Las imágenes nuevas se normalizan al subirlas, conservando proporción y centrado dentro de un formato 4:3 para su presentación en los anuncios.
 - Categoría, estado, ubicación, descripción, modalidad de entrega y gastos de envío.
@@ -107,7 +108,7 @@ La propuesta combina la sencillez de uso de un marketplace móvil con dos mecani
 - Seguimiento de compras, ventas, pujas y anuncios en `Mi actividad`, con badges persistentes y una campana de novedades contextuales.
 - Identidad contextual mediante alias en anuncios, pujas, pedidos, chat y actividad privada; el comprador nunca se publica en el anuncio vendido.
 - Valoraciones mutuas de una a cinco estrellas, con comentario opcional, únicamente tras completar un pedido.
-- Denuncia de anuncios para revisión.
+- Denuncia de anuncios para revisión. Las partes de un pedido pueden registrar incidencias de envío, entrega o estado del artículo. La bandeja de soporte está reservada a operadores.
 
 ## 5. Funcionalidades no activas o pendientes
 

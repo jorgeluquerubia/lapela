@@ -8,6 +8,7 @@ import {extractIdFromSlug,productSlug,slugify} from '@/lib/slugs';
 import {isOperatorUser,validateAuctionEligibility} from '@/lib/featured-auctions';
 import {normalizeTags} from '@/lib/search';
 import {relevantCatalog} from '@/controllers/search';
+import {deleteSearch,orderSupport,savedSearches,saveSearch,supportQueue} from '@/controllers/beta-tools';
 export async function currentUser(){const client=await createClient();const {data:{user}}=await client.auth.getUser();return user}
 const simulated=()=>process.env.LAPELA_PAYMENTS_MODE==='simulated';
 const stripeAccountsTable=()=>stripeSandboxPayments()?'lp_stripe_sandbox_accounts':'lp_accounts';
@@ -41,6 +42,15 @@ export async function catalog(request:Request){const p=new URL(request.url).sear
 export async function handle(request:Request,path:string[]){try{
  const db=admin();const [action,id]=path;const targetId=extractIdFromSlug(id||'');const user=await currentUser();
  if(request.method==='GET'){
+  if(action==='saved-searches'&&user)return ok(await savedSearches(db,user.id));
+  if(action==='order-support'&&user&&uuid(id||'')){
+    const tickets=await orderSupport(db,user.id,id);
+    return tickets?ok(tickets):ok({error:'Pedido no encontrado.'},404);
+  }
+  if(action==='support-queue'){
+    if(!user||!await isOperatorUser(user,db))return ok({error:'Acceso reservado a soporte.'},403);
+    return ok(await supportQueue(db));
+  }
   if(action==='featured-edition'){await maintain();const edition=await getCurrentFeaturedEdition(db,marketplaceEnvironment());return ok(edition)}
   if(action==='auction-edition'&&id){await maintain();const isOp=user?await isOperatorUser(user,db):false;const edition=await getAuctionEditionBySlug(id,db,marketplaceEnvironment(),isOp);return edition?ok(edition):ok({error:'Edición no encontrada'},404)}
   if(action==='profile'&&id&&id!=='me'){const profile=await getPublicProfile(id);return profile?ok(profile):ok({error:'Perfil no encontrado'},404)}
@@ -56,6 +66,16 @@ export async function handle(request:Request,path:string[]){try{
  if(request.method!=='POST')return ok({error:'Ruta no encontrada'},404);const reqOrigin=request.headers.get('origin');if(reqOrigin&&reqOrigin!==new URL(request.url).origin&&reqOrigin!==process.env.APP_URL)return ok({error:'Origen no permitido'},403);if(!user)return ok({error:'Inicia sesión para continuar.'},401);await rpc('lp_ensure_profile',{p_actor:user.id});
  if(action==='upload'){const form=await request.formData();const f=form.get('file');if(!(f instanceof File)||!['image/jpeg','image/png','image/webp'].includes(f.type)||f.size>5*1024*1024)return ok({error:'Elige una imagen JPG, PNG o WebP de hasta 5 MB.'},400);const bytes=new Uint8Array(await f.arrayBuffer());const valid=(f.type==='image/jpeg'&&bytes[0]===255&&bytes[1]===216&&bytes[2]===255)||(f.type==='image/png'&&bytes.slice(0,8).join(',')==='137,80,78,71,13,10,26,10')||(f.type==='image/webp'&&String.fromCharCode(...bytes.slice(0,4))==='RIFF'&&String.fromCharCode(...bytes.slice(8,12))==='WEBP');if(!valid)return ok({error:'El archivo no es una imagen válida.'},400);const key=`v2/${user.id}/${crypto.randomUUID()}.${f.type.split('/')[1]}`;const {error}=await db.storage.from('product-images').upload(key,bytes,{contentType:f.type,upsert:false});if(error)throw Error('No se ha podido subir la foto.');return ok({url:db.storage.from('product-images').getPublicUrl(key).data.publicUrl})}
  const body=await request.json();
+  if(action==='saved-searches')return ok(await saveSearch(db,user.id,body),201);
+  if(action==='remove-saved-search'&&uuid(id||''))return ok(await deleteSearch(db,user.id,id));
+  if(action==='order-support'&&uuid(id||'')){
+    const ticket=await orderSupport(db,user.id,id,body);
+    return ticket?ok(ticket,201):ok({error:'Pedido no encontrado.'},404);
+  }
+  if(action==='support-queue'&&uuid(id||'')){
+    if(!await isOperatorUser(user,db))return ok({error:'Acceso reservado a soporte.'},403);
+    return ok(await supportQueue(db,id));
+  }
   if(action==='auction-edition'){
     const isOp=await isOperatorUser(user,db);
     if(!isOp)return ok({error:'No tienes autorización para gestionar ediciones de subastas.'},403);
