@@ -93,7 +93,7 @@ export default function ProductCard({product:p}:{product:Product}){
           }}
           className={imageLoaded || imageError || !p.image ? 'product-image-loaded' : 'product-image-unloaded'}
         />
-        <span className={`sale-tag ${auction?'auction':''}`}>{auction?'↗ Subasta':'Precio cerrado'}</span>
+        <span className={`sale-tag ${auction?'auction':''}`}>{isDemo?(auction?'Subasta de ejemplo':'Ejemplo · Precio cerrado'):auction?'↗ Subasta':'Precio cerrado'}</span>
         {p.featuredEdition && (
           <span className="featured-tag">★ Subasta de la Pela</span>
         )}
@@ -128,7 +128,7 @@ export default function ProductCard({product:p}:{product:Product}){
       <Link href={href} prefetch={false}><h3>{p.name}</h3></Link>
       <div className="product-meta">
         <span>{p.location||'España'}</span>
-        <span>{auction&&ending?ending:p.delivery==='shipping'?'Envío':p.delivery==='pickup'?'Recogida':p.condition}</span>
+        <span>{p.demoAuction || (auction&&ending?ending:p.delivery==='shipping'?'Envío':p.delivery==='pickup'?'Recogida':p.condition)}</span>
       </div>
       {p.sellerProfile?.alias&&<Link prefetch={false} className="profile-link product-seller" href={`/usuarios/${p.sellerProfile.alias}`}>Vendedor · @{p.sellerProfile.alias}</Link>}
     </div>

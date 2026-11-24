@@ -46,3 +46,17 @@ Ejecuta `psql -X -v ON_ERROR_STOP=1 -f integration/audit-integrity.sql` desde un
 Los recorridos Stripe adicionales comprueban que el comprador no puede cerrar Checkout, que el vendedor puede expirar una sesión abierta antes de confirmar el cobro presencial y que repetir esa confirmación produce un único aviso. Se verifica el estado expired consultando Stripe y volviendo a abrir la página de Checkout. Un pago por tarjeta registrado por webhook conserva su modo de pago y bloquea la confirmación presencial.
 
 Para estos recorridos, proporciona STRIPE_SECRET_KEY de prueba al runner. Los archivos de sesión pertenecen a cuentas ficticias de la misma instancia local, con un vendedor Connect de sandbox ya habilitado. El runner recibe los secretos mediante variables de entorno. Los secretos y las sesiones permanecen fuera del repositorio.
+
+## Sesión guiada en el piloto
+
+El escenario de edición guiada publica cinco artículos simulados en la base aislada, dos con cierre a las 24 horas y tres a las 48 horas. El informe Playwright identifica la ejecución. Los ejemplos de la web se consultan aparte en `/subastas?examples=1`.
+
+Para una sesión con seis a ocho personas, usar el piloto con pagos simulados. Repartir dos papeles de venta y el resto de compra y puja. Documentar dispositivo, paso, expectativa y resultado. Alternar un iPhone y un Android físicos para los recorridos principales.
+
+1. Empezar un anuncio, salir, volver al borrador y publicar con una foto.
+2. Reservar una pieza, explicar qué ocurre con el pago y encontrar el pedido desde Por hacer.
+3. Pujar en la edición. Un segundo comprador supera la puja y el primero vuelve desde Novedades. Tras un cierre, el ganador abre el pedido desde su aviso.
+4. Registrar una incidencia de entrega. En soporte, localizar su referencia y marcarla como resuelta.
+5. Con cuentas de prueba, comprobar llegada y apertura de los correos de confirmación y recuperación. Mailpit cubre la confirmación de registro y la recuperación de contraseña automatizadas. La entrega a buzones de invitados requiere verificar el proveedor del entorno que se use.
+
+Entregar a cada participante su cuenta de prueba cuando se confirme la sesión.

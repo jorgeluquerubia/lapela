@@ -5,7 +5,7 @@ import {createClient, type SupabaseClient} from '@supabase/supabase-js';
 import {expect, test, type APIResponse, type BrowserContext} from '@playwright/test';
 import {products} from './listings';
 
-type Actor = {context: BrowserContext};
+type Actor = {context: BrowserContext; userId?: string};
 type Listing = {id: string; title: string};
 type Product = (typeof products)[keyof typeof products];
 type Order = {id: string; status: string; amount_cents: number; payment_mode: string | null};
@@ -118,7 +118,7 @@ test.beforeAll(async ({browser}) => {
     if (!role) return {context};
     const email = `${role}-${run}@example.com`;
     const password = `LaPela-${randomUUID()}!`;
-    const {error} = await admin.auth.admin.createUser({email, password, email_confirm: true});
+    const {data, error} = await admin.auth.admin.createUser({email, password, email_confirm: true});
     expect(error?.message).toBeUndefined();
     const page = await context.newPage();
     try {
@@ -129,7 +129,7 @@ test.beforeAll(async ({browser}) => {
       await expect(page.getByRole('link', {name: 'Mi cuenta', exact: true})).toBeVisible();
       await json(await post({context}, 'profile', {alias: `${role}-${run}`}));
     } finally { await page.close(); }
-    return {context};
+    return {context,userId:data.user!.id};
   }
 
   [seller, secondSeller, buyer, rival, observer, visitor] = await Promise.all([
@@ -173,7 +173,7 @@ test('publicación, fotos, catálogo y ficha desde una visita móvil', async () 
     await page.keyboard.press('Escape');
     await expect(photoDialog).toBeHidden();
     await expect(zoom).toBeFocused();
-    await expect(page.locator('.purchase-action').getByRole('link', {name: 'Entrar para comprar'}))
+    await expect(page.locator('.purchase-action').getByRole('link', {name: 'Entrar para reservar'}))
       .toHaveAttribute('href', '/login?next=' + encodeURIComponent('/articulos/' + found.slug));
     await page.goto('/search?q=' + encodeURIComponent(radio.title));
     const filters = page.getByRole('button', {name: 'Filtros', exact: true});
@@ -496,4 +496,105 @@ test('actividad y campana aíslan avisos live de la misma cuenta sandbox', async
   await json(await post(buyer,'mark-all-notifications-read'));
   const unchanged=await admin.from('lp_notifications').select('read,read_at').eq('id',notice.data!.id).single();
   expect(unchanged.data).toEqual({read:false,read_at:null});
+});
+
+test('borrador recuperable y ejemplos de subastas sin transacciones', async () => {
+  const publisher = await seller.context.newPage();
+  const guest = await visitor.context.newPage();
+  await publisher.setViewportSize({width: 390, height: 844});
+  await guest.setViewportSize({width: 390, height: 844});
+  try {
+    await publisher.goto('/publish-ad');
+    await publisher.getByRole('textbox', {name:'Título'}).fill('Radio para el borrador');
+    await publisher.getByRole('textbox', {name:'Descripción y defectos'}).fill('Radio de uso doméstico con un pequeño rasguño.');
+    await publisher.getByRole('spinbutton', {name:'Precio (€)'}).fill('24.5');
+    await publisher.reload();
+    await expect(publisher.getByRole('textbox', {name:'Título'})).toHaveValue('Radio para el borrador');
+    await expect(publisher.getByRole('spinbutton', {name:'Precio (€)'})).toHaveValue('24.5');
+    await publisher.getByRole('button', {name:'Borrar borrador'}).click();
+    await expect(publisher.getByRole('textbox', {name:'Título'})).toHaveValue('');
+
+    await guest.goto('/subastas?examples=1');
+    await expect(guest.getByText('La Subasta de la Pela · Edición de ejemplo')).toBeVisible();
+    await expect(guest.getByText('Finalizada · adjudicada')).toBeVisible();
+    await guest.getByRole('link', {name:'Mochila de montaña Abeto',exact:true}).last().click();
+    await expect(guest.getByRole('heading', {name:'Mochila de montaña Abeto'})).toBeVisible();
+    await expect(guest.getByRole('button', {name:'Revisar puja'})).toHaveCount(0);
+    await expect(guest.getByRole('link', {name:'Entrar para pujar'})).toHaveCount(0);
+  } finally {
+    await publisher.close();
+    await guest.close();
+  }
+});
+
+test('búsquedas guardadas avisan una vez por coincidencia y se pueden borrar', async () => {
+  const {id} = await json<{id:string}>(await post(buyer,'saved-searches',{category:'Hogar',mode:'sale',location:'Madrid',minPrice:'30',maxPrice:'50'}),201);
+  await json(await post(buyer,'saved-searches',{category:'Hogar',mode:'sale',location:'Madrid',maxPrice:'50'}),201);
+  await json(await post(rival,'remove-saved-search/'+id));
+  expect(await json(await get(buyer,'saved-searches'))).toEqual(expect.arrayContaining([expect.objectContaining({id})]));
+  const match = await publish(secondSeller,products.lamp,'coincide con búsqueda',{location:'Madrid'});
+  const mismatch = await publish(secondSeller,products.lamp,'fuera de ciudad',{location:'Toledo'});
+  const notices = (await notifications(buyer)).filter(notice=>notice.type==='saved_search_match');
+  expect(notices.filter(notice=>notice.listing_id===match.id)).toHaveLength(1);
+  expect(notices.filter(notice=>notice.listing_id===mismatch.id)).toHaveLength(0);
+  await json(await post(buyer,'remove-saved-search/'+id));
+  expect(await json(await get(buyer,'saved-searches'))).not.toEqual(expect.arrayContaining([expect.objectContaining({id})]));
+});
+
+test('cada parte consulta sus incidencias de pedido y conserva la referencia al reintentar', async () => {
+  const item=await publish(secondSeller,products.radio,'incidencia');
+  const id=await reserve(buyer,item);
+  const report={reason:'delivery',details:'Necesito ayuda para acordar un nuevo punto de recogida.'};
+  await denied(await post(observer,'order-support/'+id,report),/pedido no encontrado/i,404);
+  await denied(await get(observer,'order-support/'+id),/pedido no encontrado/i,404);
+  const ticket=await json<{id:string}>(await post(buyer,'order-support/'+id,report),201);
+  const retry=await json<{id:string}>(await post(buyer,'order-support/'+id,report),201);
+  expect(retry.id).toBe(ticket.id);
+  expect(await json(await get(secondSeller,'order-support/'+id))).toEqual([]);
+  await denied(await get(buyer,'support-queue'),/acceso reservado/i,403);
+
+  const page=await buyer.context.newPage();
+  try{
+    await page.goto('/my-products');
+    const task=page.getByRole('link',{name:'Pagar pedido · '+item.title});
+    await expect(task).toHaveAttribute('href','/orders/'+id+'#pago');
+    await task.click();
+    await page.getByRole('button',{name:'Tengo un problema'}).click();
+    await expect(page.getByText(ticket.id,{exact:true})).toBeVisible();
+  }finally{await page.close();}
+});
+
+test('edición jugable de la beta con cinco artículos y dos cierres', async () => {
+  const role=await admin.from('lp_operators').insert({user_id:observer.userId,role:'operator'});
+  expect(role.error?.message).toBeUndefined();
+  const now=Date.now();
+  const closeTimes=[24,48].map(hours=>new Date(now+hours*3600000).toISOString());
+  const edition=await json<{id:string;slug:string}>(await post(observer,'auction-edition',{
+    title:'La Subasta de la Pela · Beta guiada',
+    slug:'beta-guiada-'+run,
+    description:'Cinco artículos ficticios con dos cierres. Las transacciones de esta edición son simuladas.',
+    starts_at:new Date(now-60000).toISOString(),reference_ends_at:closeTimes[1],
+  }),201);
+  const pieces=[products.backpack,products.rover,products.lamp,products.coat,products.plane];
+  const listings=await Promise.all(pieces.map((piece,index)=>publish(index%2?seller:secondSeller,piece,'beta guiada',{
+    mode:'auction',ends_at:closeTimes[index<2?0:1],
+  })));
+  for(const [index,listing] of listings.entries()){
+    await json(await post(observer,`auction-edition/${edition.id}/items`,{listing_id:listing.id,sort_order:index}),201);
+  }
+  await json(await post(observer,`auction-edition/${edition.id}/status`,{status:'published'}));
+  const publicEdition=await json<{items_count:number}>(await get(visitor,'auction-edition/'+edition.slug));
+  expect(publicEdition.items_count).toBe(5);
+  await json(await post(buyer,'bid/'+listings[0].id,{amount:pieces[0].price}));
+  await json(await post(rival,'bid/'+listings[0].id,{amount:pieces[0].price+1}));
+  expect((await notifications(buyer)).some(item=>item.type==='outbid'&&item.listing_id===listings[0].id)).toBe(true);
+  const queue=await json<{id:string;status:string}[]>(await get(observer,'support-queue'));
+  expect(Array.isArray(queue)).toBe(true);
+  const supportOrder=await reserve(buyer,await publish(seller,products.radio,'soporte operativo'));
+  const ticket=await json<{id:string}>(await post(buyer,'order-support/'+supportOrder,{
+    reason:'condition',details:'El estado del artículo necesita una aclaración antes de la entrega.',
+  }),201);
+  expect(await json(await get(observer,'support-queue'))).toEqual(expect.arrayContaining([expect.objectContaining({id:ticket.id})]));
+  await json(await post(observer,'support-queue/'+ticket.id));
+  expect(await json(await get(buyer,'order-support/'+supportOrder))).toEqual(expect.arrayContaining([expect.objectContaining({id:ticket.id,status:'resolved'})]));
 });

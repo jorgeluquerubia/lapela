@@ -3,6 +3,7 @@ import {useParams} from 'next/navigation';
 import Link from 'next/link';
 import {useEffect,useState,useCallback} from 'react';
 import {api} from '@/lib/api';
+import OrderSupport from '@/components/OrderSupport';
 import {money} from '@/lib/rules';
 import {pesetaEquivalence, PESETA_DISCLAIMER} from '@/lib/pesetas';
 
@@ -25,6 +26,15 @@ export default function Order(){
     const timer=setInterval(load,10000);
     return()=>clearInterval(timer);
   },[load]);
+
+  const loaded=Boolean(data);
+  useEffect(()=>{
+    if(!loaded)return;
+    const section=window.location.hash.slice(1);
+    if(!['pago','envio','recepcion'].includes(section))return;
+    const frame=window.requestAnimationFrame(()=>document.getElementById(section)?.scrollIntoView({block:'center'}));
+    return ()=>window.cancelAnimationFrame(frame);
+  },[id,loaded]);
 
   async function action(kind:string){
     setBusy(true);
@@ -128,7 +138,7 @@ export default function Order(){
                 Artículo reservado. Utilizad el chat para acordar si el pago se realizará en mano/en persona o a través de la plataforma, así como los detalles de entrega.
               </div>
               {buyer&&(
-                <button className="button primary" disabled={busy} onClick={()=>data.simulated?setConfirmPayment(true):action('checkout')}>
+                <button id="pago" className="button primary" disabled={busy} onClick={()=>data.simulated?setConfirmPayment(true):action('checkout')}>
                   {data.simulated?'Simular pago por plataforma':data.stripeTest?'Pagar con tarjeta de prueba':'Pagar con tarjeta'}
                 </button>
               )}
@@ -171,7 +181,7 @@ export default function Order(){
           )}
 
           {!buyer&&o.status==='paid'&&(
-            <form onSubmit={e=>{e.preventDefault();action('ship')}}>
+            <form id="envio" onSubmit={e=>{e.preventDefault();action('ship')}}>
               <label>
                 {o.listing.delivery==='shipping'?'Transportista y seguimiento':'Detalle de entrega'}
                 <input className="field-input" value={tracking} onChange={e=>setTracking(e.target.value)} maxLength={200} required={o.listing.delivery==='shipping'}/>
@@ -183,7 +193,7 @@ export default function Order(){
           )}
 
           {buyer&&['paid','shipped'].includes(o.status)&&(
-            <button className="button primary" disabled={busy} onClick={()=>{if(window.confirm('¿Confirmas que has recibido el artículo y has revisado su estado?'))action('complete')}}>
+            <button id="recepcion" className="button primary" disabled={busy} onClick={()=>{if(window.confirm('¿Confirmas que has recibido el artículo y has revisado su estado?'))action('complete')}}>
               Confirmar recepción
             </button>
           )}
@@ -237,6 +247,7 @@ export default function Order(){
           )}
         </section>
       </div>
+      <OrderSupport key={id} id={id}/>
     </>
   );
 }

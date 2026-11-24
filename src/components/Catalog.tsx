@@ -8,6 +8,7 @@ import BrandSpinner from './BrandSpinner';
 import FeaturedAuctionSection from './FeaturedAuctionSection';
 import {demoProducts} from '@/lib/demo-products';
 import ActionDialog from './ActionDialog';
+import SavedSearches from './SavedSearches';
 
 interface CatalogProps {
   initialCategory?: string;
@@ -143,8 +144,8 @@ export default function Catalog({initialCategory, initialMode}: CatalogProps = {
   return <>
     {home&&<section className="market-intro">
       <div className="market-intro-copy">
-        <h1>Segunda mano.<br/><em>Sin segundas negociaciones.</em></h1>
-        <p>Compra a precio cerrado o puja por lo que te gusta.</p>
+        <h1>Segunda mano,<br/><em>sin regateos.</em></h1>
+        <p>Compra a precio fijo o puja en una subasta.</p>
       </div>
       <div className="market-intro-coin" aria-hidden="true">
         <div className="intro-coin-face"><span>1</span><strong>PESETA</strong><small>LA PELA</small></div>
@@ -160,7 +161,10 @@ export default function Catalog({initialCategory, initialMode}: CatalogProps = {
       </div>}
     </div>
 
-    {examples&&<div className="notice">Catálogo de ejemplo · Fotografías ilustrativas. <button onClick={()=>update({examples:''})} className="underline">Volver al catálogo</button></div>}
+    {examples ? <div className="notice"><strong>Catálogo de ejemplo</strong> · Estás viendo anuncios ficticios. <button type="button" onClick={()=>update({examples:''})} className="underline">Volver al catálogo</button></div>
+      : <p className="catalog-example-link"><Link href="/subastas?examples=1" className="underline">{initialMode==='auction'?'Ver una subasta de ejemplo':'Explorar subastas de ejemplo'}</Link> · <Link href="/?examples=1" className="underline">Todos los anuncios de ejemplo</Link></p>}
+    {examples&&mode==='auction'&&<div className="notice"><strong>La Subasta de la Pela · Edición de ejemplo</strong><p className="m-0">Explora artículos sin pujas, con pujas y adjudicados. Las fichas de muestra no admiten pujas.</p></div>}
+
 
     <div className="catalog-layout">
       <aside className="filter-panel catalog-filters" aria-label="Filtros del catálogo">
@@ -179,6 +183,7 @@ export default function Catalog({initialCategory, initialMode}: CatalogProps = {
             <option value="ending">Próximos cierres</option>
           </select>
         </div>
+        {!examples&&<SavedSearches keyword={q} filters={{category:category==='Todas'?'':category,mode:mode==='all'?'':mode,location,minPrice:min,maxPrice:max}}/>}
         {chips.length>0&&<div className="filter-chips" aria-label="Filtros activos">
           {chips.map(chip=><button type="button" key={chip.name} aria-label={`Quitar filtro ${chip.label}`} onClick={()=>update({[chip.name]:''})}>{chip.label} <span aria-hidden="true">×</span></button>)}
           <button type="button" className="underline" onClick={clearFilters}>Limpiar filtros</button>
@@ -232,6 +237,6 @@ export default function Catalog({initialCategory, initialMode}: CatalogProps = {
         )}
       </section>
     </div>
-    {!q&&!chips.length&&page===1&&(home||initialMode==='auction')&&<FeaturedAuctionSection/>}
+    {!examples&&!q&&!chips.length&&page===1&&(home||initialMode==='auction')&&<FeaturedAuctionSection/>}
   </>;
 }

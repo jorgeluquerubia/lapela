@@ -106,8 +106,13 @@ function ActivityContent() {
   const isPending = (o: {status:string}) => !['completed','cancelled','canceled','refunded'].includes(o.status);
   const isOrderTab = tab === 'purchases' || tab === 'sales';
   const pendingOrders = (data?.orders || []).filter(isPending);
-  const paymentsDue = pendingOrders.filter((o:any)=>o.buyer_id===user.id&&o.status==='pending_payment').length;
-  const deliveriesDue = pendingOrders.filter((o:any)=>o.seller_id===user.id&&o.status==='paid').length;
+  const tasks: {id:string; title:string; label:string; anchor:string; deadline?:string}[] = pendingOrders.flatMap((o:any)=>{
+    if(o.buyer_id===user.id&&o.status==='pending_payment')return [{id:o.id,title:o.listing.title,label:'Pagar pedido',deadline:o.expires_at,anchor:'pago'}];
+    if(o.seller_id===user.id&&o.status==='paid')return [{id:o.id,title:o.listing.title,label:o.listing.delivery==='shipping'?'Añadir seguimiento':'Preparar entrega',anchor:'envio'}];
+    if(o.buyer_id===user.id&&o.status==='shipped')return [{id:o.id,title:o.listing.title,label:'Confirmar recepción',anchor:'recepcion'}];
+    return [];
+  });
+  tasks.sort((left,right)=>Date.parse(left.deadline||'9999-12-31')-Date.parse(right.deadline||'9999-12-31'));
   const rows = !data
     ? []
     : tab === 'listings'
@@ -179,13 +184,14 @@ function ActivityContent() {
 
       {data&&<section className="activity-overview" aria-labelledby="activity-overview-title">
         <h2 id="activity-overview-title">Por hacer</h2>
-        <div>
-          <button type="button" className="button" onClick={()=>{setTab('purchases');setPeriod('pending');}}>Compras en curso · {pendingOrders.filter((o:any)=>o.buyer_id===user.id).length}</button>
-          <button type="button" className="button" onClick={()=>{setTab('sales');setPeriod('pending');}}>Ventas en curso · {pendingOrders.filter((o:any)=>o.seller_id===user.id).length}</button>
-          {paymentsDue>0&&<button type="button" className="button" onClick={()=>{setTab('purchases');setPeriod('pending');}}>Pagos pendientes · {paymentsDue}</button>}
-          {deliveriesDue>0&&<button type="button" className="button" onClick={()=>{setTab('sales');setPeriod('pending');}}>Entregas pendientes · {deliveriesDue}</button>}
-          {bidsUnreadCount>0&&<button type="button" className="button" onClick={()=>setTab('bids')}>Pujas superadas · {bidsUnreadCount}</button>}
-        </div>
+        {tasks.length===0&&bidsUnreadCount===0&&<p className="muted">Estás al día con tus pedidos y pujas.</p>}
+        <ul className="beta-task-list">
+          {tasks.slice(0,3).map(task=><li key={task.id}>
+            <div><p><strong>{task.title}</strong></p>{task.deadline&&<p className="muted">Paga antes del {new Date(task.deadline).toLocaleString('es-ES')}</p>}</div>
+            <Link className="button" href={`/orders/${task.id}#${task.anchor}`} aria-label={`${task.label} · ${task.title}`}>{task.label}</Link>
+          </li>)}
+          {bidsUnreadCount>0&&<li><button type="button" className="button" onClick={()=>setTab('bids')}>Pujas superadas · {bidsUnreadCount}</button></li>}
+        </ul>
       </section>}
 
       <div className="mode-tabs activity-tabs" aria-label="Secciones de actividad">

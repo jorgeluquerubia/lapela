@@ -225,3 +225,16 @@ a.underline, button.underline, .filter-note a, .story-badge,
 @media (prefers-reduced-motion: reduce) {
   .button, .product-image img, .favorite-button, .catalog-grid-updating { transition: none; }
 }
+
+.prose-page { max-width: 66ch; font-size: 1.0625rem; line-height: 1.55; }
+.prose-page p, .prose-page li { line-height: 1.55; }
+.how-steps { padding-left: 1.5rem; list-style: decimal; margin-bottom: 1.5rem; }
+.how-steps li { padding-block: .35rem; }
+.catalog-example-link { margin-bottom: .85rem; font-size: .9rem; }
+.beta-task-list { display: grid; gap: .75rem; }
+.beta-task-list li { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: .5rem 1rem; }
+.beta-task-list p { margin: 0; }
+
+.saved-searches { margin-bottom: .75rem; }
+.saved-search-panel { margin-top: .5rem; padding: .75rem; border: 1px solid var(--line); border-radius: .75rem; }
+.saved-search-panel p { margin-bottom: .5rem; }

@@ -134,7 +134,7 @@ describe('Activity Badges and Notifications (LP-FEAT-009)', () => {
     });
 
     // In Compras, Auriculares Inalámbricos has 'Nuevo mensaje' badge
-    expect(screen.getByText('Auriculares Inalámbricos')).toBeInTheDocument();
+    expect(screen.getByRole('heading',{name:'Auriculares Inalámbricos'})).toBeInTheDocument();
     expect(screen.getByText('Nuevo mensaje')).toBeInTheDocument();
 
     // Switch to Ventas tab

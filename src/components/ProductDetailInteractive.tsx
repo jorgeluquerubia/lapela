@@ -274,9 +274,9 @@ export default function ProductDetailInteractive({initialItem, slug, demo = fals
           </p>}
         {auction&&<div className="auction-timing">
           <p className="muted">
-            {item.bid_count} {item.bid_count===1?'puja':'pujas'} · {auctionPendingClose||item.status!=='available'
+            {item.bid_count} {item.bid_count===1?'puja':'pujas'} · {item.demoAuction||(auctionPendingClose||item.status!=='available'
               ? 'Cerrada'
-              : item.ends_at ? 'Cierra ' + new Date(item.ends_at).toLocaleString('es-ES') : 'Ejemplo de subasta'}
+              : item.ends_at ? 'Cierra ' + new Date(item.ends_at).toLocaleString('es-ES') : 'Ejemplo de subasta')}
           </p>
           {!demo&&item.status==='available'&&!auctionPendingClose&&<p className="muted">Una puja en los últimos 2 minutos amplía el cierre otros 2 minutos.</p>}
         </div>}
@@ -328,7 +328,7 @@ export default function ProductDetailInteractive({initialItem, slug, demo = fals
           </div>
         ) : !user ? (
           <Link href={loginHref} className="button primary w-full">
-            Entrar para {auction ? 'pujar' : 'comprar'}
+            Entrar para {auction ? 'pujar' : 'reservar'}
           </Link>
         ) : (
           <>
@@ -391,7 +391,7 @@ export default function ProductDetailInteractive({initialItem, slug, demo = fals
               <ActionDialog labelledBy="confirm-buy-title" onClose={() => {if (!busy) setConfirmBuy(false);}}>
               <div className="confirmation">
                 <strong id="confirm-buy-title" className="block text-base mb-1">
-                  ¿Confirmar la compra de este artículo?
+                  ¿Confirmar la reserva?
                 </strong>
                 <p className="mb-1">
                   Total a abonar:{' '}
@@ -400,20 +400,12 @@ export default function ProductDetailInteractive({initialItem, slug, demo = fals
                   </strong>
                   {item.delivery === 'shipping' ? ' (envío incluido)' : ' (recogida en persona)'}.
                 </p>
-                <p className="peseta-approx text-xs mb-1">
-                  {pesetaEquivalence(
-                    (auction ? item.buy_now_cents : item.price_cents) + item.shipping_cents,
-                    true
-                  )}
-                </p>
-                <p className="text-xs text-stone-600 mb-2 font-medium">
-                  {PESETA_DISCLAIMER}
-                </p>
-                <div className="notice text-xs mb-3">
-                  Al confirmar, el artículo quedará <strong>reservado para ti durante 48 horas</strong> para formalizar el pago y acordar la entrega. Recuerda que no abonar una reserva en plazo puede conllevar <strong>penalizaciones en tu cuenta</strong> según nuestra{' '}
-                  <Link href="/politica-de-compras" target="_blank" className="underline font-semibold">
-                    política de compras
-                  </Link>.
+                {item.delivery === 'shipping' && <p className="muted">
+                  Artículo {money(auction ? item.buy_now_cents : item.price_cents)} · Envío {money(item.shipping_cents)}
+                </p>}
+                <div className="notice text-sm mb-3">
+                  Tienes <strong>48 horas para pagar</strong>. Al reservar se abre el chat para acordar la entrega.
+                  <p className="mt-2 mb-0">Si no pagas a tiempo, se aplicará la <Link href="/politica-de-compras" target="_blank" className="underline">política de compras</Link>.</p>
                 </div>
                 {error && <p className="error-message" role="alert">{error}</p>}
                 <div className="dialog-actions">
@@ -422,7 +414,7 @@ export default function ProductDetailInteractive({initialItem, slug, demo = fals
                     disabled={busy}
                     onClick={() => action('checkout')}
                   >
-                    {busy ? 'Reservando…' : 'Confirmar y reservar'}
+                    {busy ? 'Reservando…' : 'Confirmar reserva'}
                   </button>
                   <button
                     type="button"
@@ -447,7 +439,7 @@ export default function ProductDetailInteractive({initialItem, slug, demo = fals
                   >
                     {busy
                       ? 'Preparando…'
-                      : `Comprar ahora · ${money(
+                      : `Reservar por ${money(
                           (auction ? item.buy_now_cents : item.price_cents) + item.shipping_cents
                         )}`}
                   </button>
@@ -638,9 +630,9 @@ export default function ProductDetailInteractive({initialItem, slug, demo = fals
       {dockVisible && !demo && !item.mine && item.status === 'available' && !auctionPendingClose && (
         <div className="mobile-purchase-dock">
           <div><small>{auction ? (item.bid_count ? 'Puja actual' : 'Precio de salida') : 'Total'}</small><strong>{money(item.price_cents + (auction ? 0 : (item.shipping_cents || 0)))}</strong></div>
-          {!user ? <Link href={loginHref} className="button primary">Entrar para {auction ? 'pujar' : 'comprar'}</Link>
+          {!user ? <Link href={loginHref} className="button primary">Entrar para {auction ? 'pujar' : 'reservar'}</Link>
             : auction ? <a href="#accion-articulo" className="button primary" onClick={() => requestAnimationFrame(() => document.getElementById('bid')?.focus())}>Pujar</a>
-              : <button type="button" className="button primary" aria-haspopup="dialog" onClick={event => {event.currentTarget.focus(); setConfirmBuy(true);}}>Comprar</button>}
+              : <button type="button" className="button primary" aria-haspopup="dialog" onClick={event => {event.currentTarget.focus(); setConfirmBuy(true);}}>Reservar</button>}
         </div>
       )}
       {photoOpen && <ActionDialog labelledBy="expanded-photo-title" onClose={() => setPhotoOpen(false)}>
