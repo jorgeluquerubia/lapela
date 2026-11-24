@@ -47,7 +47,10 @@ begin
  ord2:=lp_confirm_in_person_payment(ord2.id,seller);
  if ord2.status<>'completed' or ord2.payment_mode<>'in_person' then raise exception 'FAIL in person order status';end if;
  if (select status from lp_listings where id=item2)<>'sold' then raise exception 'FAIL in person listing sold';end if;
- blocked:=false;begin perform lp_confirm_in_person_payment(ord2.id,seller);exception when others then blocked:=true;end;if not blocked then raise exception 'FAIL in person already completed';end if;
+ ord2:=lp_confirm_in_person_payment(ord2.id,seller);
+ if ord2.status<>'completed' or ord2.payment_mode<>'in_person' or
+    (select count(*) from lp_notifications where order_id=ord2.id and title='Pago en persona confirmado')<>1
+ then raise exception 'FAIL in person retry must be idempotent';end if;
  insert into public.lp_listings(seller_id,title,description,category,condition,location,images,mode,price_cents,delivery,ends_at) values(seller,'Subasta de prueba','Descripción completa de una subasta sintética para validación.','Hogar','Buen estado','Madrid',array['https://example.invalid/test.jpg'],'auction',1000,'pickup',now()+interval '60 seconds') returning id into auction;
  blocked:=false;begin perform lp_bid(auction,seller,1100);exception when others then blocked:=true;end;if not blocked then raise exception 'FAIL self bid';end if;
  l:=lp_bid(auction,buyer,1000);if l.ends_at<now()+interval '119 seconds' then raise exception 'FAIL anti sniping';end if;
